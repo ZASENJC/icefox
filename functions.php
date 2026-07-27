@@ -262,6 +262,54 @@ function getThumbnail($archive)
 }
 
 /**
+ * 渲染列表页文章内容和媒体，避免多个模板重复实现同一套解析流程。
+ */
+function renderPostFeedContent($archive)
+{
+    static $autoCollapse;
+    if ($autoCollapse === null) {
+        $autoCollapse = \Widget\Options::alloc()->autoCollapse !== '0';
+    }
+
+    $content = $archive->content;
+    $view = getPostContentView($content);
+    $cws = $view['summary'];
+    $musicHtml = $view['music'];
+
+    echo '<div class="post-content">';
+    if ($autoCollapse && $cws['is_truncated'] === true) {
+        echo '<div class="summary-' . (int) $archive->cid . '">' . $cws['summary'] . '<span class="show_all_btn cursor-pointer" data-cid="' . (int) $archive->cid . '">全文</span></div>';
+        echo '<div class="hidden full_content-' . (int) $archive->cid . '">' . $cws['full_content'] . '<div><span class="hide_all_btn cursor-pointer" data-cid="' . (int) $archive->cid . '">收起</span></div></div>';
+    } elseif ($autoCollapse) {
+        echo '<div>' . $cws['full_content'] . '</div>';
+    } else {
+        echo '<div class="full-content-display">' . $cws['full_content'] . '</div>';
+    }
+    echo $musicHtml;
+    echo '</div>';
+
+    $videoSrc = extractVideoSrc($content);
+    if ($videoSrc) {
+        $archive->videoUrl = $videoSrc;
+        $archive->need('components/post/post-video.php');
+    } else {
+        $archive->images = extractImageSrcs($content);
+        $archive->need('components/post/post-images.php');
+    }
+
+    $archive->need('components/post/post-position.php');
+}
+
+function getPostContentView($content, $summaryLength = 100)
+{
+    $cws = generateContentWithSummaryAndMusic(filterContent($content), $summaryLength);
+    return array(
+        'summary' => $cws,
+        'music' => !empty($cws['music_shortcodes']) ? parseMusicShortcode($cws['music_shortcodes']) : ''
+    );
+}
+
+/**
  * 获取评论数
  */
 function getCommentCount($archive)
@@ -818,9 +866,9 @@ function getArchiveTimelineMoments($page = 1, $pageSize = 20)
         $dateLabel = '<date>' . date('m月', $post['created']) . '</date>';
 
         // 获取文章内容预览，支持音乐卡片
-        $filtered = filterContent($post['text']);
-        $cws = generateContentWithSummaryAndMusic($filtered, 100);
-        $musicHtml = !empty($cws['music_shortcodes']) ? parseMusicShortcode($cws['music_shortcodes']) : '';
+        $view = getPostContentView($post['text']);
+        $cws = $view['summary'];
+        $musicHtml = $view['music'];
         $preview = $cws['summary'];
 
         $postUrl = Typecho_Router::url('post', $post);
@@ -848,7 +896,7 @@ function getArchiveTimelineMoments($page = 1, $pageSize = 20)
         if ($musicHtml) {
             $moments .= $musicHtml;
         } elseif ($preview) {
-            $moments .= '<a href="' . htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8') . '"><p class="moment-preview">' . filterContent($preview) . '</p></a>';
+            $moments .= '<a href="' . htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8') . '"><p class="moment-preview">' . $preview . '</p></a>';
         }
         $moments .= '</div>';
         $moments .= '</div>';
@@ -1065,8 +1113,12 @@ function getPostAttachments($archive)
 function getPostIsTop($cid)
 {
     static $topCache = [];
+    static $archiveAvailable = true;
 
     $cid = (int) $cid;
+    if (!$archiveAvailable) {
+        return false;
+    }
     if (isset($topCache[$cid])) {
         return $topCache[$cid];
     }
@@ -1084,6 +1136,7 @@ function getPostIsTop($cid)
         $topCache[$cid] = !empty($result) && $result['is_top'] == 1;
         return $topCache[$cid];
     } catch (Exception $e) {
+        $archiveAvailable = false;
         $topCache[$cid] = false;
         return false;
     }

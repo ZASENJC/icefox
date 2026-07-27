@@ -35,56 +35,7 @@ $this->need('header.php');
                                 <h2 class="post-title">
                                     <a href="<?php $this->author->permalink() ?>"><?php $this->author() ?></a>
                                 </h2>
-                                <div class="post-content">
-                                    <?php
-                                    // 获取主题设置
-                                    $options = \Widget\Options::alloc();
-                                    $autoCollapse = $options->autoCollapse !== '0'; // 默认为 true（收起）
-
-                                    // 先过滤内容（保留摘要用的标签）
-                                    $filtered = filterContent($this->content);
-
-                                    // 生成摘要（音乐短代码不计入截断长度，会完整保留）
-                                    $cws = generateContentWithSummaryAndMusic($filtered, 100);
-
-                                    // 解析音乐短代码
-                                    $musicHtml = !empty($cws['music_shortcodes']) ? parseMusicShortcode($cws['music_shortcodes']) : '';
-
-                                    if ($autoCollapse) {
-                                        // 自动收起模式：显示摘要，点击展开全文
-                                        if ($cws['is_truncated'] === true) {
-                                            // 有截断：摘要 + 全文按钮 | [隐藏]完整内容 + 收起按钮 | 音乐卡片
-                                            echo '<div class="summary-' . $this->cid . '">' . $cws['summary'] . '<span class="show_all_btn cursor-pointer" data-cid="' . $this->cid . '">全文</span></div>';
-                                            echo '<div class="hidden full_content-' . $this->cid . '">' . $cws['full_content'] . '<div><span class="hide_all_btn cursor-pointer" data-cid="' . $this->cid . '">收起</span></div></div>';
-                                        } else {
-                                            // 无截断：直接显示完整内容
-                                            echo '<div>' . $cws['full_content'] . '</div>';
-                                        }
-                                        // 音乐卡片始终在最后面
-                                        echo $musicHtml;
-                                    } else {
-                                        // 不收起模式：直接显示完整内容 + 音乐卡片
-                                        echo '<div class="full-content-display">' . $cws['full_content'] . '</div>';
-                                        echo $musicHtml;
-                                    }
-                                    ?>
-                                </div>
-                                <?php
-                                // 检查是否有视频
-                                $videoSrc = extractVideoSrc($this->content);
-                                if ($videoSrc) {
-                                    // 有视频则显示视频
-                                    $this->videoUrl = $videoSrc;
-                                    $this->need('components/post/post-video.php');
-                                } else {
-                                    // 没有视频则显示图片
-                                    $images = extractImageSrcs($this->content);
-                                    $this->images = $images;
-                                    $this->need('components/post/post-images.php');
-                                }
-
-                                $this->need('components/post/post-position.php');
-                                ?>
+                                <?php renderPostFeedContent($this); ?>
                                 <div class="post-time">
                                     <time
                                         datetime="<?php $this->date('yyyy年mm月dd日'); ?>"><?php echo formatCommentTime($this->created); ?></time>

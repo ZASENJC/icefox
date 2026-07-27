@@ -1,15 +1,15 @@
 # Icefox - Typecho 博客主题
 
-![Version](https://img.shields.io/badge/version-3.0.0-blue)
+![Version](https://img.shields.io/badge/version-3.0.3-blue)
 ![Typecho](https://img.shields.io/badge/typecho-%3E%3D1.2.0-orange)
 ![PHP](https://img.shields.io/badge/php-%3E%3D7.0.0-purple)
 
-一个现代化、响应式的 Typecho 博客主题，采用 Bulma 框架和 Alpine.js 构建，提供流畅的用户体验和丰富的交互功能。
+一个现代化、响应式的 Typecho 博客主题，采用原生 CSS 和 Alpine.js 构建，提供流畅的用户体验和丰富的交互功能。
 
 ## ✨ 核心特性
 
 ### 🎨 界面设计
-- **响应式布局** - 基于 Bulma CSS 框架，完美适配各种设备
+- **响应式布局** - 轻量化原生 CSS，适配各种设备
 - **主题切换** - 支持日间/夜间模式切换
 - **现代化 UI** - 简洁优雅的视觉设计
 - **图片灯箱** - 使用 Fancybox 展示图片
@@ -34,11 +34,10 @@
 - **MySQL/MariaDB**
 
 ### 前端
-- **CSS 框架**: Bulma.min.css
+- **CSS**: 原生 CSS（主题样式）
 - **JavaScript 库**:
   - jQuery - DOM 操作
   - Alpine.js - 响应式状态管理
-  - Axios - HTTP 请求
   - Fancybox - 图片灯箱
   - ScrollLoad - 无限滚动
 
@@ -187,7 +186,6 @@ $posts = $db->fetchAll(
 ## 🙏 致谢
 
 - [Typecho](http://typecho.org/) - 优秀的博客平台
-- [Bulma](https://bulma.io/) - 现代化 CSS 框架
 - [Alpine.js](https://alpinejs.dev/) - 轻量级响应式框架
 
 ## 📝 更新日志

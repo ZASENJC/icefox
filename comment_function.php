@@ -2,36 +2,6 @@
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 /**
- * 检查评论是否与顶级评论相关（递归查找）
- *
- * @param int $commentId 要检查的评论ID
- * @param int $topCommentId 顶级评论ID
- * @param array $commentMap 评论映射表
- * @return bool 是否相关
- */
-function isCommentRelatedToTopComment($commentId, $topCommentId, $commentMap) {
-    // 如果评论不存在，返回false
-    if (!isset($commentMap[$commentId])) {
-        return false;
-    }
-
-    $comment = $commentMap[$commentId];
-
-    // 如果直接是顶级评论的子评论，返回true
-    if ($comment['parent'] == $topCommentId) {
-        return true;
-    }
-
-    // 如果没有父评论，返回false
-    if ($comment['parent'] == 0) {
-        return false;
-    }
-
-    // 递归检查父评论是否与顶级评论相关
-    return isCommentRelatedToTopComment($comment['parent'], $topCommentId, $commentMap);
-}
-
-/**
  * 获取文章的最新5条顶级评论及其所有回复
  *
  * @param int $postId 文章ID

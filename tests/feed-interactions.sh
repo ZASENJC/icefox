@@ -21,4 +21,9 @@ if ! rg -q 'isCommentRelatedToTopComment\(\$childComment\['"'"'coid'"'"'\], \$to
     exit 1
 fi
 
+if ! rg -q 'function isCommentRelatedToTopComment\(' comment_function.php; then
+    echo "the restored comment association helper must be defined" >&2
+    exit 1
+fi
+
 echo "Feed comments and likes use the established loading path"

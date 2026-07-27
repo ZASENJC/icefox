@@ -760,16 +760,24 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     </style>
     <?php endif; ?>
 
-    <script src="<?php $this->options->themeUrl('/assets/js/jquery.min.js'); ?>"></script>
-    <script src="<?php $this->options->themeUrl('/assets/js/alpinejs.js'); ?>"></script>
-    <script src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>
-    <script src="<?php $this->options->themeUrl('/assets/js/scrollload.min.js'); ?>"></script>
-    <script src="<?php $this->options->themeUrl('/assets/js/music-player.js'); ?>"></script>
-    <script src="<?php $this->options->themeUrl('/assets/js/icefox.js'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/jquery.min.js'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/alpinejs.js'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/scrollload.min.js'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/music-player.js'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox.js'); ?>"></script>
 
     <?php if ($this->options->customJs): ?>
+    <?php $customJs = (string) $this->options->customJs; ?>
     <script>
-        <?php $this->options->customJs(); ?>
+        document.addEventListener('DOMContentLoaded', function () {
+            const customJs = <?php echo json_encode($customJs, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+            try {
+                new Function(customJs)();
+            } catch (error) {
+                console.warn('Icefox ignored invalid custom JavaScript:', error.message);
+            }
+        }, { once: true });
     </script>
     <?php endif; ?>
 

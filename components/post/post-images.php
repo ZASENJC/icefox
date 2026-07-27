@@ -10,10 +10,10 @@ if ($imageCount == 1) {
             <?php
             foreach ($images as $image):
                 ?>
-                <figure class="cell post-image-one"><img src="<?php echo $image; ?>"
+                <figure class="cell post-image-one"><img src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
                                                          alt="" class="preview-image"
                                                          data-fancybox="<?php echo $this->cid; ?>"
-                                                         data-src="<?php echo $image; ?>"/>
+                                                         data-src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"/>
                 </figure>
             <?php endforeach; ?>
         </div>
@@ -29,10 +29,10 @@ if ($imageCount == 1) {
             $index = 1;
             foreach ($images as $image) {
                 ?>
-                <figure class="cell post-image"><img src="<?php echo $image; ?>"
+                <figure class="cell post-image"><img src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
                                                      alt="" class="preview-image"
                                                      data-fancybox="<?php echo $this->cid; ?>"
-                                                     data-src="<?php echo $image; ?>"/>
+                                                     data-src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"/>
                 </figure>
                 <?php
                 if ($index == 2) {
@@ -63,20 +63,20 @@ if ($imageCount == 1) {
                     $addNum = $imageCount - 9;
                     ?>
                     <figure class="cell post-image <?php echo $hidden; ?> reactive">
-                        <img src="<?php echo $image; ?>"
+                        <img src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
                              alt=""/>
                         <div class="post-image-zzc preview-image"
                              data-fancybox="<?php echo $this->cid; ?>"
-                             data-src="<?php echo $image; ?>">+<?php echo $addNum; ?></div>
+                             data-src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>">+<?php echo $addNum; ?></div>
                     </figure>
                     <?php
                 } else {
                     ?>
                     <figure class="cell post-image <?php echo $hidden; ?>">
-                        <img src="<?php echo $image; ?>"
+                        <img src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
                              alt="" class="preview-image"
                              data-fancybox="<?php echo $this->cid; ?>"
-                             data-src="<?php echo $image; ?>"/>
+                             data-src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"/>
                     </figure>
                     <?php
                 }
@@ -93,10 +93,10 @@ if ($imageCount == 1) {
             <?php
             foreach ($images as $image):
                 ?>
-                <figure class="cell post-image"><img src="<?php echo $image; ?>"
+                <figure class="cell post-image"><img src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
                                                      alt="" class="preview-image"
                                                      data-fancybox="<?php echo $this->cid; ?>"
-                                                     data-src="<?php echo $image; ?>"/>
+                                                     data-src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"/>
                 </figure>
             <?php endforeach; ?>
         </div>

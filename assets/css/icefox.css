@@ -3491,3 +3491,24 @@ html[data-theme="dark"] .author-badge {
     color: #ff6b81 !important;
     border-color: #ff6b81;
 }
+
+.moments-pagination {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin: 1.5rem 0;
+}
+
+.moments-pagination a {
+    min-width: 2rem;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid var(--line);
+    color: var(--text-color);
+    text-align: center;
+    text-decoration: none;
+}
+
+.moments-pagination a.is-current,
+.moments-pagination a:hover {
+    background: var(--primary-background-hover);
+}

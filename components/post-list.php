@@ -22,13 +22,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
                         ?>
                             <span class="top-badge">置顶</span>
                         <?php endif; ?>
-                        <?php
-                        // 显示广告标识
-                        $isAdvertise = getArticleFieldsByCid($this->cid, 'isAdvertise');
-                        if (!empty($isAdvertise) && ($isAdvertise[0]['int_value'] == 1 || $isAdvertise[0]['str_value'] == '1')):
-                        ?>
-                            <span class="ad-badge">广告</span>
-                        <?php endif; ?>
                     </h2>
                     <?php renderPostFeedContent($this); ?>
                     <div class="post-time">

@@ -37,13 +37,6 @@ $this->need('header.php');
                         ?>
                             <span class="top-badge">置顶</span>
                         <?php endif; ?>
-                        <?php
-                        // 显示广告标识
-                        $isAdvertise = getArticleFieldsByCid($this->cid, 'isAdvertise');
-                        if (!empty($isAdvertise) && ($isAdvertise[0]['int_value'] == 1 || $isAdvertise[0]['str_value'] == '1')):
-                        ?>
-                            <span class="ad-badge">广告</span>
-                        <?php endif; ?>
                     </h2>
 
                     <!-- 文章内容（完整显示） -->

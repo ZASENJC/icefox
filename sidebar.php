@@ -251,17 +251,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     </div>
     <?php endif; ?>
 
-    <!-- 广告位 -->
-    <?php if ($this->options->sidebarAd): ?>
-    <div class="sidebar-widget">
-        <h3 class="widget-title">赞助商</h3>
-        <div class="widget-content">
-            <div class="ad-sidebar">
-                <?php $this->options->sidebarAd(); ?>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
 </aside>
 
 <style>
@@ -399,10 +388,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     font-size: 14px;
     line-height: 1.6;
     color: #666;
-}
-
-.ad-sidebar {
-    text-align: center;
 }
 
 .tag-cloud a {

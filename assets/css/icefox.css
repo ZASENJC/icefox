@@ -356,7 +356,7 @@ main {
     color: var(--link);
 }
 
-/* 置顶和广告标识 */
+/* 置顶标识 */
 .top-badge {
     display: inline-block;
     padding: 2px 6px;
@@ -365,17 +365,6 @@ main {
     color: #ff4444;
     background-color: transparent;
     border: 1px solid #ff4444;
-    border-radius: 3px;
-    line-height: 1;
-}
-
-.ad-badge {
-    display: inline-block;
-    padding: 2px 6px;
-    font-size: 12px;
-    font-weight: 500;
-    color: #fff;
-    background-color: #ff4444;
     border-radius: 3px;
     line-height: 1;
 }

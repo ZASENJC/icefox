@@ -120,19 +120,6 @@ function themeFields($layout)
     );
     $positionUrl->input->setAttribute('class', 't-default-find');
     $layout->addItem($positionUrl);
-
-    $isAdvertise = new Typecho_Widget_Helper_Form_Element_Radio(
-        "isAdvertise",
-        [
-            "1" => _t("是"),
-            "0" => _t("不是"),
-        ],
-        "0",
-        _t("是否是广告"),
-        _t('<span>默认不是</span>')
-    );
-    $isAdvertise->input->setAttribute('class', 't-default-find');
-    $layout->addItem($isAdvertise);
 }
 
 /**
@@ -1035,16 +1022,6 @@ function getArchiveTagsCloud()
 function getPostLocation($archive)
 {
     return (string) getPostField($archive, 'location', 'str');
-}
-
-/**
- * 检查文章是否为广告
- * @param object|int $archive 文章对象或cid
- * @return bool 是否为广告
- */
-function isPostAd($archive)
-{
-    return (int) getPostField($archive, 'isAd', 'int') === 1;
 }
 
 /**

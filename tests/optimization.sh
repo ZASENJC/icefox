@@ -15,7 +15,6 @@ assert_pattern() {
 }
 
 assert_pattern 'static \$fieldCache' core/core.php
-assert_pattern 'childrenByParent' comment_function.php
 assert_pattern '->limit\(\$pageSize\)' functions.php
 assert_pattern 'function getPostContentView' functions.php
 

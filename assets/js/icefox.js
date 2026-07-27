@@ -296,7 +296,7 @@ function loadNextPage(page, scrollloadInstance, postSelector, isArchivePage, isA
                     if ($likeContainer.length) {
                         const cid = $likeContainer.data('cid');
                         if (cid) {
-                            scheduleLikeData(cid, $likeContainer);
+                            loadLikeData(cid, $likeContainer);
                         }
                     }
 
@@ -379,7 +379,7 @@ function initLikes() {
         const $likeContainer = $(this);
         const cid = $likeContainer.data('cid');
         if (cid) {
-            scheduleLikeData(cid, $likeContainer);
+            loadLikeData(cid, $likeContainer);
         }
     });
 
@@ -391,45 +391,6 @@ function initLikes() {
             doToggleLike(cid, $(this));
         }
     });
-}
-
-// 只在点赞区域接近视口时请求，避免首屏为所有文章创建网络请求。
-function scheduleLikeData(cid, $container) {
-    const element = $container && $container[0];
-    if (!cid || !element || element.dataset.likeRequested === '1') {
-        return;
-    }
-
-    const request = () => {
-        if (element.dataset.likeRequested === '1') {
-            return;
-        }
-        element.dataset.likeRequested = '1';
-        loadLikeData(cid, $container);
-    };
-
-    if (!('IntersectionObserver' in window)) {
-        request();
-        return;
-    }
-
-    if (!window.icefoxLikeObserver) {
-        window.icefoxLikeObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting) {
-                    return;
-                }
-                const target = entry.target;
-                observer.unobserve(target);
-                if (target.dataset.likeRequested === '1') {
-                    return;
-                }
-                target.dataset.likeRequested = '1';
-                loadLikeData($(target).data('cid'), $(target));
-            });
-        }, { rootMargin: '200px 0px' });
-    }
-    window.icefoxLikeObserver.observe(element);
 }
 
 // 加载点赞数据

@@ -2,6 +2,36 @@
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 /**
+ * 检查评论是否与顶级评论相关（递归查找）
+ *
+ * @param int $commentId 要检查的评论ID
+ * @param int $topCommentId 顶级评论ID
+ * @param array $commentMap 评论映射表
+ * @return bool 是否相关
+ */
+function isCommentRelatedToTopComment($commentId, $topCommentId, $commentMap) {
+    // 如果评论不存在，返回false
+    if (!isset($commentMap[$commentId])) {
+        return false;
+    }
+
+    $comment = $commentMap[$commentId];
+
+    // 如果直接是顶级评论的子评论，返回true
+    if ($comment['parent'] == $topCommentId) {
+        return true;
+    }
+
+    // 如果没有父评论，返回false
+    if ($comment['parent'] == 0) {
+        return false;
+    }
+
+    // 递归检查父评论是否与顶级评论相关
+    return isCommentRelatedToTopComment($comment['parent'], $topCommentId, $commentMap);
+}
+
+/**
  * 获取文章的最新5条顶级评论及其所有回复
  *
  * @param int $postId 文章ID
@@ -36,45 +66,37 @@ function getPostLatestCommentsWithReplies($postId, $limit = 5) {
         ->where('c.parent > ?', 0)
         ->order('c.created', Typecho_Db::SORT_ASC));
 
-    // 创建评论索引和父子索引，后续组树只需遍历每条评论一次。
+    // 3. 创建评论映射表（用于快速查找父评论信息）
     $commentMap = array();
-    $childrenByParent = array();
     foreach ($topLevelComments as $comment) {
         $commentMap[$comment['coid']] = $comment;
     }
     foreach ($allChildComments as $comment) {
         $commentMap[$comment['coid']] = $comment;
-        $childrenByParent[$comment['parent']][] = $comment;
     }
 
-    // 构建评论树，避免对每个顶级评论重复扫描全部子评论并递归查找父级。
+    // 4. 构建评论树
     $commentTree = array();
 
     foreach ($topLevelComments as $topComment) {
+        // 初始化顶级评论
         $topComment['replies'] = array();
         $topComment['level'] = 0;
+
+        // 查找所有与这个顶级评论相关的子评论（包括任意层级）
         $relatedReplies = array();
 
-        $pendingParents = array($topComment['coid']);
-        $visited = array($topComment['coid'] => true);
-        while (!empty($pendingParents)) {
-            $parentId = array_pop($pendingParents);
-            foreach ($childrenByParent[$parentId] ?? array() as $childComment) {
-                if (isset($visited[$childComment['coid']])) {
-                    continue;
-                }
-                $visited[$childComment['coid']] = true;
-
-                $parentComment = $commentMap[$childComment['parent']] ?? null;
-                if (!$parentComment) {
-                    continue;
-                }
+        foreach ($allChildComments as $childComment) {
+            // 使用递归函数检查是否与顶级评论相关
+            if (isCommentRelatedToTopComment($childComment['coid'], $topComment['coid'], $commentMap)) {
+                // 添加父评论信息
+                $parentComment = $commentMap[$childComment['parent']];
                 $childComment['parentAuthor'] = $parentComment['author'];
                 $childComment['parentAuthorId'] = $parentComment['authorId'] ?? '';
                 $childComment['parentUrl'] = $parentComment['url'] ?? '';
                 $childComment['parentUserGroup'] = $parentComment['userGroup'] ?? '';
+
                 $relatedReplies[] = $childComment;
-                $pendingParents[] = $childComment['coid'];
             }
         }
 

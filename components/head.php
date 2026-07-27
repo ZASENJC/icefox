@@ -1,4 +1,4 @@
-<section class="top-container">
+<section class="top-container" x-data>
     <div class="top-container-left">
         <div class="tc-user" data-icon="user"
              @click="$nextTick(() => { document.querySelector('.login-modal')._x_dataStack[0].loginModalShow = true })">

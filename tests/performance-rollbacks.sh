@@ -23,7 +23,7 @@ reject_pattern 'moments-pagination' assets/css/icefox.css 'timeline pagination s
 reject_pattern 'loading="lazy"' functions.php 'timeline image lazy loading must be rolled back'
 reject_pattern 'htmlspecialchars' components/post/post-images.php 'feed image output changes must be rolled back'
 reject_pattern 'htmlspecialchars' components/post/post-position.php 'position output changes must be rolled back'
-reject_pattern 'preload="metadata"' components/post/post-video.php 'video preload changes must be rolled back'
+reject_pattern 'htmlspecialchars' components/post/post-video.php 'video source output changes must be rolled back'
 
 for asset in assets/css/normalize.css assets/js/axios.min.js; do
     if [ ! -f "$asset" ]; then

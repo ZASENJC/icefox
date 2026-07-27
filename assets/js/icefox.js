@@ -313,6 +313,25 @@ function loadNextPage(page, scrollloadInstance, postSelector, isArchivePage, isA
                     }
                 });
 
+                // 重新初始化Fancybox
+                Fancybox.bind("[data-fancybox]", {
+                    Thumbs: { autoStart: false },
+                    Toolbar: {
+                        display: {
+                            left: ["infobar"],
+                            middle: ["zoomIn", "zoomOut", "toggle1to1", "rotateCCW", "rotateCW", "flipX", "flipY"],
+                            right: ["slideshow", "thumbs", "close"],
+                        },
+                    },
+                    loop: true,
+                    keyboard: {
+                        Escape: "close", Delete: "close", Backspace: "close",
+                        PageUp: "next", PageDown: "prev",
+                        ArrowUp: "next", ArrowDown: "prev",
+                        ArrowRight: "next", ArrowLeft: "prev",
+                    },
+                });
+
                 // 检查是否还有下一页
                 const $newPagination = $response.find('.total-pages');
                 if ($newPagination.length) {

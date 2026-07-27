@@ -32,32 +32,14 @@ function extractVideoSrc($html)
 /**
  * 根据文章id获取文章字段
  */
-function getArticleFieldsByCid($cid, $name = null)
+function getArticleFieldsByCid($cid, $name)
 {
-    static $fieldCache = [];
-
-    $cid = (int) $cid;
-    if ($cid <= 0) {
-        return $name === null ? [] : [];
-    }
-
-    if (!isset($fieldCache[$cid])) {
-        $db = Typecho_Db::get();
-        $rows = $db->fetchAll($db->select('cid', 'name', 'type', 'str_value', 'int_value', 'float_value')
-            ->from('table.fields')
-            ->where('cid = ?', $cid));
-
-        $fieldCache[$cid] = [];
-        foreach ($rows as $row) {
-            $fieldCache[$cid][$row['name']][] = $row;
-        }
-    }
-
-    if ($name === null) {
-        return $fieldCache[$cid];
-    }
-
-    return $fieldCache[$cid][$name] ?? [];
+    $db = Typecho_Db::get();
+    $select = $db->select('*')
+        ->from('table.fields')
+        ->where('cid = ?', $cid)
+        ->where('name = ?', $name);
+    return $db->fetchAll($select);
 }
 
 /**

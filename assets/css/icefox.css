@@ -3463,27 +3463,6 @@ input:checked + .slider:before {
     display: none;
 }
 
-.moments-pagination {
-    display: flex;
-    gap: 6px;
-    justify-content: center;
-    margin: 1.5rem 0;
-}
-
-.moments-pagination a {
-    min-width: 2rem;
-    padding: 0.35rem 0.55rem;
-    border: 1px solid var(--line);
-    color: var(--text-color);
-    text-align: center;
-    text-decoration: none;
-}
-
-.moments-pagination a.is-current,
-.moments-pagination a:hover {
-    background: var(--primary-background-hover);
-}
-
 /* 暗黑模式适配 */
 :root.dark .music-card {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);

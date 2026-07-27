@@ -38,6 +38,7 @@
 - **JavaScript 库**:
   - jQuery - DOM 操作
   - Alpine.js - 响应式状态管理
+  - Axios - HTTP 请求
   - Fancybox - 图片灯箱
   - ScrollLoad - 无限滚动
 

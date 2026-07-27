@@ -17,10 +17,7 @@
         <div class="archive-views">
             <!-- 时间轴视图 -->
             <div id="timeline-view" class="archive-view active">
-                <?php
-                $archivePage = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
-                echo getArchiveTimelineMoments($archivePage, 20);
-                ?>
+                <?php echo getArchiveTimelineMoments(); ?>
             </div>
         </div>
     </section>

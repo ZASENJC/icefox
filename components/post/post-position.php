@@ -8,9 +8,9 @@ if (!empty($position)) {
     ?>
     <div class="post-position">
         <?php if ($hasUrl): ?>
-            <a href="<?php echo htmlspecialchars($positionUrl[0]['str_value'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer"><?php echo htmlspecialchars($positionText, ENT_QUOTES, 'UTF-8'); ?></a>
+            <a href="<?php echo $positionUrl[0]['str_value']; ?>" target="_blank"><?php echo $positionText; ?></a>
         <?php else: ?>
-            <span><?php echo htmlspecialchars($positionText, ENT_QUOTES, 'UTF-8'); ?></span>
+            <span><?php echo $positionText; ?></span>
         <?php endif; ?>
     </div>
 <?php } ?>

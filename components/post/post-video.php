@@ -5,7 +5,7 @@ if (!empty($videoUrl)) {
     ?>
     <div class="post-video">
         <video controls controlsList="nodownload" preload="metadata">
-            <source src="<?php echo $videoUrl; ?>" type="video/mp4">
+            <source src="<?php echo htmlspecialchars($videoUrl, ENT_QUOTES, 'UTF-8'); ?>" type="video/mp4">
             您的浏览器不支持视频播放
         </video>
     </div>

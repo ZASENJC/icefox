@@ -22,7 +22,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     <link rel="alternate" type="application/atom+xml" title="<?php $this->options->title() ?> &raquo; ATOM 1.0" href="<?php $this->options->feedUrl('/atom'); ?>">
 
     <!-- 主题样式 -->
-    <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/bulma.min.css'); ?>">
     <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/fancybox.css'); ?>">
     <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/icefox.css'); ?>">
 
@@ -758,21 +757,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     <style>
         <?php $this->options->customCss(); ?>
     </style>
-    <?php endif; ?>
-
-    <!-- jQuery -->
-    <script src="<?php $this->options->themeUrl('/assets/js/jquery.min.js'); ?>"></script>
-    <script src="<?php $this->options->themeUrl('/assets/js/alpinejs.js'); ?>"></script>
-    <script src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>
-    <script src="<?php $this->options->themeUrl('/assets/js/scrollload.min.js'); ?>"></script>
-    <script src="<?php $this->options->themeUrl('/assets/js/music-player.js'); ?>"></script>
-    <script src="<?php $this->options->themeUrl('/assets/js/icefox.js'); ?>"></script>
-
-    <!-- 自定义JavaScript -->
-    <?php if ($this->options->customJs): ?>
-    <script>
-        <?php $this->options->customJs(); ?>
-    </script>
     <?php endif; ?>
 
     <!-- Typecho主题API -->

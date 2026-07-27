@@ -3316,8 +3316,28 @@ input:checked + .slider:before {
 }
 
 .music-card .media {
+    display: flex;
     align-items: center;
     margin: 0;
+}
+
+.music-card .media-left {
+    flex: 0 0 auto;
+    margin-right: 1rem;
+}
+
+.music-card .media-left .image.is-64x64 {
+    width: 64px;
+    height: 64px;
+}
+
+.music-card .media-content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.music-card .is-hidden {
+    display: none !important;
 }
 
 .music-card .media-left .image {

@@ -66,37 +66,45 @@ function getPostLatestCommentsWithReplies($postId, $limit = 5) {
         ->where('c.parent > ?', 0)
         ->order('c.created', Typecho_Db::SORT_ASC));
 
-    // 3. 创建评论映射表（用于快速查找父评论信息）
+    // 创建评论索引和父子索引，后续组树只需遍历每条评论一次。
     $commentMap = array();
+    $childrenByParent = array();
     foreach ($topLevelComments as $comment) {
         $commentMap[$comment['coid']] = $comment;
     }
     foreach ($allChildComments as $comment) {
         $commentMap[$comment['coid']] = $comment;
+        $childrenByParent[$comment['parent']][] = $comment;
     }
 
-    // 4. 构建评论树
+    // 构建评论树，避免对每个顶级评论重复扫描全部子评论并递归查找父级。
     $commentTree = array();
 
     foreach ($topLevelComments as $topComment) {
-        // 初始化顶级评论
         $topComment['replies'] = array();
         $topComment['level'] = 0;
-
-        // 查找所有与这个顶级评论相关的子评论（包括任意层级）
         $relatedReplies = array();
 
-        foreach ($allChildComments as $childComment) {
-            // 使用递归函数检查是否与顶级评论相关
-            if (isCommentRelatedToTopComment($childComment['coid'], $topComment['coid'], $commentMap)) {
-                // 添加父评论信息
-                $parentComment = $commentMap[$childComment['parent']];
+        $pendingParents = array($topComment['coid']);
+        $visited = array($topComment['coid'] => true);
+        while (!empty($pendingParents)) {
+            $parentId = array_pop($pendingParents);
+            foreach ($childrenByParent[$parentId] ?? array() as $childComment) {
+                if (isset($visited[$childComment['coid']])) {
+                    continue;
+                }
+                $visited[$childComment['coid']] = true;
+
+                $parentComment = $commentMap[$childComment['parent']] ?? null;
+                if (!$parentComment) {
+                    continue;
+                }
                 $childComment['parentAuthor'] = $parentComment['author'];
                 $childComment['parentAuthorId'] = $parentComment['authorId'] ?? '';
                 $childComment['parentUrl'] = $parentComment['url'] ?? '';
                 $childComment['parentUserGroup'] = $parentComment['userGroup'] ?? '';
-
                 $relatedReplies[] = $childComment;
+                $pendingParents[] = $childComment['coid'];
             }
         }
 

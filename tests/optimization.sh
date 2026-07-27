@@ -16,12 +16,17 @@ assert_pattern() {
 
 assert_pattern 'static \$fieldCache' core/core.php
 assert_pattern 'childrenByParent' comment_function.php
-assert_pattern '->limit(\$pageSize)' functions.php
+assert_pattern '->limit\(\$pageSize\)' functions.php
 assert_pattern 'loading="lazy"' components/post/post-images.php
-assert_pattern 'defer' header.php
+assert_pattern 'assets/js/icefox.js' footer.php
 
-if [ -e assets/js/axios.min.js ] || [ -e assets/css/normalize.css ]; then
-    echo "unused axios or normalize assets remain" >&2
+if rg -n '<script src=.*assets/js' header.php; then
+    echo "application scripts must not block the document head" >&2
+    exit 1
+fi
+
+if [ -e assets/js/axios.min.js ] || [ -e assets/css/normalize.css ] || [ -e assets/css/bulma.min.css ]; then
+    echo "unused vendor assets remain" >&2
     exit 1
 fi
 

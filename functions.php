@@ -779,12 +779,22 @@ function getTotalCommentCount()
 /**
  * 获取微信朋友圈风格的时间轴归档
  */
-function getArchiveTimelineMoments()
+function getArchiveTimelineMoments($page = 1, $pageSize = 20)
 {
     $db = Typecho_Db::get();
+    $page = max(1, (int) $page);
+    $pageSize = max(1, min(50, (int) $pageSize));
+    $offset = ($page - 1) * $pageSize;
+
+    $total = (int) $db->fetchObject($db->select(array('COUNT(cid)' => 'count'))
+        ->from('table.contents')
+        ->where('status = ? AND type = ?', 'publish', 'post'))->count;
+
     $posts = $db->fetchAll($db->select('cid', 'title', 'created', 'slug', 'text')->from('table.contents')
         ->where('status = ? AND type = ?', 'publish', 'post')
-        ->order('created', Typecho_Db::SORT_DESC));
+        ->order('created', Typecho_Db::SORT_DESC)
+        ->limit($pageSize)
+        ->offset($offset));
 
     if (empty($posts)) {
         return '<div class="moments-empty">
@@ -824,7 +834,7 @@ function getArchiveTimelineMoments()
         // 有图片时：图片在最左边
         if (count($images) > 0) {
             $moments .= '<div class="moment-avatar">';
-            $moments .= '<a href="' . $postUrl . '"><img src="'.$images[0].'" alt="封面"></a>';
+            $moments .= '<a href="' . htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8') . '"><img loading="lazy" decoding="async" src="' . htmlspecialchars($images[0], ENT_QUOTES, 'UTF-8') . '" alt="封面"></a>';
             $moments .= '</div>';
         }
 
@@ -838,12 +848,26 @@ function getArchiveTimelineMoments()
         if ($musicHtml) {
             $moments .= $musicHtml;
         } elseif ($preview) {
-            $moments .= '<a href="' . $postUrl . '"><p class="moment-preview">' . filterContent($preview) . '</p></a>';
+            $moments .= '<a href="' . htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8') . '"><p class="moment-preview">' . filterContent($preview) . '</p></a>';
         }
         $moments .= '</div>';
         $moments .= '</div>';
         $moments .= '</div>'; // 关闭 moments-group
 
+    }
+
+    $totalPages = (int) ceil($total / $pageSize);
+    if ($totalPages > 1) {
+        $path = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
+        $moments .= '<nav class="moments-pagination" aria-label="归档分页">';
+        for ($pageNumber = 1; $pageNumber <= $totalPages; $pageNumber++) {
+            $query = $_GET;
+            $query['page'] = $pageNumber;
+            $href = $path . '?' . http_build_query($query);
+            $class = $pageNumber === $page ? ' class="is-current"' : '';
+            $moments .= '<a' . $class . ' href="' . htmlspecialchars($href, ENT_QUOTES, 'UTF-8') . '">' . $pageNumber . '</a>';
+        }
+        $moments .= '</nav>';
     }
 
     $moments .= '</div>'; // 关闭 moments-container
@@ -962,18 +986,7 @@ function getArchiveTagsCloud()
  */
 function getPostLocation($archive)
 {
-    $cid = is_object($archive) ? $archive->cid : intval($archive);
-    if (empty($cid)) {
-        return '';
-    }
-
-    $db = Typecho_Db::get();
-    $field = $db->fetchRow($db->select('str_value')
-        ->from('table.fields')
-        ->where('cid = ?', $cid)
-        ->where('name = ?', 'location'));
-
-    return $field ? $field['str_value'] : '';
+    return (string) getPostField($archive, 'location', 'str');
 }
 
 /**
@@ -983,18 +996,7 @@ function getPostLocation($archive)
  */
 function isPostAd($archive)
 {
-    $cid = is_object($archive) ? $archive->cid : intval($archive);
-    if (empty($cid)) {
-        return false;
-    }
-
-    $db = Typecho_Db::get();
-    $field = $db->fetchRow($db->select('int_value')
-        ->from('table.fields')
-        ->where('cid = ?', $cid)
-        ->where('name = ?', 'isAd'));
-
-    return $field && $field['int_value'] == 1;
+    return (int) getPostField($archive, 'isAd', 'int') === 1;
 }
 
 /**
@@ -1011,14 +1013,11 @@ function getPostField($archive, $fieldName, $type = 'str')
         return null;
     }
 
-    $db = Typecho_Db::get();
     $valueColumn = $type . '_value';
-    $field = $db->fetchRow($db->select($valueColumn)
-        ->from('table.fields')
-        ->where('cid = ?', $cid)
-        ->where('name = ?', $fieldName));
+    $fields = getArticleFieldsByCid($cid, $fieldName);
+    $field = reset($fields);
 
-    return $field ? $field[$valueColumn] : null;
+    return $field && array_key_exists($valueColumn, $field) ? $field[$valueColumn] : null;
 }
 
 /**
@@ -1065,6 +1064,13 @@ function getPostAttachments($archive)
  */
 function getPostIsTop($cid)
 {
+    static $topCache = [];
+
+    $cid = (int) $cid;
+    if (isset($topCache[$cid])) {
+        return $topCache[$cid];
+    }
+
     $db = Typecho_Db::get();
     $prefix = $db->getPrefix();
 
@@ -1075,8 +1081,10 @@ function getPostIsTop($cid)
                 ->where('cid = ?', $cid)
         );
 
-        return !empty($result) && $result['is_top'] == 1;
+        $topCache[$cid] = !empty($result) && $result['is_top'] == 1;
+        return $topCache[$cid];
     } catch (Exception $e) {
+        $topCache[$cid] = false;
         return false;
     }
 }

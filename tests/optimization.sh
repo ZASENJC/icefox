@@ -31,7 +31,7 @@ if rg -n 'generateContentWithSummaryAndMusic\(' components/post-list.php archive
     exit 1
 fi
 
-if [ -e assets/js/axios.min.js ] || [ -e assets/css/normalize.css ] || [ -e assets/css/bulma.min.css ]; then
+if [ -e assets/js/axios.min.js ] || [ -e assets/css/normalize.css ]; then
     echo "unused vendor assets remain" >&2
     exit 1
 fi

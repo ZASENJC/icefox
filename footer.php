@@ -8,16 +8,3 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
         <polyline points="18 15 12 9 6 15"></polyline>
     </svg>
 </div>
-
-<script src="<?php $this->options->themeUrl('/assets/js/jquery.min.js'); ?>"></script>
-<script src="<?php $this->options->themeUrl('/assets/js/alpinejs.js'); ?>"></script>
-<script src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>
-<script src="<?php $this->options->themeUrl('/assets/js/scrollload.min.js'); ?>"></script>
-<script src="<?php $this->options->themeUrl('/assets/js/music-player.js'); ?>"></script>
-<script src="<?php $this->options->themeUrl('/assets/js/icefox.js'); ?>"></script>
-
-<?php if ($this->options->customJs): ?>
-<script>
-    <?php $this->options->customJs(); ?>
-</script>
-<?php endif; ?>

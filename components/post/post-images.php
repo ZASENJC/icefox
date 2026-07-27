@@ -10,7 +10,7 @@ if ($imageCount == 1) {
             <?php
             foreach ($images as $image):
                 ?>
-                <figure class="cell post-image-one"><img loading="lazy" decoding="async" src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
+                <figure class="cell post-image-one"><img src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
                                                          alt="" class="preview-image"
                                                          data-fancybox="<?php echo $this->cid; ?>"
                                                          data-src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"/>
@@ -29,7 +29,7 @@ if ($imageCount == 1) {
             $index = 1;
             foreach ($images as $image) {
                 ?>
-                <figure class="cell post-image"><img loading="lazy" decoding="async" src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
+                <figure class="cell post-image"><img src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
                                                      alt="" class="preview-image"
                                                      data-fancybox="<?php echo $this->cid; ?>"
                                                      data-src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"/>
@@ -63,7 +63,7 @@ if ($imageCount == 1) {
                     $addNum = $imageCount - 9;
                     ?>
                     <figure class="cell post-image <?php echo $hidden; ?> reactive">
-                        <img loading="lazy" decoding="async" src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
+                        <img src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
                              alt=""/>
                         <div class="post-image-zzc preview-image"
                              data-fancybox="<?php echo $this->cid; ?>"
@@ -73,7 +73,7 @@ if ($imageCount == 1) {
                 } else {
                     ?>
                     <figure class="cell post-image <?php echo $hidden; ?>">
-                        <img loading="lazy" decoding="async" src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
+                        <img src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
                              alt="" class="preview-image"
                              data-fancybox="<?php echo $this->cid; ?>"
                              data-src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"/>
@@ -93,7 +93,7 @@ if ($imageCount == 1) {
             <?php
             foreach ($images as $image):
                 ?>
-                <figure class="cell post-image"><img loading="lazy" decoding="async" src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
+                <figure class="cell post-image"><img src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"
                                                      alt="" class="preview-image"
                                                      data-fancybox="<?php echo $this->cid; ?>"
                                                      data-src="<?php echo htmlspecialchars($image, ENT_QUOTES, 'UTF-8'); ?>"/>

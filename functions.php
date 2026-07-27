@@ -248,45 +248,6 @@ function getThumbnail($archive)
     return '';
 }
 
-/**
- * 渲染列表页文章内容和媒体，避免多个模板重复实现同一套解析流程。
- */
-function renderPostFeedContent($archive)
-{
-    static $autoCollapse;
-    if ($autoCollapse === null) {
-        $autoCollapse = \Widget\Options::alloc()->autoCollapse !== '0';
-    }
-
-    $content = $archive->content;
-    $view = getPostContentView($content);
-    $cws = $view['summary'];
-    $musicHtml = $view['music'];
-
-    echo '<div class="post-content">';
-    if ($autoCollapse && $cws['is_truncated'] === true) {
-        echo '<div class="summary-' . (int) $archive->cid . '">' . $cws['summary'] . '<span class="show_all_btn cursor-pointer" data-cid="' . (int) $archive->cid . '">全文</span></div>';
-        echo '<div class="hidden full_content-' . (int) $archive->cid . '">' . $cws['full_content'] . '<div><span class="hide_all_btn cursor-pointer" data-cid="' . (int) $archive->cid . '">收起</span></div></div>';
-    } elseif ($autoCollapse) {
-        echo '<div>' . $cws['full_content'] . '</div>';
-    } else {
-        echo '<div class="full-content-display">' . $cws['full_content'] . '</div>';
-    }
-    echo $musicHtml;
-    echo '</div>';
-
-    $videoSrc = extractVideoSrc($content);
-    if ($videoSrc) {
-        $archive->videoUrl = $videoSrc;
-        $archive->need('components/post/post-video.php');
-    } else {
-        $archive->images = extractImageSrcs($content);
-        $archive->need('components/post/post-images.php');
-    }
-
-    $archive->need('components/post/post-position.php');
-}
-
 function getPostContentView($content, $summaryLength = 100)
 {
     $cws = generateContentWithSummaryAndMusic(filterContent($content), $summaryLength);

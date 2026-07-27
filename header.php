@@ -760,6 +760,19 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     </style>
     <?php endif; ?>
 
+    <script src="<?php $this->options->themeUrl('/assets/js/jquery.min.js'); ?>"></script>
+    <script src="<?php $this->options->themeUrl('/assets/js/alpinejs.js'); ?>"></script>
+    <script src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>
+    <script src="<?php $this->options->themeUrl('/assets/js/scrollload.min.js'); ?>"></script>
+    <script src="<?php $this->options->themeUrl('/assets/js/music-player.js'); ?>"></script>
+    <script src="<?php $this->options->themeUrl('/assets/js/icefox.js'); ?>"></script>
+
+    <?php if ($this->options->customJs): ?>
+    <script>
+        <?php $this->options->customJs(); ?>
+    </script>
+    <?php endif; ?>
+
     <!-- Typecho主题API -->
     <?php $this->header(); ?>
 </head>

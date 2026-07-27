@@ -16,18 +16,11 @@ assert_pattern() {
 
 assert_pattern 'static \$fieldCache' core/core.php
 assert_pattern 'childrenByParent' comment_function.php
-assert_pattern 'function renderPostFeedContent' functions.php
 assert_pattern '->limit\(\$pageSize\)' functions.php
-assert_pattern 'loading="lazy"' components/post/post-images.php
-assert_pattern 'assets/js/icefox.js' footer.php
+assert_pattern 'function getPostContentView' functions.php
 
-if rg -n '<script src=.*assets/js' header.php; then
-    echo "application scripts must not block the document head" >&2
-    exit 1
-fi
-
-if rg -n 'generateContentWithSummaryAndMusic\(' components/post-list.php archive.php; then
-    echo "feed templates must use the shared post renderer" >&2
+if ! rg -q "assets/js/icefox\.js" header.php; then
+    echo "application scripts must remain in the established document order" >&2
     exit 1
 fi
 

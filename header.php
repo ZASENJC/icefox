@@ -22,6 +22,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     <link rel="alternate" type="application/atom+xml" title="<?php $this->options->title() ?> &raquo; ATOM 1.0" href="<?php $this->options->feedUrl('/atom'); ?>">
 
     <!-- 主题样式 -->
+    <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/bulma.min.css'); ?>">
     <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/fancybox.css'); ?>">
     <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/icefox.css'); ?>">
 

@@ -99,6 +99,18 @@ function themeConfig($form)
     $showMomentsAlbum = new Typecho_Widget_Helper_Form_Element_Radio('showMomentsAlbum', $showMomentsAlbumOptions, '1', _t('显示“朋友圈”相册'), _t('开启后，相册首页会默认置顶显示“朋友圈”相册；关闭只影响前台显示，不会删除已经同步的图片。'));
     $form->addInput($showMomentsAlbum);
 
+    $uploadStorage = new Typecho_Widget_Helper_Form_Element_Radio(
+        'uploadStorage',
+        array(
+            'local' => _t('本地存储'),
+            'object' => _t('R2/S3 对象存储')
+        ),
+        'local',
+        _t('图片默认上传位置'),
+        _t('对象存储由独立的 IcefoxStorage 插件配置。视频仍保存在本地；对象存储不可用时会终止发布，不会静默回退。')
+    );
+    $form->addInput($uploadStorage);
+
     // 是否自动收起内容
     $autoCollapse = new Typecho_Widget_Helper_Form_Element_Radio(
         'autoCollapse',
@@ -1080,8 +1092,11 @@ function getPostAttachments($archive)
 
     $result = [];
     foreach ($attachments as $attachment) {
-        $data = @unserialize($attachment['text']);
-        if ($data) {
+        $data = json_decode((string) $attachment['text'], true);
+        if (!is_array($data)) {
+            $data = @unserialize($attachment['text'], ['allowed_classes' => false]);
+        }
+        if (is_array($data)) {
             $result[] = [
                 'cid' => $attachment['cid'],
                 'name' => $data['name'] ?? $attachment['title'],

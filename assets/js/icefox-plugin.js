@@ -31,5 +31,11 @@
         return endpoint.toString();
     }
 
-    global.ICEFOX_PLUGIN = Object.freeze({ actions, url });
+    function appendStorageTarget(formData) {
+        const configuredTarget = global.ICEFOX_CONFIG && global.ICEFOX_CONFIG.uploadStorage;
+        formData.set('storage', ['local', 'object'].includes(configuredTarget) ? configuredTarget : 'local');
+        return formData;
+    }
+
+    global.ICEFOX_PLUGIN = Object.freeze({ actions, url, appendStorageTarget });
 })(window);

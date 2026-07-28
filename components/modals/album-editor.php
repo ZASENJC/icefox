@@ -156,6 +156,9 @@ function albumEditorManager() {
                 }
                 formData.append('remotePhotos', JSON.stringify(remotePhotos));
                 this.mediaFiles.forEach((media, index) => formData.append(`media_${index}`, media.file));
+                if (typeof window.ICEFOX_PLUGIN.appendStorageTarget === 'function') {
+                    window.ICEFOX_PLUGIN.appendStorageTarget(formData);
+                }
 
                 const response = await fetch(window.ICEFOX_PLUGIN.url(window.ICEFOX_PLUGIN.actions.saveAlbum), {
                     method: 'POST',

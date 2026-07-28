@@ -27,7 +27,7 @@ if [ -e core/plugin-bridge.php ]; then
     exit 1
 fi
 
-if rg -n --glob '*.php' --glob '!scripts/**' --glob '!tests/**' -- '->from\([^)]*icefox_' .; then
+if rg -n --glob '*.php' --glob '!scripts/**' --glob '!tests/**' --glob '!plugins/**' -- '->from\([^)]*icefox_' .; then
     echo 'theme runtime must not read plugin-owned tables' >&2
     exit 1
 fi

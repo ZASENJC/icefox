@@ -63,9 +63,9 @@
 
 2. **安装配套插件**（必需）
 
-   主题依赖 `icefox` 插件提供后端功能，请确保安装并启用插件：
-   ```
-   /path/to/typecho/usr/plugins/icefox/
+   本仓库在 `plugins/Icefox/` 中包含配套插件源码。复制到 Typecho 插件目录并启用：
+   ```bash
+   cp -R plugins/Icefox /path/to/typecho/usr/plugins/Icefox
    ```
 
    插件负责：
@@ -77,13 +77,21 @@
 
    旧版文章置顶数据需按分工文档运行一次迁移脚本；新版置顶由主题的 `isTop` 文章字段直接管理和排序。迁移后请使用 Typecho 文章编辑页的“置顶文章”，不要再使用旧插件后台的置顶按钮。
 
-3. **启用主题**
+3. **安装对象存储插件**（使用 R2/S3 时必需）
+
+   ```bash
+   cp -R plugins/IcefoxStorage /path/to/typecho/usr/plugins/IcefoxStorage
+   ```
+
+   启用 `IcefoxStorage`，在插件设置页填写 Endpoint、Region、Bucket、访问凭证、公开访问域名和路径前缀。Cloudflare R2 的 Region 使用 `auto`。Endpoint 是 S3 API 地址，公开访问域名应填写绑定到存储桶的稳定图片域名。
+
+4. **启用主题**
 
    登录 Typecho 后台 → 外观 → 启用 Icefox 主题
 
-4. **配置主题**
+5. **配置主题**
 
-   在主题设置页面根据需要调整配置
+   在主题设置页面将“图片默认上传位置”设为“R2/S3 对象存储”。该选项只影响图片，视频仍使用本地存储。
 
 ## 🗂️ 目录结构
 
@@ -99,6 +107,9 @@ icefox/
 │   ├── post/            # 文章相关组件
 │   └── svgs/            # SVG 图标
 ├── core/                # 核心工具函数
+├── plugins/
+│   ├── Icefox/          # 配套数据与上传插件
+│   └── IcefoxStorage/   # 独立 R2/S3 对象存储插件
 ├── index.php            # 首页模板
 ├── header.php           # 头部模板
 ├── footer.php           # 底部模板
@@ -126,6 +137,20 @@ icefox/
 ### 主题切换
 
 用户可通过页面右上角的图标切换日间/夜间模式，设置会自动保存到 localStorage
+
+### R2/S3 图片存储与恢复
+
+选择对象存储后，动态和相册上传的图片会先写入 R2/S3。文章正文、Typecho 附件元数据和相册照片数据保存完整公开 URL，同时保留 `objectKey` 供删除和迁移使用。对象存储失败会终止发布，不会静默保存到本地。
+
+建议使用长期固定的自定义图片域名，例如 `https://img.example.com`。恢复数据库后，只要该域名、存储桶和对象仍然存在，历史图片无需迁移即可继续显示。
+
+数据库备份只保存图片引用，不包含图片文件。完整灾备必须同时包含：
+
+- Typecho 数据库备份
+- R2/S3 存储桶同步或快照
+- 自定义域名配置
+- `Icefox` 与 `IcefoxStorage` 插件代码
+- 独立安全保存的上传凭证
 
 ### 相册页面
 
@@ -167,10 +192,10 @@ $posts = $db->fetchAll(
 | `do=like` | POST | 切换点赞状态 |
 | `do=addComment` | POST | 添加评论 |
 | `do=getFriendLinks` | GET | 获取友情链接 |
-| `do=createPost` | POST multipart | 发布动态；`syncToAlbum=1` 时同步上传图片到“朋友圈”相册 |
+| `do=createPost` | POST multipart | 发布动态；`storage=object` 上传图片到 R2/S3，`syncToAlbum=1` 时同步到“朋友圈”相册 |
 | `do=getAlbums` | GET | 获取可见相册列表 |
 | `do=getAlbum&album={id}` | GET | 获取相册详情和照片 |
-| `do=saveAlbum` | POST multipart | 新建或编辑相册并上传照片；`isPinned=1/0` 控制置顶状态，普通相册通过 `sortOrder` 设置排序序号 |
+| `do=saveAlbum` | POST multipart | 新建或编辑相册并上传照片；支持 `storage=local/object`、`isPinned` 和 `sortOrder` |
 
 ## ⚙️ 配置要求
 
@@ -178,6 +203,8 @@ $posts = $db->fetchAll(
 - PDO
 - mbstring
 - json
+- fileinfo
+- curl（使用 R2/S3 时）
 
 ### 数据库
 - 支持外键约束

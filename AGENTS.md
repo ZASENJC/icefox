@@ -13,9 +13,10 @@ companion Icefox plugin.
 - No Composer, npm, or frontend build step is used.
 - Third-party browser libraries are committed under `assets/`.
 
-Install the repository as `usr/themes/icefox/` inside a Typecho installation.
-The companion plugin is expected at `usr/plugins/icefox/` and must register the
-`/action/icefox` action route.
+Install the theme files as `usr/themes/icefox/` inside a Typecho installation.
+Install `plugins/Icefox/` as `usr/plugins/Icefox/`; it registers the
+`/action/icefox` action route. Install `plugins/IcefoxStorage/` as
+`usr/plugins/IcefoxStorage/` when R2/S3 image storage is enabled.
 
 ## Runtime Architecture
 
@@ -54,6 +55,9 @@ Core responsibilities:
   state, and back-to-top behavior.
 - `assets/js/music-player.js`: per-card audio players and global playback
   coordination.
+- `plugins/Icefox/`: companion persistence, publishing, and album API.
+- `plugins/IcefoxStorage/`: standalone R2/S3 signing, validation, upload, and
+  object lifecycle integration.
 
 ## Data And Plugin Contract
 
@@ -97,6 +101,7 @@ preserve pinning priority and then sort by ascending `sortOrder`.
 - `customCss`, `customJs`, `analytics`
 - `editPageUrl`, `albumPageUrl`, `albumTopImage`
 - `showMomentsAlbum`, `autoCollapse`
+- `uploadStorage`
 
 The theme also observes Typecho's `pageSize` option.
 
@@ -167,6 +172,8 @@ Exercise these workflows after behavior changes:
 - Light/dark mode persistence.
 - Frontend post creation with image/video limits.
 - Album list, detail, editing, pinning, and Moments synchronization.
+- Local and object-backed image publishing, partial-upload rollback, and
+  Typecho attachment deletion.
 - Mobile and desktop responsive layouts.
 
 Do not claim PHP validation succeeded when `php` or a compatible Typecho runtime
@@ -182,8 +189,10 @@ tasks:
 - `assets/fonts/HarmonyOS-Sans.woff2` is referenced but missing.
 - `assets/images/default-avatar.png` is referenced by the friend-link fallback
   but missing.
+- The upstream companion plugin README declares MIT, but its release omits the
+  referenced `LICENSE`; provenance is documented in `plugins/Icefox/UPSTREAM.md`.
 - Standard templates rely on browser HTML recovery for final document closing
   tags; `footer.php` currently only renders the back-to-top control.
 
-Keep fixes scoped. Do not silently add the plugin, a package manager, a build
-system, or generated vendor assets while addressing an unrelated theme change.
+Keep fixes scoped. Do not add a package manager, build system, or generated
+vendor assets while addressing an unrelated theme change.

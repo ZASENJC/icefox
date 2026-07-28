@@ -26,6 +26,7 @@
 | 友情链接 | 弹窗和列表样式 | `getFriendLinks` 和链接数据 |
 | 前台发布 | 编辑器、图片预览和选项 | `createPost`、媒体上传和文章写入 |
 | 独立相册 | 相册列表、三列网格、灯箱和编辑弹窗 | `getAlbums`、`getAlbum`、`saveAlbum` |
+| 对象存储 | 选择默认上传目标 | `Icefox` 调用 `IcefoxStorage` 上传、回滚和保存对象元数据 |
 
 主题中的所有插件 URL 都必须通过 `window.ICEFOX_PLUGIN` 生成，不要在组件里手写 `?do=...`。
 
@@ -39,6 +40,14 @@
 - 图片和视频上传、文件类型检查与存储
 - 点赞、友情链接、相册和“朋友圈”同步的持久化
 - 从动态正文提取、去重并同步相册图片
+
+## 对象存储边界
+
+`plugins/IcefoxStorage/` 是独立 Typecho 插件，负责 S3 Signature V4、R2/S3 配置、图片真实性与大小校验、上传、删除和公开 URL 生成。Access Key、Secret、Endpoint 和 Bucket 不得进入主题配置或浏览器全局变量。
+
+`plugins/Icefox/` 读取主题提交的 `storage=local/object`，但必须在服务端白名单化。选择 `object` 时，只有图片交给 `IcefoxStorage`；视频继续使用本地存储。对象上传后若文章、附件、相册或朋友圈同步写入失败，伴生插件必须删除本次新对象作为补偿回滚。
+
+数据库保存完整公开 URL，并额外保存 `storage` 和 `objectKey`。完整 URL 保证数据库恢复后可直接显示，`objectKey` 用于后台删除、存储迁移和失败清理。数据库备份不包含对象文件，存储桶仍需独立备份。
 
 ## 旧置顶数据迁移
 
@@ -56,7 +65,7 @@ TYPECHO_CONFIG=/absolute/path/to/typecho/config.inc.php php scripts/migrate-lega
 
 ## 配套插件升级要求
 
-配套插件源码不在本主题仓库中。发布与本主题配套的新插件版本时，需要完成以下清理：
+配套插件源码位于 `plugins/Icefox/`。该版本已经完成以下清理：
 
 - 删除 `Widget\\Archive` 的旧 `indexHandle` 置顶排序钩子
 - 删除 `do=top`、`setTop` 和插件文章列表中的旧置顶按钮

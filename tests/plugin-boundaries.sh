@@ -37,11 +37,33 @@ if [ ! -f docs/plugin-boundaries.md ]; then
     exit 1
 fi
 
-for heading in '主题直接实现' '主题界面 + 插件后端' '插件完全负责' '旧置顶数据迁移'; do
+for heading in '主题直接实现' '主题界面 + 插件后端' '插件完全负责' '旧置顶数据迁移' '配套插件升级要求'; do
     if ! rg -Fq "$heading" docs/plugin-boundaries.md; then
         echo "ownership guide is missing section: $heading" >&2
         exit 1
     fi
 done
+
+plugin_main=${ICEFOX_PLUGIN_MAIN:-}
+plugin_action=${ICEFOX_PLUGIN_ACTION:-}
+if [ -n "$plugin_main" ] && [ -f "$plugin_main" ]; then
+    if rg -n 'Widget(\\\\Archive|_Archive).*indexHandle|function indexHandle\(' "$plugin_main"; then
+        echo 'the companion plugin must remove its old article-pinning query hook' >&2
+        exit 1
+    fi
+
+    plugin_admin=$(dirname "$plugin_main")/admin/manage-posts.php
+    if [ -f "$plugin_admin" ] && rg -n 'do=top|取消置顶' "$plugin_admin"; then
+        echo 'the companion plugin must remove its old article-pinning admin button' >&2
+        exit 1
+    fi
+fi
+
+if [ -n "$plugin_action" ] && [ -f "$plugin_action" ]; then
+    if rg -n "do *==? *['\"]top['\"]|function setTop\(" "$plugin_action"; then
+        echo 'the companion plugin must remove its old article-pinning action' >&2
+        exit 1
+    fi
+fi
 
 echo 'Theme/plugin boundaries are explicit'

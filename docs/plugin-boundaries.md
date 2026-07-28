@@ -52,6 +52,17 @@ TYPECHO_CONFIG=/absolute/path/to/typecho/config.inc.php php scripts/migrate-lega
 
 该脚本只会把 `icefox_archive.is_top=1` 复制为 `isTop=1`。已经存在的 `isTop` 选择会被保留，插件表也不会被删除，因此脚本可以重复执行。
 
+迁移完成后，统一在 Typecho 文章编辑页的“置顶文章”选项中管理。旧版插件后台如果仍显示“置顶/取消置顶”按钮，说明插件还没有完成职责迁移，不要再使用该按钮。
+
+## 配套插件升级要求
+
+配套插件源码不在本主题仓库中。发布与本主题配套的新插件版本时，需要完成以下清理：
+
+- 删除 `Widget\\Archive` 的旧 `indexHandle` 置顶排序钩子
+- 删除 `do=top`、`setTop` 和插件文章列表中的旧置顶按钮
+- 前台创建文章时不再主动写入 `is_top`
+- 如果 `icefox_archive` 仍保存点赞计数，可以保留表和 `likes` 数据；确认迁移和回滚期限结束后，再单独移除废弃的 `is_top` 列
+
 ## 插件契约测试
 
 `tests/album-plugin-*.sh` 和 `tests/album-plugin-moments-sync.php` 是插件契约测试，不是纯主题测试。它们需要通过 `ICEFOX_PLUGIN_ACTION`、`ICEFOX_PLUGIN_MAIN` 和可选的 `TYPECHO_CONFIG` 指向真实插件与 Typecho 环境。

@@ -59,9 +59,8 @@ if (getenv('ICEFOX_DB_INTEGRATION') === '1') {
 
     $append = $reflection->getMethod('appendImagesToMomentsAlbum');
     $append->setAccessible(true);
-    $integrationSrc = 'https://img.example.com/integration-moments.jpg';
+    $integrationSrc = 'https://img.example.com/integration-moments-' . bin2hex(random_bytes(8)) . '.jpg';
     $integrationError = '';
-    $db->query('START TRANSACTION');
     try {
         $count = $append->invoke(
             $action,
@@ -81,7 +80,13 @@ if (getenv('ICEFOX_DB_INTEGRATION') === '1') {
                 . '; sources=' . json_encode($duringSources, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         }
     } finally {
-        $db->query('ROLLBACK');
+        $db->query($db->update($prefix . 'icefox_albums')->rows([
+            'slug' => $before['slug'],
+            'cover' => $before['cover'],
+            'is_moments' => $before['is_moments'],
+            'photos' => $before['photos'],
+            'updated_at' => $before['updated_at']
+        ])->where('id = ?', (int) $before['id']));
     }
 
     if ($integrationError !== '') {
@@ -97,5 +102,5 @@ if (getenv('ICEFOX_DB_INTEGRATION') === '1') {
         exit(1);
     }
 
-    echo "Album moments database integration verified and rolled back\n";
+    echo "Album moments database integration verified and restored\n";
 }

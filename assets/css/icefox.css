@@ -757,7 +757,8 @@ main {
 }
 
 .album-editor-field input[type="text"],
-.album-editor-field input[type="url"] {
+.album-editor-field input[type="url"],
+.album-editor-field textarea {
     width: 100%;
     box-sizing: border-box;
     padding: 10px 11px;
@@ -765,6 +766,11 @@ main {
     border-radius: 4px;
     background: var(--modal-input-background);
     color: var(--text-color);
+}
+
+.album-editor-field textarea {
+    min-height: 112px;
+    resize: vertical;
 }
 
 .album-editor-field small {

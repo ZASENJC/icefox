@@ -17,6 +17,7 @@ function albumEditorManager() {
         visibility: 'public',
         uploadOnly: false,
         mediaFiles: [],
+        remotePhotoUrls: '',
         submitStatus: '',
         isSubmitting: false,
 
@@ -35,6 +36,7 @@ function albumEditorManager() {
             this.address = album.address || album.location || '';
             this.visibility = album.visibility === 'private' ? 'private' : 'public';
             this.mediaFiles = [];
+            this.remotePhotoUrls = '';
             this.submitStatus = '';
             this.albumEditorShow = true;
             document.body.style.overflow = 'hidden';
@@ -48,7 +50,7 @@ function albumEditorManager() {
 
         handleMediaSelect(event) {
             const files = Array.from(event.target.files).filter(file => file.type.startsWith('image/'));
-            const remaining = Math.max(0, 30 - this.mediaFiles.length);
+            const remaining = Math.max(0, 30 - this.mediaFiles.length - this.parseRemotePhotoUrls().length);
             files.slice(0, remaining).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = loadEvent => this.mediaFiles.push({ file, preview: loadEvent.target.result });
@@ -61,8 +63,26 @@ function albumEditorManager() {
             this.mediaFiles.splice(index, 1);
         },
 
+        parseRemotePhotoUrls() {
+            return this.remotePhotoUrls
+                .split(/\r?\n/)
+                .map(url => url.trim())
+                .filter(Boolean);
+        },
+
+        isRemotePhotoUrlValid(value) {
+            try {
+                const url = new URL(value);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch (error) {
+                return false;
+            }
+        },
+
         async submitAlbum() {
             if (this.isSubmitting) return;
+            const remotePhotos = this.parseRemotePhotoUrls();
+            const invalidRemotePhoto = remotePhotos.find(url => !this.isRemotePhotoUrlValid(url));
             if (this.uploadOnly && !this.albumId) {
                 alert('无法识别当前相册，请刷新后重试');
                 return;
@@ -71,8 +91,16 @@ function albumEditorManager() {
                 alert('请输入相册名称');
                 return;
             }
-            if (this.uploadOnly && this.mediaFiles.length === 0) {
-                alert('请选择要上传的照片');
+            if (invalidRemotePhoto) {
+                alert(`图片链接格式不正确：${invalidRemotePhoto}`);
+                return;
+            }
+            if (this.mediaFiles.length + remotePhotos.length > 30) {
+                alert('本地图片和远程图片合计最多 30 张');
+                return;
+            }
+            if (this.uploadOnly && this.mediaFiles.length === 0 && remotePhotos.length === 0) {
+                alert('请选择照片或填写远程图片链接');
                 return;
             }
 
@@ -86,6 +114,7 @@ function albumEditorManager() {
                 formData.append('tags', this.tags);
                 formData.append('address', this.address);
                 formData.append('visibility', this.visibility);
+                formData.append('remotePhotos', JSON.stringify(remotePhotos));
                 this.mediaFiles.forEach((media, index) => formData.append(`media_${index}`, media.file));
 
                 const response = await fetch(`${window.ICEFOX_CONFIG.actionUrl}?do=saveAlbum`, {
@@ -150,8 +179,13 @@ function albumEditorManager() {
                 <div class="album-editor-field">
                     <span x-text="uploadOnly ? '选择照片' : '添加照片'"></span>
                     <input type="file" accept="image/*" multiple @change="handleMediaSelect($event)">
-                    <small>最多 30 张，未设置封面时自动使用第一张照片</small>
+                    <small>本地图片与远程链接合计最多 30 张，未设置封面时自动使用第一张照片</small>
                 </div>
+                <label class="album-editor-field">
+                    <span>远程图片链接</span>
+                    <textarea x-model="remotePhotoUrls" rows="5" placeholder="https://example.com/photo-1.jpg&#10;https://example.com/photo-2.jpg"></textarea>
+                    <small>支持图片直链或图床链接，一行一张，仅支持 HTTP/HTTPS</small>
+                </label>
                 <div class="album-editor-media" x-show="mediaFiles.length">
                     <template x-for="(media, index) in mediaFiles" :key="index">
                         <div class="album-editor-media-item">

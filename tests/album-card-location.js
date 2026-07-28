@@ -6,8 +6,8 @@ const stylesheet = fs.readFileSync('assets/css/icefox.css', 'utf8');
 
 assert.match(
     gallerySource,
-    /<div class="album-card-meta"[^>]*>[\s\S]*?class="album-card-photo-count"[\s\S]*?class="album-card-address"[\s\S]*?<\/div>/,
-    'album cards must render the photo count and address in the same metadata row'
+    /<div class="album-card-heading"[^>]*>[\s\S]*?class="album-card-name"[\s\S]*?class="album-card-address"[\s\S]*?<\/div>\s*<div class="album-card-meta"[^>]*>[\s\S]*?class="album-card-photo-count"[\s\S]*?<\/div>/,
+    'album cards must render the name and address on one line above the photo count'
 );
 assert.match(
     gallerySource,
@@ -16,8 +16,8 @@ assert.match(
 );
 assert.match(
     stylesheet,
-    /\.album-card-meta\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*space-between;/s,
-    'the album metadata row must keep the photo count and address on opposite sides'
+    /\.album-card-heading\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*space-between;[^}]*color:\s*var\(--text-color\);[^}]*font-size:\s*14px;[^}]*font-weight:\s*500;/s,
+    'the album heading must align the name and address while defining their shared typography'
 );
 assert.match(
     stylesheet,

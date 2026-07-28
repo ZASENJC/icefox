@@ -34,9 +34,21 @@ MARKDOWN;
 
 $actual = $extract->invoke($action, $content);
 $expected = [
-    ['src' => 'https://img.example.com/remote.jpg', 'alt' => '远程图片'],
-    ['src' => '/usr/uploads/2026/07/local.webp', 'alt' => '本地图片'],
-    ['src' => 'https://img.example.com/from-html.png', 'alt' => 'HTML 图片']
+    [
+        'src' => 'https://img.example.com/remote.jpg',
+        'url' => 'https://img.example.com/remote.jpg',
+        'alt' => '远程图片'
+    ],
+    [
+        'src' => '/usr/uploads/2026/07/local.webp',
+        'url' => '/usr/uploads/2026/07/local.webp',
+        'alt' => '本地图片'
+    ],
+    [
+        'src' => 'https://img.example.com/from-html.png',
+        'url' => 'https://img.example.com/from-html.png',
+        'alt' => 'HTML 图片'
+    ]
 ];
 
 if ($actual !== $expected) {
@@ -64,9 +76,8 @@ if (getenv('ICEFOX_DB_INTEGRATION') === '1') {
     try {
         $count = $append->invoke(
             $action,
-            [],
             '![集成图片](' . $integrationSrc . ')',
-            (int) $before['created_by']
+            []
         );
         $during = $db->fetchRow(
             $db->select()->from($prefix . 'icefox_albums')->where('id = ?', (int) $before['id'])

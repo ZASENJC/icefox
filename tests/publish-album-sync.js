@@ -35,6 +35,12 @@ async function assertSyncContract(publisher) {
     const source = fs.readFileSync(publisher.file, 'utf8');
     assert.match(source, /同步到「朋友圈」相册/, `${publisher.file} must show the album sync option`);
     assert.match(source, /type="checkbox"[^>]*x-model="syncToAlbum"/, `${publisher.file} must expose an accessible checkbox`);
+    assert.match(
+        source,
+        /class="option-icon album-sync-image-icon"[^>]*>[\s\S]*?<svg[^>]*viewBox="0 0 24 24"/,
+        `${publisher.file} must use the image icon UI for album sync`
+    );
+    assert.doesNotMatch(source, />▧</, `${publisher.file} must not use a text glyph as the album icon`);
 
     const createManager = loadManager(source, publisher.managerName);
     for (const [syncToAlbum, expectedValue] of [[false, '0'], [true, '1']]) {

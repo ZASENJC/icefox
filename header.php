@@ -361,7 +361,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
                 submitBtn.textContent = '提交中...';
 
                 try {
-                    const response = await fetch(`${window.ICEFOX_CONFIG.actionUrl}?do=addComment`, {
+                    const response = await fetch(window.ICEFOX_PLUGIN.url(window.ICEFOX_PLUGIN.actions.addComment), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -542,7 +542,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
                 submitBtn.textContent = '提交中...';
 
                 try {
-                    const response = await fetch(`${window.ICEFOX_CONFIG.actionUrl}?do=addComment`, {
+                    const response = await fetch(window.ICEFOX_PLUGIN.url(window.ICEFOX_PLUGIN.actions.addComment), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -770,6 +770,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     </style>
     <?php endif; ?>
 
+    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox-plugin.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/jquery.min.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/alpinejs.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>

@@ -32,7 +32,7 @@ if ! rg -q 'editor-modal-open\.window' components/modals/editor.php; then
     exit 1
 fi
 
-if ! rg -q '\?do=createPost' components/modals/editor.php; then
+if ! rg -q 'ICEFOX_PLUGIN\.actions\.createPost' components/modals/editor.php; then
     echo "the editor modal must retain the plugin createPost contract" >&2
     exit 1
 fi

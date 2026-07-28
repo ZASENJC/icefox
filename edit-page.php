@@ -152,7 +152,7 @@ function editPageManager() {
                     formData.append(`media_${index}`, media.file);
                 });
 
-                const response = await fetch(`${window.ICEFOX_CONFIG.actionUrl}?do=createPost`, {
+                const response = await fetch(window.ICEFOX_PLUGIN.url(window.ICEFOX_PLUGIN.actions.createPost), {
                     method: 'POST',
                     body: formData
                 });

@@ -81,6 +81,10 @@ global.window = {
         actionUrl: '/action/icefox',
         homeUrl: '/'
     },
+    ICEFOX_PLUGIN: {
+        actions: { createPost: 'createPost' },
+        url: action => `/action/icefox?do=${action}`
+    },
     location: {
         href: 'https://example.com/current',
         origin: 'https://example.com',

@@ -37,7 +37,7 @@ if rg -q '^function getPostIsTop\(' functions.php; then
     exit 1
 fi
 
-if rg -n -- '->from\([^)]*icefox_' --glob '*.php' --glob '!core/plugin-bridge.php' --glob '!tests/**' .; then
+if rg -n --glob '*.php' --glob '!core/plugin-bridge.php' --glob '!tests/**' -- '->from\([^)]*icefox_' .; then
     echo 'plugin-owned tables may only be read by the compatibility bridge' >&2
     exit 1
 fi
@@ -48,7 +48,7 @@ if [ ! -f docs/plugin-boundaries.md ]; then
 fi
 
 for heading in '主题直接实现' '主题界面 + 插件后端' '插件完全负责' '待迁移的兼容代码'; do
-    if ! rg -q "$heading" docs/plugin-boundaries.md; then
+    if ! rg -Fq "$heading" docs/plugin-boundaries.md; then
         echo "ownership guide is missing section: $heading" >&2
         exit 1
     fi

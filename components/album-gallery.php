@@ -126,9 +126,10 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
             this.loading = true;
             this.error = '';
             try {
-                const query = this.isDetail ? `&album=${encodeURIComponent(this.albumKey)}` : '';
-                const action = this.isDetail ? 'getAlbum' : 'getAlbums';
-                const response = await fetch(`${window.ICEFOX_CONFIG.actionUrl}?do=${action}${query}`, {
+                const actions = window.ICEFOX_PLUGIN.actions;
+                const action = this.isDetail ? actions.getAlbum : actions.getAlbums;
+                const params = this.isDetail ? { album: this.albumKey } : {};
+                const response = await fetch(window.ICEFOX_PLUGIN.url(action, params), {
                     headers: { 'Accept': 'application/json' }
                 });
                 const result = await response.json();

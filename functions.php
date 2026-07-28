@@ -12,6 +12,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 include_once 'comment_function.php';
 include_once 'core/core.php';
+include_once 'core/plugin-bridge.php';
 include_once __TYPECHO_ROOT_DIR__ . '/var/Utils/Markdown.php';
 
 /**
@@ -754,12 +755,6 @@ function themeActivate()
             $db->query($db->insert('table.fields')->rows($field));
         }
     }
-//
-//    // 添加主题设置主菜单
-//    $menuIndex = Helper::addMenu('icefox-theme');
-//
-//    // 使用返回的索引添加子面板
-//    Helper::addPanel($menuIndex, 'admin/theme.php', '主题设置', '配置主题', 'administrator');
 }
 
 /**
@@ -767,11 +762,6 @@ function themeActivate()
  */
 function themeDeactivate()
 {
-//    // 清理自定义数据
-//    $menuIndex = Helper::removeMenu('icefox-theme');
-//
-//    // 使用返回的索引删除子面板
-//    Helper::removePanel($menuIndex, 'admin/theme.php');
 }
 
 /**
@@ -779,13 +769,7 @@ function themeDeactivate()
  */
 function themeUpgrade()
 {
-    // 执行升级操作
 }
-
-// 注册主题激活/停用钩子
-//Helper::addPanel(1, 'IceFox/panel.php', 'IceFox主题设置', 'IceFox主题设置', 'administrator');
-//Helper::addRoute('icefox_api', '/icefox/api', 'IceFox_Action');
-//Helper::removePanel(1,'IceFox/panel.php');
 
 /**
  * 归档页面辅助函数
@@ -1135,43 +1119,6 @@ function getPostAttachments($archive)
     }
 
     return $result;
-}
-
-/**
- * 获取文章置顶状态
- * @param int $cid 文章ID
- * @return bool 是否置顶
- */
-function getPostIsTop($cid)
-{
-    static $topCache = [];
-    static $archiveAvailable = true;
-
-    $cid = (int) $cid;
-    if (!$archiveAvailable) {
-        return false;
-    }
-    if (isset($topCache[$cid])) {
-        return $topCache[$cid];
-    }
-
-    $db = Typecho_Db::get();
-    $prefix = $db->getPrefix();
-
-    try {
-        $result = $db->fetchRow(
-            $db->select('is_top')
-                ->from($prefix . 'icefox_archive')
-                ->where('cid = ?', $cid)
-        );
-
-        $topCache[$cid] = !empty($result) && $result['is_top'] == 1;
-        return $topCache[$cid];
-    } catch (Exception $e) {
-        $archiveAvailable = false;
-        $topCache[$cid] = false;
-        return false;
-    }
 }
 
 /**

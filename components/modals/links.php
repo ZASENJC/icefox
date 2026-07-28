@@ -13,7 +13,7 @@
              this.loading = true;
              this.error = null;
              try {
-                 const response = await fetch(window.ICEFOX_CONFIG.actionUrl + '?do=getFriendLinks');
+                 const response = await fetch(window.ICEFOX_PLUGIN.url(window.ICEFOX_PLUGIN.actions.getFriendLinks));
                  const result = await response.json();
 
                  if (result.success) {

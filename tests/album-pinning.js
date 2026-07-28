@@ -76,6 +76,10 @@ global.FormData = class FormDataMock {
 let submittedForm = null;
 global.window = {
     ICEFOX_CONFIG: { actionUrl: '/action/icefox' },
+    ICEFOX_PLUGIN: {
+        actions: { saveAlbum: 'saveAlbum' },
+        url: action => `/action/icefox?do=${action}`
+    },
     setTimeout() {}
 };
 global.fetch = async (url, options) => {

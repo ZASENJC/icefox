@@ -401,12 +401,18 @@ function loadLikeData(cid, $container) {
     const commentAuthor = localStorage.getItem('icefox_comment_author') || '';
     const commentEmail = localStorage.getItem('icefox_comment_email') || '';
 
-    let url = window.ICEFOX_CONFIG.actionUrl + '?do=getLikes&cid=' + cid + '&anonymous_id=' + encodeURIComponent(anonymousId);
+    const params = {
+        cid: cid,
+        anonymous_id: anonymousId
+    };
 
     // 如果有评论用户信息,携带到请求中
     if (commentAuthor && commentEmail) {
-        url += '&comment_author=' + encodeURIComponent(commentAuthor) + '&comment_email=' + encodeURIComponent(commentEmail);
+        params.comment_author = commentAuthor;
+        params.comment_email = commentEmail;
     }
+
+    const url = window.ICEFOX_PLUGIN.url(window.ICEFOX_PLUGIN.actions.getLikes, params);
 
     $.ajax({
         url: url,
@@ -435,12 +441,18 @@ function doToggleLike(cid, $container) {
     const commentAuthor = localStorage.getItem('icefox_comment_author') || '';
     const commentEmail = localStorage.getItem('icefox_comment_email') || '';
 
-    let url = window.ICEFOX_CONFIG.actionUrl + '?do=like&cid=' + cid + '&anonymous_id=' + encodeURIComponent(anonymousId);
+    const params = {
+        cid: cid,
+        anonymous_id: anonymousId
+    };
 
     // 如果有评论用户信息,携带到请求中
     if (commentAuthor && commentEmail) {
-        url += '&comment_author=' + encodeURIComponent(commentAuthor) + '&comment_email=' + encodeURIComponent(commentEmail);
+        params.comment_author = commentAuthor;
+        params.comment_email = commentEmail;
     }
+
+    const url = window.ICEFOX_PLUGIN.url(window.ICEFOX_PLUGIN.actions.like, params);
 
     $.ajax({
         url: url,

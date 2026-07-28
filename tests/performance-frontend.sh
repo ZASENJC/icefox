@@ -28,7 +28,7 @@ reject_pattern() {
 }
 
 require_pattern 'static \$fieldCache' core/core.php 'article fields must be cached per post'
-require_pattern 'static \$topCache' functions.php 'pinned-post lookups must be cached'
+require_pattern 'static \$topCache' core/plugin-bridge.php 'pinned-post lookups must be cached'
 require_pattern 'function getPostContentView' functions.php 'timeline content parsing must be shared'
 require_pattern '->limit\(\$pageSize\)' functions.php 'timeline queries must be paginated'
 require_pattern 'moments-pagination' assets/css/icefox.css 'timeline pagination styles are missing'
@@ -49,7 +49,7 @@ if [ "$fancybox_bind_count" -ne 1 ]; then
     failures=$((failures + 1))
 fi
 
-for script in jquery.min.js alpinejs.js fancybox.umd.js scrollload.min.js music-player.js icefox.js; do
+for script in icefox-plugin.js jquery.min.js alpinejs.js fancybox.umd.js scrollload.min.js music-player.js icefox.js; do
     require_pattern "<script defer src=.*assets/js/$script" header.php "deferred script loading is missing for $script"
 done
 

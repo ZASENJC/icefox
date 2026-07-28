@@ -48,6 +48,13 @@ global.window = {
         actionUrl: '/action/icefox',
         albumUrl: '/albums'
     },
+    ICEFOX_PLUGIN: {
+        actions: {
+            getAlbum: 'getAlbum',
+            getAlbums: 'getAlbums'
+        },
+        url: action => `/action/icefox?do=${action}`
+    },
     location: {
         href: 'https://example.com/albums'
     }

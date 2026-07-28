@@ -69,8 +69,11 @@
    ```
 
    插件负责：
-   - 创建数据库表（`typecho_icefox_archive`、`typecho_icefox_likes`）
-   - 注册 API 路由（点赞、评论等接口）
+   - 创建和升级插件数据表，包括文章置顶、点赞和相册数据
+   - 注册 `/action/icefox` 和相册详情路由
+   - 处理点赞、评论写入、友情链接、前台发布和相册接口
+
+   详细的主题/插件分工见 [`docs/plugin-boundaries.md`](docs/plugin-boundaries.md)。
 
 3. **启用主题**
 

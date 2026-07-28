@@ -127,7 +127,7 @@ function albumEditorManager() {
                 formData.append('remotePhotos', JSON.stringify(remotePhotos));
                 this.mediaFiles.forEach((media, index) => formData.append(`media_${index}`, media.file));
 
-                const response = await fetch(`${window.ICEFOX_CONFIG.actionUrl}?do=saveAlbum`, {
+                const response = await fetch(window.ICEFOX_PLUGIN.url(window.ICEFOX_PLUGIN.actions.saveAlbum), {
                     method: 'POST',
                     body: formData
                 });

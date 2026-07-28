@@ -193,7 +193,7 @@ function editorModalManager() {
 
                 <div class="edit-options">
                     <button type="button" class="edit-option-item" @click="showLocationPicker = !showLocationPicker">
-                        <span class="option-icon" aria-hidden="true">⌖</span>
+                        <span class="option-icon editor-option-icon editor-option-location-icon" aria-hidden="true"></span>
                         <span class="option-content"><span class="option-label">所在位置</span></span>
                         <span class="option-value" x-text="position || '未设置'"></span>
                         <span class="option-arrow">›</span>
@@ -205,7 +205,7 @@ function editorModalManager() {
                     </div>
 
                     <button type="button" class="edit-option-item" @click="showVisibilityPicker = !showVisibilityPicker">
-                        <span class="option-icon" aria-hidden="true">◉</span>
+                        <span class="option-icon editor-option-icon editor-option-visibility-icon" aria-hidden="true"></span>
                         <span class="option-content"><span class="option-label">谁可以看</span></span>
                         <span class="option-value" x-text="visibilityText"></span>
                         <span class="option-arrow">›</span>
@@ -224,11 +224,7 @@ function editorModalManager() {
                     </div>
 
                     <label class="edit-option-item">
-                        <span class="option-icon album-sync-image-icon" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z" />
-                            </svg>
-                        </span>
+                        <span class="option-icon editor-option-icon editor-option-album-icon" aria-hidden="true"></span>
                         <span class="option-content">
                             <span class="option-label">同步到「朋友圈」相册</span>
                         </span>

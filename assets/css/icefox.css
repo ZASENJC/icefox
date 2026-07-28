@@ -2467,6 +2467,54 @@ main {
     text-align: left;
 }
 
+.editor-modal .edit-option-item {
+    min-height: 56px;
+    align-items: center;
+    box-sizing: border-box;
+    font: inherit;
+    letter-spacing: 0;
+}
+
+.editor-modal .editor-option-icon {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    margin-right: 16px;
+    background-color: var(--text-sub-color);
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 22px 22px;
+    mask-size: 22px 22px;
+}
+
+.editor-modal .editor-option-location-icon {
+    -webkit-mask-image: url('../icons/heroicons-location.svg');
+    mask-image: url('../icons/heroicons-location.svg');
+}
+
+.editor-modal .editor-option-visibility-icon {
+    -webkit-mask-image: url('../icons/heroicons-visibility.svg');
+    mask-image: url('../icons/heroicons-visibility.svg');
+}
+
+.editor-modal .editor-option-album-icon {
+    -webkit-mask-image: url('../icons/heroicons-album.svg');
+    mask-image: url('../icons/heroicons-album.svg');
+}
+
+.editor-modal .option-content {
+    min-width: 0;
+    min-height: 22px;
+}
+
+.editor-modal .option-label {
+    font-size: 15px;
+    line-height: 22px;
+    letter-spacing: 0;
+}
+
 .editor-modal .media-empty-icon {
     font-size: 28px;
     line-height: 1;
@@ -2474,9 +2522,27 @@ main {
 
 .editor-modal .option-value {
     max-width: 45%;
+    display: flex;
+    align-items: center;
     overflow: hidden;
+    font-size: 15px;
+    line-height: 22px;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.editor-modal .option-arrow {
+    display: flex;
+    width: 16px;
+    height: 22px;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.editor-modal .option-switch {
+    min-height: 28px;
 }
 
 /* 顶部栏 */

@@ -5,6 +5,12 @@ const gallerySource = fs.readFileSync('components/album-gallery.php', 'utf8');
 const stylesheet = fs.readFileSync('assets/css/icefox.css', 'utf8');
 
 assert.match(
+    stylesheet,
+    /\.album-page-title\s*\{[^}]*font-size:\s*24px;/s,
+    'the album page title must use the larger 24px heading size'
+);
+
+assert.match(
     gallerySource,
     /<div class="album-card-heading"[^>]*>[\s\S]*?class="album-card-name"[\s\S]*?class="album-card-address"[\s\S]*?<\/div>\s*<div class="album-card-meta"[^>]*>[\s\S]*?class="album-card-photo-count"[\s\S]*?<\/div>/,
     'album cards must render the name and address on one line above the photo count'

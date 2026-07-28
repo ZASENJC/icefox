@@ -1,7 +1,7 @@
 <?php
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
-$albumKey = isset($_GET['album']) ? trim((string) $_GET['album']) : '';
+$albumKey = trim((string) $this->request->get('album', ''));
 $configuredAlbumUrl = trim((string) $this->options->albumPageUrl);
 $albumPageUrl = $configuredAlbumUrl !== '' ? rtrim($configuredAlbumUrl, '/') : Typecho_Common::url('albums', $this->options->index);
 $albumEditorUser = \Widget\User::alloc();

@@ -230,10 +230,12 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                         <template x-if="album.cover"><img :src="album.cover" :alt="album.name" decoding="async"></template>
                         <template x-if="!album.cover"><div class="album-card-placeholder">相册</div></template>
                     </div>
-                    <div class="album-card-name" x-text="album.name"></div>
-                    <div class="album-card-meta" x-show="album.photos.length || album.address">
-                        <span class="album-card-photo-count" x-show="album.photos.length" x-text="album.photos.length + ' 张照片'"></span>
+                    <div class="album-card-heading">
+                        <span class="album-card-name" x-text="album.name"></span>
                         <span class="album-card-address" x-show="album.address" x-text="album.address" :title="album.address"></span>
+                    </div>
+                    <div class="album-card-meta" x-show="album.photos.length">
+                        <span class="album-card-photo-count" x-text="album.photos.length + ' 张照片'"></span>
                     </div>
                 </a>
                 <?php if ($canEditAlbums): ?>

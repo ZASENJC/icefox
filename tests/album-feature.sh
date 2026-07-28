@@ -17,6 +17,16 @@ require_pattern() {
     fi
 }
 
+forbid_pattern() {
+    pattern=$1
+    file=$2
+    message=$3
+    if rg -q -- "$pattern" "$file"; then
+        echo "$message" >&2
+        failures=$((failures + 1))
+    fi
+}
+
 require_pattern "Form_Element_Text.*albumPageUrl" functions.php 'theme config must expose the album page URL'
 require_pattern "Form_Element_Text.*albumTopImage" functions.php 'theme config must expose the album top image'
 require_pattern "albumPageUrl.*'/albums'" functions.php 'album page URL must use the clean /albums path'
@@ -37,6 +47,8 @@ require_pattern 'remotePhotoUrls' components/modals/album-editor.php 'album edit
 require_pattern "formData.append\('remotePhotos'" components/modals/album-editor.php 'album editor must send remote photos to the plugin'
 require_pattern 'album-editor-field textarea:focus' assets/css/icefox.css 'album editor text fields must define a focus style without the browser ring'
 require_pattern 'box-shadow: none' assets/css/icefox.css 'album editor focus styling must remove the blue focus shadow'
+require_pattern 'album-editor-field textarea::placeholder' assets/css/icefox.css 'album editor placeholders must match the publishing composer'
+forbid_pattern 'background: var\(--modal-input-background\)' assets/css/icefox.css 'album editor fields must not use the light modal input background'
 require_pattern 'class="album-grid"' components/album-gallery.php 'album photos must render in a dedicated grid'
 require_pattern 'components/modals/album-editor.php' album-page.php 'album page must render its editor modal'
 require_pattern 'isAlbumOnlyPost' components/post-list.php 'blog feed must filter album-only posts'

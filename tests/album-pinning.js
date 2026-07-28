@@ -23,8 +23,8 @@ const sortedAlbums = gallery.normalizeAlbumList([
 ]);
 assert.deepEqual(
     sortedAlbums.map(album => album.slug),
-    ['pinned-new', 'pinned-old', 'moments', 'regular-new', 'regular-old'],
-    'pinned albums must be first without changing order inside each group'
+    ['moments', 'pinned-new', 'pinned-old', 'regular-new', 'regular-old'],
+    'moments must stay first, followed by pinned albums without changing order inside each group'
 );
 
 assert.match(gallerySource, /class="album-card-pinned"[^>]*x-show="album\.isPinned"/);

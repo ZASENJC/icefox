@@ -66,6 +66,8 @@ fi
 node tests/album-remote-urls.js
 node tests/moments-album.js
 node tests/album-pinning.js
+node tests/album-sorting.js
 sh tests/album-plugin-pinning.sh
+sh tests/album-plugin-sorting.sh
 
 echo 'Album page contracts are present'

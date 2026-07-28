@@ -45,9 +45,18 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
     <!-- 全局配置（适配伪静态和非伪静态） -->
     <script>
-        window.ICEFOX_CONFIG = {
-            actionUrl: '<?php echo Typecho_Common::url('action/icefox', Helper::options()->index); ?>'
-        };
+        window.ICEFOX_CONFIG = <?php echo json_encode([
+            'actionUrl' => Typecho_Common::url('action/icefox', Helper::options()->index),
+            'homeUrl' => Helper::options()->siteUrl
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
+
+        (function cleanPublishedRefreshParameter() {
+            const currentUrl = new URL(window.location.href);
+            if (!currentUrl.searchParams.has('icefox_published')) return;
+
+            currentUrl.searchParams.delete('icefox_published');
+            window.history.replaceState({}, document.title, currentUrl.toString());
+        })();
     </script>
 
     <!-- Alpine.js 评论回复管理器 -->

@@ -51,8 +51,12 @@ function themeConfig($form)
     $form->addInput($avatarLink);
 
     // 网站备案信息
-    $beianInfo = new Typecho_Widget_Helper_Form_Element_Text('beianInfo', NULL, NULL, _t('网站备案信息'), _t('在这里填入网站备案号，例如：蜀ICP备2000101010号。将显示在设置弹窗的版权信息处，点击自动跳转至工信部备案网站'));
+    $beianInfo = new Typecho_Widget_Helper_Form_Element_Text('beianInfo', NULL, NULL, _t('网站备案信息'), _t('在这里填入网站备案号，例如：蜀ICP备2000101010号。将显示在设置弹窗的版权信息处'));
     $form->addInput($beianInfo);
+
+    // 网站备案链接
+    $beianUrl = new Typecho_Widget_Helper_Form_Element_Text('beianUrl', NULL, 'https://beian.miit.gov.cn/', _t('网站备案链接'), _t('设置备案号点击后的跳转网址，仅支持 http 或 https 地址'));
+    $form->addInput($beianUrl);
 
     // Gravatar 头像加速地址
     $gravatarUrl = new Typecho_Widget_Helper_Form_Element_Text('gravatarUrl', NULL, 'https://www.weavatar.com', _t('Gravatar 头像加速地址'), _t('用于替换 Gravatar 官方地址（http://www.gravatar.com），提升国内访问速度。默认使用 WeAvatar 加速服务（https://www.weavatar.com）。其他可选服务：<br>- https://gravatar.loli.net (Loli.net)<br>- https://cravatar.cn (Cravatar)<br>- https://dn-qiniu-avatar.qbox.me (七牛)<br>留空则使用默认值'));

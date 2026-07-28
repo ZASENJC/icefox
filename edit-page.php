@@ -205,7 +205,7 @@ function editPageManager() {
                 <h3>请先登录</h3>
                 <p>登录后即可发布内容</p>
                 <button type="button" class="login-required-btn"
-                        @click="$nextTick(() => { document.querySelector('.login-modal')._x_dataStack[0].loginModalShow = true })">
+                        @click="$nextTick(() => { document.querySelector('.setting-modal')._x_dataStack[0].settingModalShow = true })">
                     立即登录
                 </button>
             </div>
@@ -415,7 +415,6 @@ function editPageManager() {
     </section>
 
     <?php $this->need('components/modals/setting.php'); ?>
-    <?php $this->need('components/modals/login.php'); ?>
 </main>
 
 <?php if ($isLoggedIn): ?>

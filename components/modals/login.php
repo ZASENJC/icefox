@@ -61,17 +61,7 @@ if ($errorMsg) {
 
 ?>
 
-<div class="login-modal" x-cloak
-     x-data="{ loginModalShow: false }"
-     x-show="loginModalShow"
-     x-transition.opacity.duration.300ms
-     @click.self="loginModalShow = false">
-    <div class="login-container" x-transition.scale.duration.300ms>
-        <!-- 弹框标题 -->
-        <div class="login-modal-header">
-            <div class="login-modal-title"><?php echo $isLoggedIn ? '👤 用户信息' : '🔐 登录'; ?></div>
-            <button type="button" class="login-modal-close" @click="loginModalShow = false">×</button>
-        </div>
+<div class="settings-account-panel">
 
         <!-- 错误/成功提示 -->
         <?php if (!empty($loginError)): ?>
@@ -96,7 +86,7 @@ if ($errorMsg) {
             <script>
             (function() {
                 // 自动显示登录弹窗和错误提示
-                const modal = document.querySelector('.login-modal');
+                const modal = document.querySelector('.setting-modal');
                 const alert = document.getElementById('loginAlertMessage');
 
                 if (modal && alert) {
@@ -104,7 +94,7 @@ if ($errorMsg) {
                     setTimeout(() => {
                         const alpineData = Alpine.$data(modal);
                         if (alpineData) {
-                            alpineData.loginModalShow = true;
+                            alpineData.settingModalShow = true;
 
                             // 显示错误提示（带动画）
                             setTimeout(() => {
@@ -133,7 +123,7 @@ if ($errorMsg) {
                     <img src="<?php echo getGravatarUrl($user->mail, 80, 'identicon', 'g'); ?>" alt="<?php echo htmlspecialchars($user->screenName, ENT_QUOTES, 'UTF-8'); ?>">
                 </div>
                 <div class="user-info-details">
-                    <div class="user-info-item">
+                    <div class="user-info-item user-info-item-nickname">
                         <span class="user-info-label">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="16" height="16" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
@@ -142,7 +132,7 @@ if ($errorMsg) {
                         </span>
                         <span class="user-info-value"><?php echo htmlspecialchars($user->screenName, ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
-                    <div class="user-info-item">
+                    <div class="user-info-item user-info-item-email">
                         <span class="user-info-label">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="16" height="16" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
@@ -152,7 +142,7 @@ if ($errorMsg) {
                         <span class="user-info-value"><?php echo htmlspecialchars($user->mail, ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                     <?php if ($user->url): ?>
-                    <div class="user-info-item">
+                    <div class="user-info-item user-info-item-url">
                         <span class="user-info-label">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="16" height="16" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
@@ -166,7 +156,7 @@ if ($errorMsg) {
                         </span>
                     </div>
                     <?php endif; ?>
-                    <div class="user-info-item">
+                    <div class="user-info-item user-info-item-group">
                         <span class="user-info-label">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="16" height="16" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
@@ -216,7 +206,7 @@ if ($errorMsg) {
                     localStorage.setItem('icefox_comment_url', <?php echo json_encode($user->url, JSON_UNESCAPED_UNICODE); ?>);
                     <?php endif; ?>
                 } catch (e) {
-                    //console.error('❌ 保存用户信息到 localStorage 失败:', e);
+                    // Ignore storage failures in restricted browser contexts.
                 }
             })();
             </script>
@@ -335,5 +325,4 @@ if ($errorMsg) {
             })();
             </script>
         <?php endif; ?>
-    </div>
 </div>

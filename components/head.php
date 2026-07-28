@@ -1,9 +1,5 @@
 <section class="top-container" x-data>
     <div class="top-container-left">
-        <div class="tc-user" data-icon="user"
-             @click="$nextTick(() => { document.querySelector('.login-modal')._x_dataStack[0].loginModalShow = true })">
-            <?php $this->need("components/svgs/user.php"); ?>
-        </div>
         <div class="tc-links" data-icon="links"
              @click="$nextTick(() => { window.dispatchEvent(new CustomEvent('links-modal-open')) })">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
@@ -19,9 +15,10 @@
         $user = \Widget\User::alloc();
         if ($user->hasLogin()):
         ?>
-            <a href="<?php echo $this->options->editPageUrl ? $this->options->editPageUrl : '/edit.html'; ?>" class="tc-edit" data-icon="edit">
+            <button type="button" class="tc-edit" data-icon="edit" aria-label="发布内容"
+                    @click="window.dispatchEvent(new CustomEvent('editor-modal-open'))">
                 <?php $this->need("components/svgs/edit.php"); ?>
-            </a>
+            </button>
         <?php endif; ?>
         <div class="tc-setting" data-icon="setting"
              @click="$nextTick(() => { document.querySelector('.setting-modal')._x_dataStack[0].settingModalShow = true })">
@@ -33,12 +30,10 @@
 <!-- 预加载所有图标，但隐藏起来 -->
 <div class="preloaded-icons" style="display: none;">
     <!-- 原始图标 -->
-    <div data-icon="user"><?php $this->need("components/svgs/user.php"); ?></div>
     <div data-icon="music"><?php $this->need("components/svgs/music.php"); ?></div>
     <div data-icon="edit"><?php $this->need("components/svgs/edit.php"); ?></div>
     <div data-icon="setting"><?php $this->need("components/svgs/setting.php"); ?></div>
     <!-- outline图标 -->
-    <div data-icon="user-outline"><?php $this->need("components/svgs/user-outline.php"); ?></div>
     <div data-icon="music-outline"><?php $this->need("components/svgs/music-outline.php"); ?></div>
     <div data-icon="edit-outline"><?php $this->need("components/svgs/edit-outline.php"); ?></div>
     <div data-icon="setting-outline"><?php $this->need("components/svgs/setting-outline.php"); ?></div>

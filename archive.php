@@ -35,6 +35,9 @@ $this->need('header.php');
                             <div class="post-item-right">
                                 <h2 class="post-title">
                                     <a href="<?php $this->author->permalink() ?>"><?php $this->author() ?></a>
+                                    <?php if (getPostIsTop($this->cid)): ?>
+                                        <span class="top-badge">置顶</span>
+                                    <?php endif; ?>
                                 </h2>
                                 <div class="post-content">
                                     <?php

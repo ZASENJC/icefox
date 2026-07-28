@@ -22,23 +22,13 @@ if ! rg -q 'icefox-plugin\.js' header.php; then
     exit 1
 fi
 
-if [ ! -f core/plugin-bridge.php ]; then
-    echo 'plugin-owned database compatibility code must live in core/plugin-bridge.php' >&2
+if [ -e core/plugin-bridge.php ]; then
+    echo 'runtime plugin database compatibility code must be removed' >&2
     exit 1
 fi
 
-if ! rg -q '^function getPostIsTop\(' core/plugin-bridge.php; then
-    echo 'the pinned-post compatibility bridge is missing' >&2
-    exit 1
-fi
-
-if rg -q '^function getPostIsTop\(' functions.php; then
-    echo 'functions.php must not hide plugin-owned database access' >&2
-    exit 1
-fi
-
-if rg -n --glob '*.php' --glob '!core/plugin-bridge.php' --glob '!tests/**' -- '->from\([^)]*icefox_' .; then
-    echo 'plugin-owned tables may only be read by the compatibility bridge' >&2
+if rg -n --glob '*.php' --glob '!scripts/**' --glob '!tests/**' -- '->from\([^)]*icefox_' .; then
+    echo 'theme runtime must not read plugin-owned tables' >&2
     exit 1
 fi
 
@@ -47,7 +37,7 @@ if [ ! -f docs/plugin-boundaries.md ]; then
     exit 1
 fi
 
-for heading in '主题直接实现' '主题界面 + 插件后端' '插件完全负责' '待迁移的兼容代码'; do
+for heading in '主题直接实现' '主题界面 + 插件后端' '插件完全负责' '旧置顶数据迁移'; do
     if ! rg -Fq "$heading" docs/plugin-boundaries.md; then
         echo "ownership guide is missing section: $heading" >&2
         exit 1

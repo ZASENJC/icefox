@@ -12,7 +12,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 include_once 'comment_function.php';
 include_once 'core/core.php';
-include_once 'core/plugin-bridge.php';
+include_once 'core/post-pinning.php';
 include_once __TYPECHO_ROOT_DIR__ . '/var/Utils/Markdown.php';
 
 /**
@@ -27,6 +27,10 @@ function themeInit($archive)
     $options = Helper::options();
     if ($options->pageSize) {
         $archive->parameter->pageSize = $options->pageSize;
+    }
+
+    if (icefoxShouldOrderPinnedPosts($archive)) {
+        icefoxRegisterPinnedPostOrdering();
     }
 }
 
@@ -141,6 +145,12 @@ function themeFields($layout)
     );
     $positionUrl->input->setAttribute('class', 't-default-find');
     $layout->addItem($positionUrl);
+
+    $isTop = new Typecho_Widget_Helper_Form_Element_Radio('isTop', array(
+        '0' => _t('否（正常排序）'),
+        '1' => _t('是（排在文章列表最前）')
+    ), '0', _t('置顶文章'), _t('开启后会显示置顶标记，并在首页、归档和搜索结果中优先显示。'));
+    $layout->addItem($isTop);
 
     $albumOnly = new Typecho_Widget_Helper_Form_Element_Radio(
         'albumOnly',
@@ -721,57 +731,6 @@ function seoInfo($archive)
 }
 
 /**
- * 主题激活时执行
- */
-function themeActivate()
-{
-    // 创建自定义字段
-    $db = Typecho_Db::get();
-
-    $customFields = array(
-        array(
-            'name' => 'thumbnail',
-            'type' => 'str',
-            'title' => '缩略图',
-            'description' => '文章缩略图URL'
-        ),
-        array(
-            'name' => 'albumOnly',
-            'type' => 'int',
-            'title' => '相册内容',
-            'description' => '是否仅显示在相册'
-        ),
-        array(
-            'name' => 'albumId',
-            'type' => 'str',
-            'title' => '所属相册 ID',
-            'description' => '相册插件返回的相册标识'
-        )
-    );
-
-    foreach ($customFields as $field) {
-        $exists = $db->fetchRow($db->select()->from('table.fields')->where('name = ?', $field['name']));
-        if (!$exists) {
-            $db->query($db->insert('table.fields')->rows($field));
-        }
-    }
-}
-
-/**
- * 主题停用时执行
- */
-function themeDeactivate()
-{
-}
-
-/**
- * 主题升级时执行
- */
-function themeUpgrade()
-{
-}
-
-/**
  * 归档页面辅助函数
  */
 
@@ -1050,6 +1009,22 @@ function getPostField($archive, $fieldName, $type = 'str')
     $field = reset($fields);
 
     return $field && array_key_exists($valueColumn, $field) ? $field[$valueColumn] : null;
+}
+
+/**
+ * 判断文章是否由主题置顶。
+ */
+function getPostIsTop($archive)
+{
+    $value = getPostField($archive, 'isTop', 'int');
+    if ($value === null) {
+        $value = getPostField($archive, 'isTop', 'str');
+    }
+    if ($value === null && is_object($archive) && isset($archive->fields)) {
+        $value = $archive->fields->isTop;
+    }
+
+    return in_array((string) $value, array('1', 'true', 'yes'), true);
 }
 
 /**

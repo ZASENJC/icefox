@@ -28,7 +28,7 @@ reject_pattern() {
 }
 
 require_pattern 'static \$fieldCache' core/core.php 'article fields must be cached per post'
-require_pattern 'static \$topCache' core/plugin-bridge.php 'pinned-post lookups must be cached'
+require_pattern "getPostField\(.*'isTop'.*'int'" functions.php 'pinned-post lookups must use the cached Typecho field reader'
 require_pattern 'function getPostContentView' functions.php 'timeline content parsing must be shared'
 require_pattern '->limit\(\$pageSize\)' functions.php 'timeline queries must be paginated'
 require_pattern 'moments-pagination' assets/css/icefox.css 'timeline pagination styles are missing'

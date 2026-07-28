@@ -6,6 +6,7 @@ storage_main=plugins/IcefoxStorage/Plugin.php
 storage_client=plugins/IcefoxStorage/S3Client.php
 storage_service=plugins/IcefoxStorage/StorageService.php
 companion_action=plugins/Icefox/Action.php
+theme_functions=functions.php
 
 for file in "$storage_main" "$storage_client" "$storage_service" "$companion_action"; do
     if [ ! -f "$file" ]; then
@@ -43,5 +44,8 @@ require_pattern 'IcefoxStorage' "$companion_action" 'the companion plugin must c
 require_pattern 'cleanupUploadedObjects' "$companion_action" 'failed database writes must clean up newly uploaded objects'
 require_pattern 'rollbackAlbumWrite' "$companion_action" 'failed album saves must restore or remove the database record'
 require_pattern 'saveAlbum' "$companion_action" 'album uploads must use the upgraded companion plugin'
+require_pattern "'text' => json_encode" "$companion_action" 'Typecho 1.2 attachment metadata must be stored as JSON'
+require_pattern 'json_decode' "$theme_functions" 'theme attachment lookup must read Typecho 1.2 JSON metadata'
+require_pattern 'unserialize' "$theme_functions" 'theme attachment lookup must retain legacy serialized metadata compatibility'
 
 echo 'Object storage plugin contracts are present'

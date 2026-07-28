@@ -1,0 +1,185 @@
+# Icefox Repository Guide
+
+## Project Overview
+
+Icefox is a mobile-first, WeChat Moments-style theme for Typecho. It is not a
+standalone application and cannot run without a Typecho installation and the
+companion Icefox plugin.
+
+- Theme version in code: `3.0.3`
+- Expected Typecho version: `>= 1.2.0`
+- Expected PHP version: `>= 7.0`
+- Default branch: `main`
+- No Composer, npm, or frontend build step is used.
+- Third-party browser libraries are committed under `assets/`.
+
+Install the repository as `usr/themes/icefox/` inside a Typecho installation.
+The companion plugin is expected at `usr/plugins/icefox/` and must register the
+`/action/icefox` action route.
+
+## Runtime Architecture
+
+Typecho loads `functions.php`, then selects one of the PHP templates. The normal
+homepage rendering path is:
+
+1. `index.php`
+2. `header.php`
+3. `components/head.php`
+4. `components/post-list.php`
+5. modal components under `components/modals/`
+6. `footer.php`
+
+Important templates:
+
+- `index.php`: homepage entry point.
+- `archive.php`: category, tag, search, and author result pages.
+- `post.php`: post detail page.
+- `page.php`: regular standalone page.
+- `archive-page.php`: custom timeline archive page.
+- `edit-page.php`: authenticated frontend post creation page.
+- `album-page.php`: standalone album index and detail page.
+- `sidebar.php`: legacy/general Typecho sidebar widgets; it is not part of the
+  primary homepage composition.
+
+Core responsibilities:
+
+- `functions.php`: theme configuration, post fields, SEO, archive queries,
+  attachment lookup, pinned-post state, and music shortcode rendering.
+- `core/core.php`: image/video extraction and HTML-aware summary helpers.
+- `comment_function.php`: direct Typecho comment queries and reply-tree
+  construction.
+- `header.php`: document head, global browser configuration, comment/reply
+  controller, and script loading.
+- `assets/js/icefox.js`: infinite scrolling, likes, content expansion, icon
+  state, and back-to-top behavior.
+- `assets/js/music-player.js`: per-card audio players and global playback
+  coordination.
+
+## Data And Plugin Contract
+
+The theme reads standard Typecho tables directly, especially `contents`,
+`comments`, `users`, `metas`, `relationships`, and `fields`. The companion
+plugin owns Icefox-specific persistence for likes, friend links, and albums.
+`icefox_archive` is only a legacy pinning source for
+`scripts/migrate-legacy-pins.php`; runtime pinning uses the Typecho `isTop`
+post field.
+
+`header.php` publishes the plugin route as `window.ICEFOX_CONFIG.actionUrl`.
+Keep pseudo-static and non-pseudo-static Typecho installations compatible by
+building URLs from this value instead of hardcoding `/action/icefox`.
+
+The frontend currently calls these plugin actions:
+
+| Action | Method | Purpose |
+| --- | --- | --- |
+| `getLikes` | GET | Load like count, users, and current-user state |
+| `like` | POST | Toggle a post like |
+| `addComment` | POST JSON | Add a top-level comment or reply |
+| `getFriendLinks` | GET | Load friend links |
+| `createPost` | POST multipart | Create a post and upload media |
+| `getAlbums` | GET | Load the visible album list |
+| `getAlbum` | GET | Load one album and its photos |
+| `saveAlbum` | POST multipart | Create or update an album and upload photos |
+
+Do not implement these endpoints inside the theme unless the architecture is
+explicitly being changed. They belong to the companion plugin.
+
+## Theme Configuration And Fields
+
+`themeConfig()` defines these options:
+
+- `topVideo`, `topImage`, `logoUrl`, `avatarLink`
+- `beianInfo`, `beianUrl`, `gravatarUrl`
+- `customCss`, `customJs`, `analytics`
+- `editPageUrl`, `albumPageUrl`, `albumTopImage`
+- `showMomentsAlbum`, `autoCollapse`
+
+The theme also observes Typecho's `pageSize` option.
+
+`themeFields()` defines post fields `position`, `positionUrl`, `isTop`,
+`albumOnly`, and `albumId`. Other code also reads `thumbnail`, `customFields`,
+and attachment records. Preserve string and integer representations when
+interpreting legacy boolean-like field values such as `isTop` and `albumOnly`.
+
+## Content Rendering
+
+The information feed intentionally resembles a social timeline rather than a
+traditional blog index:
+
+- Text is summarized to 100 visible characters when `autoCollapse` is enabled.
+- Image and video URLs are extracted from rendered post content.
+- Video takes precedence over the image gallery in list views.
+- Music cards use this shortcode:
+
+  `[music title="Song" artist="Artist" cover="URL" src="URL"]`
+
+- List pages show recent top-level comments and all replies associated with
+  those comments.
+- Dark mode and anonymous visitor/comment identity are stored in
+  `localStorage`.
+
+When outputting user-controlled values, preserve the existing use of
+`htmlspecialchars`, Alpine `x-text`, or equivalent escaping. Treat custom CSS,
+custom JavaScript, analytics snippets, post HTML, URLs, and plugin JSON as
+system boundaries requiring deliberate validation.
+
+## Frontend Dependencies
+
+The repository vendors these main libraries:
+
+- Bulma `1.0.4`
+- jQuery `2.2.4`
+- Alpine.js `3.15.0`
+- Fancybox `6.0.29`
+- ScrollLoad
+
+There is no asset compilation step. Edit source files in `assets/css/` and
+`assets/js/` directly. Avoid editing minified vendor files for application
+behavior.
+
+## Development And Verification
+
+This repository alone cannot provide a meaningful local preview. Use a Typecho
+test installation with the Icefox plugin enabled and a configured database.
+
+For changes, run the checks available in the environment:
+
+```sh
+find . -name '*.php' -not -path './.git/*' -exec php -l {} \;
+node --check assets/js/icefox.js
+node --check assets/js/icefox-plugin.js
+node --check assets/js/music-player.js
+git diff --check
+git diff
+```
+
+Exercise these workflows after behavior changes:
+
+- Homepage and archive infinite scrolling, including non-rewrite URLs.
+- Post expansion/collapse and dynamically loaded Alpine components.
+- Anonymous and logged-in likes.
+- Top-level comments and nested replies.
+- Image gallery, video, and music-card rendering.
+- Light/dark mode persistence.
+- Frontend post creation with image/video limits.
+- Album list, detail, editing, pinning, and Moments synchronization.
+- Mobile and desktop responsive layouts.
+
+Do not claim PHP validation succeeded when `php` or a compatible Typecho runtime
+is unavailable.
+
+## Known Repository Gaps
+
+These are existing repository conditions, not automatically part of unrelated
+tasks:
+
+- `README.md` claims GPL-3.0, but no `LICENSE` file is committed.
+- `favicon.ico` is referenced but missing.
+- `assets/fonts/HarmonyOS-Sans.woff2` is referenced but missing.
+- `assets/images/default-avatar.png` is referenced by the friend-link fallback
+  but missing.
+- Standard templates rely on browser HTML recovery for final document closing
+  tags; `footer.php` currently only renders the back-to-top control.
+
+Keep fixes scoped. Do not silently add the plugin, a package manager, a build
+system, or generated vendor assets while addressing an unrelated theme change.

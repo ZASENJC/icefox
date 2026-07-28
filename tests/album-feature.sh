@@ -25,6 +25,7 @@ require_pattern 'class="tc-album"' components/head.php 'the top bar must include
 require_pattern "options->albumPageUrl" components/head.php 'the album entry must use the configured URL'
 require_pattern 'getAlbums' components/album-gallery.php 'album page must load the album list from the plugin'
 require_pattern 'getAlbum' components/album-gallery.php 'album detail must load its photos from the plugin'
+require_pattern "request->get.*album" components/album-gallery.php 'album detail must read the slug from the Typecho route request'
 require_pattern 'pathname.*album.slug' components/album-gallery.php 'album links must use the album slug as a path segment'
 require_pattern 'saveAlbum' components/modals/album-editor.php 'album editor must retain the plugin save contract'
 require_pattern 'class="album-grid"' components/album-gallery.php 'album photos must render in a dedicated grid'

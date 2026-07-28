@@ -69,5 +69,6 @@ if ! rg -q '最多只能上传9张图片' components/modals/editor.php ||
 fi
 
 node tests/publish-album-sync.js
+node tests/editor-options-ui.js
 
 echo "Publishing uses the in-page editor modal"

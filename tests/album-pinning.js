@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
 const gallerySource = fs.readFileSync('components/album-gallery.php', 'utf8');
+const stylesheet = fs.readFileSync('assets/css/icefox.css', 'utf8');
 const galleryScript = gallerySource.match(/<script>\s*([\s\S]*?)\s*<\/script>/);
 assert.ok(galleryScript, 'album gallery manager script must be present');
 
@@ -28,6 +29,11 @@ assert.deepEqual(
 
 assert.match(gallerySource, /class="album-card-pinned"[^>]*x-show="album\.isPinned"/);
 assert.match(gallerySource, /class="album-card-pinned"[\s\S]*?<svg[^>]*aria-hidden="true"/);
+assert.match(
+    stylesheet,
+    /\.album-card-pinned\s*\{[^}]*top:\s*8px;[^}]*left:\s*8px;[^}]*background:\s*#e5484d;/s,
+    'the pinned SVG badge must be red and anchored to the cover top-left'
+);
 
 const editorSource = fs.readFileSync('components/modals/album-editor.php', 'utf8');
 const editorScript = editorSource.match(/<script>\s*([\s\S]*?)\s*<\/script>/);

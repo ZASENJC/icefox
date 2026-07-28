@@ -40,6 +40,18 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
             };
         },
 
+        isAlbumPinned(album) {
+            const source = album || {};
+            let value = false;
+            for (const key of ['isPinned', 'pinned', 'is_pinned']) {
+                if (Object.prototype.hasOwnProperty.call(source, key)) {
+                    value = source[key];
+                    break;
+                }
+            }
+            return value === true || value === 1 || value === '1' || value === 'true';
+        },
+
         normalizeAlbum(album) {
             const source = album || {};
             const rawPhotos = source.photos || source.images || source.media || [];
@@ -54,7 +66,8 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                 cover,
                 tags,
                 photos,
-                address: source.address || source.location || ''
+                address: source.address || source.location || '',
+                isPinned: this.isAlbumPinned(source)
             };
         },
 
@@ -67,13 +80,20 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
             return markedAsMoments || type === 'moments' || ['moments', 'pengyouquan'].includes(slug) || name === '朋友圈';
         },
 
+        sortPinnedAlbums(albums) {
+            return albums
+                .map((album, index) => ({ album, index }))
+                .sort((left, right) => Number(right.album.isPinned) - Number(left.album.isPinned) || left.index - right.index)
+                .map(item => item.album);
+        },
+
         normalizeAlbumList(albums) {
             const normalizedAlbums = (Array.isArray(albums) ? albums : []).map(album => this.normalizeAlbum(album));
             const momentsAlbum = normalizedAlbums.find(album => this.isMomentsAlbum(album));
             const regularAlbums = normalizedAlbums.filter(album => !this.isMomentsAlbum(album));
 
             if (!this.showMomentsAlbum) {
-                return regularAlbums;
+                return this.sortPinnedAlbums(regularAlbums);
             }
 
             if (!momentsAlbum) {
@@ -85,11 +105,11 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                     isMoments: true,
                     photos: []
                 }));
-                return regularAlbums;
+                return this.sortPinnedAlbums(regularAlbums);
             }
 
             regularAlbums.unshift(momentsAlbum);
-            return regularAlbums;
+            return this.sortPinnedAlbums(regularAlbums);
         },
 
         unwrap(payload) {
@@ -183,6 +203,14 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
             <div class="album-card">
                 <a class="album-card-link" :href="albumHref(album)">
                     <div class="album-card-cover">
+                        <span class="album-card-pinned" x-cloak x-show="album.isPinned" aria-label="置顶相册">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 17v5" />
+                                <path d="M5 17h14" />
+                                <path d="M9 9v1c0 2-1 3-2 4h10c-1-1-2-2-2-4V9" />
+                                <path d="M15 4.5c0 2 2 4.5 2 4.5H7s2-2.5 2-4.5a3 3 0 0 1 6 0Z" />
+                            </svg>
+                        </span>
                         <template x-if="album.cover"><img :src="album.cover" :alt="album.name" decoding="async"></template>
                         <template x-if="!album.cover"><div class="album-card-placeholder">相册</div></template>
                     </div>

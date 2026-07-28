@@ -620,11 +620,38 @@ main {
 }
 
 .album-card-cover {
+    position: relative;
     width: 100%;
     aspect-ratio: 1 / 1;
     overflow: hidden;
     border-radius: 8px;
     background: var(--primary-background);
+}
+
+.album-card-pinned {
+    position: absolute;
+    z-index: 1;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #e5484d;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 24%);
+    color: #fff;
+    pointer-events: none;
+}
+
+.album-card-pinned[x-cloak] {
+    display: none !important;
+}
+
+.album-card-pinned svg {
+    width: 16px;
+    height: 16px;
 }
 
 .album-card-cover img,
@@ -847,6 +874,32 @@ main {
 .album-visibility-options button.active {
     border-color: #07C160;
     color: #07C160;
+}
+
+.album-editor-pin-option {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.album-editor-pin-label {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 9px;
+}
+
+.album-editor-pin-label svg {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    color: var(--text-sub-color);
 }
 
 .album-editor-media {

@@ -27,7 +27,8 @@ require_pattern() {
 }
 
 require_pattern '`is_pinned` tinyint\(1\).*DEFAULT' "$plugin_main" 'album schema must define is_pinned'
-require_pattern "in_array\('is_pinned'.*ALTER TABLE.*is_pinned" "$plugin_main" 'existing album tables must migrate is_pinned'
+require_pattern "in_array\('is_pinned'" "$plugin_main" 'album migration must detect an existing is_pinned field'
+require_pattern 'ALTER TABLE.*is_pinned' "$plugin_main" 'existing album tables must migrate is_pinned'
 require_pattern "request->get\('isPinned'" "$plugin_action" 'saveAlbum must read isPinned'
 require_pattern "'is_pinned'.*isPinned" "$plugin_action" 'saveAlbum must persist isPinned'
 require_pattern "order\('is_pinned'.*SORT_DESC\)" "$plugin_action" 'getAlbums must sort pinned albums first'

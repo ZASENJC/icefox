@@ -15,6 +15,7 @@ function albumEditorManager() {
         tags: '',
         address: '',
         visibility: 'public',
+        isPinned: false,
         uploadOnly: false,
         mediaFiles: [],
         remotePhotoUrls: '',
@@ -25,9 +26,16 @@ function albumEditorManager() {
             return this.visibility === 'private' ? '私密' : '公开';
         },
 
+        normalizePinnedValue(value) {
+            return value === true || value === 1 || value === '1' || value === 'true';
+        },
+
         openModal(event) {
             const detail = event.detail || {};
             const album = Object.prototype.hasOwnProperty.call(detail, 'album') ? (detail.album || {}) : detail;
+            const pinnedValue = Object.prototype.hasOwnProperty.call(album, 'isPinned')
+                ? album.isPinned
+                : (Object.prototype.hasOwnProperty.call(album, 'pinned') ? album.pinned : album.is_pinned);
             this.uploadOnly = detail.uploadOnly === true;
             this.albumId = album.id || album.aid || album.albumId || album.slug || '';
             this.albumName = album.name || album.title || '';
@@ -35,6 +43,7 @@ function albumEditorManager() {
             this.tags = Array.isArray(album.tags) ? album.tags.join(', ') : (album.tags || '');
             this.address = album.address || album.location || '';
             this.visibility = album.visibility === 'private' ? 'private' : 'public';
+            this.isPinned = this.normalizePinnedValue(pinnedValue);
             this.mediaFiles = [];
             this.remotePhotoUrls = '';
             this.submitStatus = '';
@@ -114,6 +123,7 @@ function albumEditorManager() {
                 formData.append('tags', this.tags);
                 formData.append('address', this.address);
                 formData.append('visibility', this.visibility);
+                if (!this.uploadOnly) formData.append('isPinned', this.isPinned ? '1' : '0');
                 formData.append('remotePhotos', JSON.stringify(remotePhotos));
                 this.mediaFiles.forEach((media, index) => formData.append(`media_${index}`, media.file));
 
@@ -175,6 +185,23 @@ function albumEditorManager() {
                             <button type="button" :class="{active: visibility === 'private'}" @click="visibility = 'private'">私密</button>
                         </div>
                     </div>
+                    <label class="album-editor-pin-option">
+                        <span class="album-editor-pin-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 17v5" />
+                                <path d="M5 17h14" />
+                                <path d="M9 9v1c0 2-1 3-2 4h10c-1-1-2-2-2-4V9" />
+                                <path d="M15 4.5c0 2 2 4.5 2 4.5H7s2-2.5 2-4.5a3 3 0 0 1 6 0Z" />
+                            </svg>
+                            <span>置顶相册</span>
+                        </span>
+                        <span class="option-switch">
+                            <span class="switch">
+                                <input type="checkbox" name="isPinned" x-model="isPinned" aria-label="置顶相册">
+                                <span class="slider"></span>
+                            </span>
+                        </span>
+                    </label>
                 </div>
                 <div class="album-editor-field">
                     <span x-text="uploadOnly ? '选择照片' : '添加照片'"></span>

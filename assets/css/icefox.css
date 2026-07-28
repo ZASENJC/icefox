@@ -773,6 +773,14 @@ main {
     resize: vertical;
 }
 
+.album-editor-field input[type="text"]:focus,
+.album-editor-field input[type="url"]:focus,
+.album-editor-field textarea:focus {
+    outline: none;
+    border-color: var(--line);
+    box-shadow: none;
+}
+
 .album-editor-field small {
     display: block;
     margin-top: 6px;

@@ -32,7 +32,7 @@ require_pattern 'album-primary-action.window="openPrimaryAction\(\)"' components
 require_pattern 'openEditor\(this.album, true\)' components/album-gallery.php 'album detail must open the current album in upload mode'
 require_pattern 'saveAlbum' components/modals/album-editor.php 'album editor must retain the plugin save contract'
 require_pattern 'uploadOnly' components/modals/album-editor.php 'album editor must expose a photo-upload-only mode'
-require_pattern "uploadOnly ? '上传照片'" components/modals/album-editor.php 'album upload mode must have a dedicated title'
+require_pattern "uploadOnly \\? '上传照片'" components/modals/album-editor.php 'album upload mode must have a dedicated title'
 require_pattern 'class="album-grid"' components/album-gallery.php 'album photos must render in a dedicated grid'
 require_pattern 'components/modals/album-editor.php' album-page.php 'album page must render its editor modal'
 require_pattern 'isAlbumOnlyPost' components/post-list.php 'blog feed must filter album-only posts'

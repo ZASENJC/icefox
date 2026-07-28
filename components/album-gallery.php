@@ -107,14 +107,29 @@ function albumGalleryManager(initialAlbumKey) {
             header.style.backgroundImage = `url("${String(cover).replace(/"/g, '%22')}")`;
         },
 
-        openEditor(album) {
-            window.dispatchEvent(new CustomEvent('album-editor-open', { detail: album || null }));
+        openPrimaryAction() {
+            if (this.isDetail) {
+                if (!this.album) return;
+                this.openEditor(this.album, true);
+                return;
+            }
+
+            this.openEditor();
+        },
+
+        openEditor(album, uploadOnly = false) {
+            window.dispatchEvent(new CustomEvent('album-editor-open', {
+                detail: {
+                    album: album || null,
+                    uploadOnly
+                }
+            }));
         }
     };
 }
 </script>
 
-<div class="album-page-content" x-data="albumGalleryManager(<?php echo htmlspecialchars(json_encode($albumKey, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8'); ?>)" x-init="init()" @album-updated.window="load()">
+<div class="album-page-content" x-data="albumGalleryManager(<?php echo htmlspecialchars(json_encode($albumKey, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8'); ?>)" x-init="init()" @album-primary-action.window="openPrimaryAction()" @album-updated.window="load()">
     <div class="album-page-heading">
         <div>
             <a class="album-back-link" href="<?php echo htmlspecialchars($albumPageUrl ?? '', ENT_QUOTES, 'UTF-8'); ?>" x-show="isDetail">相册</a>

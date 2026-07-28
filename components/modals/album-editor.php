@@ -15,6 +15,7 @@ function albumEditorManager() {
         tags: '',
         address: '',
         visibility: 'public',
+        uploadOnly: false,
         mediaFiles: [],
         submitStatus: '',
         isSubmitting: false,
@@ -24,8 +25,10 @@ function albumEditorManager() {
         },
 
         openModal(event) {
-            const album = event.detail || {};
-            this.albumId = album.id || album.aid || '';
+            const detail = event.detail || {};
+            const album = Object.prototype.hasOwnProperty.call(detail, 'album') ? (detail.album || {}) : detail;
+            this.uploadOnly = detail.uploadOnly === true;
+            this.albumId = album.id || album.aid || album.albumId || album.slug || '';
             this.albumName = album.name || album.title || '';
             this.cover = album.cover || '';
             this.tags = Array.isArray(album.tags) ? album.tags.join(', ') : (album.tags || '');
@@ -60,13 +63,21 @@ function albumEditorManager() {
 
         async submitAlbum() {
             if (this.isSubmitting) return;
+            if (this.uploadOnly && !this.albumId) {
+                alert('无法识别当前相册，请刷新后重试');
+                return;
+            }
             if (!this.albumName.trim()) {
                 alert('请输入相册名称');
                 return;
             }
+            if (this.uploadOnly && this.mediaFiles.length === 0) {
+                alert('请选择要上传的照片');
+                return;
+            }
 
             this.isSubmitting = true;
-            this.submitStatus = '保存中...';
+            this.submitStatus = this.uploadOnly ? '上传中...' : '保存中...';
             try {
                 const formData = new FormData();
                 if (this.albumId) formData.append('albumId', this.albumId);
@@ -83,10 +94,10 @@ function albumEditorManager() {
                 });
                 const result = await response.json();
                 if (!response.ok || !result.success) {
-                    throw new Error(result.message || '相册保存失败');
+                    throw new Error(result.message || (this.uploadOnly ? '照片上传失败' : '相册保存失败'));
                 }
 
-                this.submitStatus = '保存成功';
+                this.submitStatus = this.uploadOnly ? '上传成功' : '保存成功';
                 this.$dispatch('album-updated');
                 window.setTimeout(() => this.closeModal(), 350);
             } catch (error) {
@@ -107,35 +118,37 @@ function albumEditorManager() {
         <form class="album-editor-form" @submit.prevent="submitAlbum">
             <header class="album-editor-header">
                 <button type="button" class="album-editor-close" aria-label="关闭相册编辑" @click="closeModal()">×</button>
-                <h2 id="album-editor-title" x-text="albumId ? '编辑相册' : '新建相册'"></h2>
-                <button type="submit" class="edit-publish-btn" :disabled="isSubmitting" x-text="isSubmitting ? '保存中...' : '保存'"></button>
+                <h2 id="album-editor-title" x-text="uploadOnly ? '上传照片' : (albumId ? '编辑相册' : '新建相册')"></h2>
+                <button type="submit" class="edit-publish-btn" :disabled="isSubmitting" x-text="isSubmitting ? (uploadOnly ? '上传中...' : '保存中...') : (uploadOnly ? '上传' : '保存')"></button>
             </header>
             <div class="album-editor-body">
-                <label class="album-editor-field">
-                    <span>相册名称</span>
-                    <input type="text" x-model="albumName" maxlength="80" required placeholder="例如：春日散步">
-                </label>
-                <label class="album-editor-field">
-                    <span>封面图 URL</span>
-                    <input type="url" x-model="cover" placeholder="留空则使用首图">
-                </label>
-                <label class="album-editor-field">
-                    <span>标签</span>
-                    <input type="text" x-model="tags" placeholder="用逗号分隔">
-                </label>
-                <label class="album-editor-field">
-                    <span>地址</span>
-                    <input type="text" x-model="address" placeholder="例如：成都·天府广场">
-                </label>
-                <div class="album-editor-field">
-                    <span>谁可以看</span>
-                    <div class="album-visibility-options">
-                        <button type="button" :class="{active: visibility === 'public'}" @click="visibility = 'public'">公开</button>
-                        <button type="button" :class="{active: visibility === 'private'}" @click="visibility = 'private'">私密</button>
+                <div x-show="!uploadOnly">
+                    <label class="album-editor-field">
+                        <span>相册名称</span>
+                        <input type="text" x-model="albumName" maxlength="80" required placeholder="例如：春日散步">
+                    </label>
+                    <label class="album-editor-field">
+                        <span>封面图 URL</span>
+                        <input type="url" x-model="cover" placeholder="留空则使用首图">
+                    </label>
+                    <label class="album-editor-field">
+                        <span>标签</span>
+                        <input type="text" x-model="tags" placeholder="用逗号分隔">
+                    </label>
+                    <label class="album-editor-field">
+                        <span>地址</span>
+                        <input type="text" x-model="address" placeholder="例如：成都·天府广场">
+                    </label>
+                    <div class="album-editor-field">
+                        <span>谁可以看</span>
+                        <div class="album-visibility-options">
+                            <button type="button" :class="{active: visibility === 'public'}" @click="visibility = 'public'">公开</button>
+                            <button type="button" :class="{active: visibility === 'private'}" @click="visibility = 'private'">私密</button>
+                        </div>
                     </div>
                 </div>
                 <div class="album-editor-field">
-                    <span>添加照片</span>
+                    <span x-text="uploadOnly ? '选择照片' : '添加照片'"></span>
                     <input type="file" accept="image/*" multiple @change="handleMediaSelect($event)">
                     <small>最多 30 张，未设置封面时自动使用第一张照片</small>
                 </div>

@@ -125,11 +125,11 @@ icefox/
 ### 相册页面
 
 1. 在 Typecho 后台新建一个独立页面，选择 `album-page.php` 模板。
-2. 在主题设置中填写“相册页面地址”和“相册页顶部图片”。入口固定使用 `/albums`，相册详情使用 `/albums/{相册名称拼音}`。
-3. 配套 `icefox` 插件需要提供相册数据和写入动作：`getAlbums`（GET）、`getAlbum`（GET，参数 `album`）和 `saveAlbum`（POST multipart）。
+2. 在主题设置中填写“相册页面地址”和“相册页顶部图片”。入口固定使用 `/albums`，相册详情使用 `/albums/{相册名称拼音}`。“显示‘朋友圈’相册”默认开启，关闭后只隐藏该相册，不删除已同步图片。
+3. 配套 `icefox` 插件需要提供相册数据和写入动作：`getAlbums`（GET）、`getAlbum`（GET，参数 `album`）和 `saveAlbum`（POST multipart）。主题会为缺失的“朋友圈”相册补充 `moments` 入口；插件需支持 `getAlbum&album=moments`，并返回同步到该相册的图片。
 4. 插件返回的相册对象可使用 `id`/`slug`、`name`、`cover`、`tags`、`address`、`visibility` 和 `photos` 字段；未设置 `cover` 时，主题使用 `photos` 的第一张图片作为封面。
 5. 文章编辑页中的“相册内容”字段开启后，主题会从博客首页、归档和搜索结果中过滤该图文；`albumId` 可用于把图文关联到插件相册。
-6. 前端发布动态时可开启“同步到「朋友圈」相册”；主题会向 `createPost` 发送 `syncToAlbum=1`，配套插件负责把本次上传的图片追加到“朋友圈”相册，动态本身仍保留在信息流中。
+6. 前端发布动态时可开启“同步到「朋友圈」相册”；主题会向 `createPost` 发送 `syncToAlbum=1`，配套插件负责把本次上传的图片追加到固定标识为 `moments` 的“朋友圈”相册，动态本身仍保留在信息流中。
 
 ## 🛠️ 开发指南
 

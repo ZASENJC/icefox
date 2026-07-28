@@ -29,9 +29,10 @@ async function run() {
 
     const pluginAlbums = await loadAlbums(true, [
         { id: 'trip', slug: 'trip', name: '旅行' },
-        { id: 'moments-id', slug: 'moments', name: '朋友圈', photos: ['photo.jpg'] }
+        { id: 'moments-id', slug: 'moments', name: '朋友圈', photos: ['photo.jpg'] },
+        { id: 'legacy-moments', slug: 'legacy', name: '朋友圈' }
     ]);
-    assert.strictEqual(pluginAlbums.length, 2, 'the plugin-provided moments album must not be duplicated');
+    assert.strictEqual(pluginAlbums.length, 2, 'duplicate plugin-provided moments albums must be collapsed');
     assert.strictEqual(pluginAlbums[0].slug, 'moments', 'the moments album must be the first album');
     assert.strictEqual(pluginAlbums[0].photos.length, 1, 'the plugin-provided moments photos must be preserved');
 

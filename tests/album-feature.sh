@@ -38,6 +38,8 @@ require_pattern "options->albumPageUrl" components/head.php 'the album entry mus
 require_pattern 'album-primary-action' components/head.php 'the album top-right control must delegate to the active album view'
 require_pattern 'getAlbums' components/album-gallery.php 'album page must load the album list from the plugin'
 require_pattern 'getAlbum' components/album-gallery.php 'album detail must load its photos from the plugin'
+require_pattern 'options->showMomentsAlbum' components/album-gallery.php 'album page must read the moments album visibility setting'
+require_pattern "showMomentsAlbum \? 'true' : 'false'" components/album-gallery.php 'album page must pass the moments album visibility setting to the gallery manager'
 require_pattern "request->get.*album" components/album-gallery.php 'album detail must read the slug from the Typecho route request'
 require_pattern 'pathname.*album.slug' components/album-gallery.php 'album links must use the album slug as a path segment'
 require_pattern 'album-primary-action.window="openPrimaryAction\(\)"' components/album-gallery.php 'the album gallery must handle the top-right control'

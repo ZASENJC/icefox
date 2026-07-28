@@ -6,12 +6,14 @@ $configuredAlbumUrl = trim((string) $this->options->albumPageUrl);
 $albumPageUrl = $configuredAlbumUrl !== '' ? rtrim($configuredAlbumUrl, '/') : Typecho_Common::url('albums', $this->options->index);
 $albumEditorUser = \Widget\User::alloc();
 $canEditAlbums = $albumEditorUser->hasLogin();
+$showMomentsAlbum = (string) $this->options->showMomentsAlbum !== '0';
 ?>
 
 <script>
-function albumGalleryManager(initialAlbumKey) {
+function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
     return {
         albumKey: initialAlbumKey || '',
+        showMomentsAlbum: showMomentsAlbum !== false,
         albums: [],
         album: null,
         loading: true,
@@ -56,6 +58,40 @@ function albumGalleryManager(initialAlbumKey) {
             };
         },
 
+        isMomentsAlbum(album) {
+            const source = album || {};
+            const slug = String(source.slug || source.id || source.aid || '').toLowerCase();
+            const type = String(source.type || source.kind || '').toLowerCase();
+            const name = String(source.name || source.title || '').trim();
+            const markedAsMoments = source.isMoments === true || source.isMoments === 1 || source.isMoments === '1';
+            return markedAsMoments || type === 'moments' || ['moments', 'pengyouquan'].includes(slug) || name === '朋友圈';
+        },
+
+        normalizeAlbumList(albums) {
+            const normalizedAlbums = (Array.isArray(albums) ? albums : []).map(album => this.normalizeAlbum(album));
+            const momentsAlbum = normalizedAlbums.find(album => this.isMomentsAlbum(album));
+            const regularAlbums = normalizedAlbums.filter(album => !this.isMomentsAlbum(album));
+
+            if (!this.showMomentsAlbum) {
+                return regularAlbums;
+            }
+
+            if (!momentsAlbum) {
+                regularAlbums.unshift(this.normalizeAlbum({
+                    id: 'moments',
+                    slug: 'moments',
+                    name: '朋友圈',
+                    type: 'moments',
+                    isMoments: true,
+                    photos: []
+                }));
+                return regularAlbums;
+            }
+
+            regularAlbums.unshift(momentsAlbum);
+            return regularAlbums;
+        },
+
         unwrap(payload) {
             const data = payload && payload.data !== undefined ? payload.data : payload;
             if (Array.isArray(data)) return { albums: data, album: null };
@@ -85,7 +121,7 @@ function albumGalleryManager(initialAlbumKey) {
                     this.album = this.normalizeAlbum(data.album);
                     this.updateHeader(this.album.cover);
                 } else {
-                    this.albums = data.albums.map(album => this.normalizeAlbum(album));
+                    this.albums = this.normalizeAlbumList(data.albums);
                 }
             } catch (error) {
                 this.error = error.message || '相册加载失败';
@@ -129,7 +165,7 @@ function albumGalleryManager(initialAlbumKey) {
 }
 </script>
 
-<div class="album-page-content" x-data="albumGalleryManager(<?php echo htmlspecialchars(json_encode($albumKey, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8'); ?>)" x-init="init()" @album-primary-action.window="openPrimaryAction()" @album-updated.window="load()">
+<div class="album-page-content" x-data="albumGalleryManager(<?php echo htmlspecialchars(json_encode($albumKey, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8'); ?>, <?php echo $showMomentsAlbum ? 'true' : 'false'; ?>)" x-init="init()" @album-primary-action.window="openPrimaryAction()" @album-updated.window="load()">
     <div class="album-page-heading">
         <div>
             <a class="album-back-link" href="<?php echo htmlspecialchars($albumPageUrl ?? '', ENT_QUOTES, 'UTF-8'); ?>" x-show="isDetail">相册</a>

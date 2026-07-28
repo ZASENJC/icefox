@@ -86,6 +86,14 @@ function themeConfig($form)
     $albumTopImage = new Typecho_Widget_Helper_Form_Element_Text('albumTopImage', NULL, NULL, _t('相册页顶部图片'), _t('相册首页和相册详情页使用的顶部图片 URL，详情页会优先显示相册封面'));
     $form->addInput($albumTopImage);
 
+    // 是否显示默认的朋友圈相册
+    $showMomentsAlbumOptions = array(
+        '1' => _t('开启（在相册首页显示）'),
+        '0' => _t('关闭（从相册首页隐藏）')
+    );
+    $showMomentsAlbum = new Typecho_Widget_Helper_Form_Element_Radio('showMomentsAlbum', $showMomentsAlbumOptions, '1', _t('显示“朋友圈”相册'), _t('开启后，相册首页会默认置顶显示“朋友圈”相册；关闭只影响前台显示，不会删除已经同步的图片。'));
+    $form->addInput($showMomentsAlbum);
+
     // 是否自动收起内容
     $autoCollapse = new Typecho_Widget_Helper_Form_Element_Radio(
         'autoCollapse',

@@ -37,20 +37,22 @@ async function assertSyncContract(publisher) {
     assert.match(source, /type="checkbox"[^>]*x-model="syncToAlbum"/, `${publisher.file} must expose an accessible checkbox`);
 
     const createManager = loadManager(source, publisher.managerName);
-    const manager = createManager();
-    assert.strictEqual(manager.syncToAlbum, false, `${publisher.file} must default album sync to off`);
+    for (const [syncToAlbum, expectedValue] of [[false, '0'], [true, '1']]) {
+        const manager = createManager();
+        assert.strictEqual(manager.syncToAlbum, false, `${publisher.file} must default album sync to off`);
 
-    manager.postContent = '测试动态';
-    manager.syncToAlbum = true;
-    await manager.submitPost();
+        manager.postContent = '测试动态';
+        manager.syncToAlbum = syncToAlbum;
+        await manager.submitPost();
 
-    const submittedForm = FormDataMock.instances.pop();
-    assert.ok(submittedForm, `${publisher.file} must submit multipart form data`);
-    assert.strictEqual(
-        submittedForm.values.get('syncToAlbum'),
-        '1',
-        `${publisher.file} must send the enabled album sync choice`
-    );
+        const submittedForm = FormDataMock.instances.pop();
+        assert.ok(submittedForm, `${publisher.file} must submit multipart form data`);
+        assert.strictEqual(
+            submittedForm.values.get('syncToAlbum'),
+            expectedValue,
+            `${publisher.file} must send the album sync choice as ${expectedValue}`
+        );
+    }
 }
 
 global.FormData = FormDataMock;
@@ -73,8 +75,10 @@ global.window = {
     setTimeout: () => {}
 };
 
-Promise.all(publishers.map(assertSyncContract))
-    .then(() => console.log('Publishing album sync contract verified'))
+publishers.reduce(
+    (previous, publisher) => previous.then(() => assertSyncContract(publisher)),
+    Promise.resolve()
+).then(() => console.log('Publishing album sync contract verified'))
     .catch(error => {
         console.error(error);
         process.exit(1);

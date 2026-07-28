@@ -14,6 +14,7 @@ function editorModalManager() {
         position: '',
         positionUrl: '',
         visibility: 'public',
+        syncToAlbum: false,
         showLocationPicker: false,
         showVisibilityPicker: false,
         submitStatus: '',
@@ -118,6 +119,7 @@ function editorModalManager() {
                 formData.append('position', this.position);
                 formData.append('positionUrl', this.positionUrl);
                 formData.append('visibility', this.visibility);
+                formData.append('syncToAlbum', this.syncToAlbum ? '1' : '0');
                 this.mediaFiles.forEach((media, index) => {
                     formData.append(`media_${index}`, media.file);
                 });
@@ -220,6 +222,19 @@ function editorModalManager() {
                             <span class="visibility-check" x-show="visibility === 'private'">✓</span>
                         </button>
                     </div>
+
+                    <label class="edit-option-item">
+                        <span class="option-icon" aria-hidden="true">▧</span>
+                        <span class="option-content">
+                            <span class="option-label">同步到「朋友圈」相册</span>
+                        </span>
+                        <span class="option-switch">
+                            <span class="switch">
+                                <input type="checkbox" name="syncToAlbum" x-model="syncToAlbum">
+                                <span class="slider"></span>
+                            </span>
+                        </span>
+                    </label>
                 </div>
 
                 <div class="edit-status" x-show="submitStatus" x-text="submitStatus"></div>

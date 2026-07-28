@@ -27,6 +27,7 @@ function editPageManager() {
         position: '',
         positionUrl: '',
         visibility: 'public',
+        syncToAlbum: false,
         showLocationPicker: false,
         showVisibilityPicker: false,
         submitStatus: '',
@@ -145,6 +146,7 @@ function editPageManager() {
                 formData.append('position', this.position);
                 formData.append('positionUrl', this.positionUrl);
                 formData.append('visibility', this.visibility);
+                formData.append('syncToAlbum', this.syncToAlbum ? '1' : '0');
 
                 this.mediaFiles.forEach((media, index) => {
                     formData.append(`media_${index}`, media.file);
@@ -382,27 +384,23 @@ function editPageManager() {
                         </div>
                     </div>
 
-                    <!-- 同步到其他平台（占位） -->
-                    <!--
-                    <div class="edit-option-item">
-                        <div class="option-icon">
+                    <!-- 同步到朋友圈相册 -->
+                    <label class="edit-option-item">
+                        <span class="option-icon" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="22" height="22">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z" />
                             </svg>
-                        </div>
-                        <div class="option-content">
-                            <span class="option-label">同步</span>
-                        </div>
-                        <div class="option-value">
-                            <span class="option-placeholder">不同步</span>
-                        </div>
-                        <div class="option-arrow">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="16" height="16">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                            </svg>
-                        </div>
-                    </div>
-                    -->
+                        </span>
+                        <span class="option-content">
+                            <span class="option-label">同步到「朋友圈」相册</span>
+                        </span>
+                        <span class="option-switch">
+                            <span class="switch">
+                                <input type="checkbox" name="syncToAlbum" x-model="syncToAlbum">
+                                <span class="slider"></span>
+                            </span>
+                        </span>
+                    </label>
                 </div>
 
                 <!-- 提交状态提示 -->

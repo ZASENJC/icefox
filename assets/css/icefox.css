@@ -2843,6 +2843,10 @@ input:checked + .slider {
     background-color: #07C160;
 }
 
+.switch input:focus-visible + .slider {
+    box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.3);
+}
+
 input:checked + .slider:before {
     transform: translateX(22px);
 }

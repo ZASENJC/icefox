@@ -43,7 +43,7 @@ function albumGalleryManager(initialAlbumKey) {
             const rawPhotos = source.photos || source.images || source.media || [];
             const photos = Array.isArray(rawPhotos) ? rawPhotos.map(photo => this.normalizePhoto(photo)).filter(photo => photo.src) : [];
             const tags = Array.isArray(source.tags) ? source.tags : (source.tags ? String(source.tags).split(',').map(tag => tag.trim()).filter(Boolean) : []);
-            const cover = source.cover || source.coverUrl || (photos[0] ? photos[0].src : '');
+            const cover = source.cover || source.coverUrl || source.firstImage || source.first_image || (photos[0] ? photos[0].src : '');
             return {
                 ...source,
                 id: source.id || source.aid || source.albumId || '',

@@ -685,6 +685,10 @@ main {
 
 /* 相册编辑弹窗 */
 .album-editor-modal {
+    --album-editor-field-background: #262626;
+    --album-editor-field-border: #3a3a3a;
+    --album-editor-field-color: #f5f5f5;
+
     position: fixed;
     inset: 0;
     z-index: 110;
@@ -762,13 +766,43 @@ main {
     width: 100%;
     box-sizing: border-box;
     padding: 10px 11px;
-    border: 1px solid var(--line);
+    border: 1px solid var(--album-editor-field-border);
     border-radius: 4px;
-    background: var(--main-background);
-    color: var(--text-color);
+    background: var(--album-editor-field-background);
+    color: var(--album-editor-field-color);
+    caret-color: #07C160;
+    color-scheme: dark;
     font-family: inherit;
     font-size: 14px;
     line-height: 1.5;
+}
+
+.album-editor-field input[type="file"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px;
+    border: 1px solid var(--album-editor-field-border);
+    border-radius: 4px;
+    background: var(--album-editor-field-background);
+    color: var(--album-editor-field-color);
+    color-scheme: dark;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.album-editor-field input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 12px;
+    border: 0;
+    border-radius: 3px;
+    background: #3a3a3a;
+    color: var(--album-editor-field-color);
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.album-editor-field input[type="file"]::file-selector-button:hover {
+    background: #474747;
 }
 
 .album-editor-field textarea {
@@ -780,7 +814,7 @@ main {
 .album-editor-field input[type="url"]:focus,
 .album-editor-field textarea:focus {
     outline: none;
-    border-color: var(--line);
+    border-color: var(--album-editor-field-border);
     box-shadow: none;
 }
 

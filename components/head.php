@@ -6,6 +6,9 @@ $albumPageUrl = $configuredAlbumUrl !== '' ? rtrim($configuredAlbumUrl, '/') : T
 ?>
 <section class="top-container" x-data>
     <div class="top-container-left">
+        <a class="tc-home" data-icon="home" href="<?php $this->options->siteUrl(); ?>" aria-label="返回首页">
+            <?php $this->need("components/svgs/home.php"); ?>
+        </a>
         <div class="tc-links" data-icon="links"
              @click="$nextTick(() => { window.dispatchEvent(new CustomEvent('links-modal-open')) })">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
@@ -48,11 +51,13 @@ $albumPageUrl = $configuredAlbumUrl !== '' ? rtrim($configuredAlbumUrl, '/') : T
 <!-- 预加载所有图标，但隐藏起来 -->
 <div class="preloaded-icons" style="display: none;">
     <!-- 原始图标 -->
+    <div data-icon="home"><?php $this->need("components/svgs/home.php"); ?></div>
     <div data-icon="music"><?php $this->need("components/svgs/music.php"); ?></div>
     <div data-icon="album"><?php $this->need("components/svgs/album.php"); ?></div>
     <div data-icon="edit"><?php $this->need("components/svgs/edit.php"); ?></div>
     <div data-icon="setting"><?php $this->need("components/svgs/setting.php"); ?></div>
     <!-- outline图标 -->
+    <div data-icon="home-outline"><?php $this->need("components/svgs/home-outline.php"); ?></div>
     <div data-icon="music-outline"><?php $this->need("components/svgs/music-outline.php"); ?></div>
     <div data-icon="album-outline"><?php $this->need("components/svgs/album-outline.php"); ?></div>
     <div data-icon="edit-outline"><?php $this->need("components/svgs/edit-outline.php"); ?></div>

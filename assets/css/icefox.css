@@ -149,6 +149,7 @@ main {
     gap: 5px;
 }
 
+.top-container .tc-home,
 .top-container .tc-music,
 .top-container .tc-album,
 .top-container .tc-edit,
@@ -161,6 +162,7 @@ main {
     cursor: pointer;
 }
 
+.top-container .tc-home,
 .top-container .tc-album {
     display: flex;
     align-items: center;

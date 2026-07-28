@@ -40,7 +40,7 @@ $(function () {
 
     // 切换图标函数 - 使用预加载的SVG内容
     function toggleIcons(isScrolled) {
-        $('.tc-user, .tc-music, .tc-album, .tc-edit, .tc-setting').each(function () {
+        $('.tc-home, .tc-user, .tc-music, .tc-album, .tc-edit, .tc-setting').each(function () {
             const $iconContainer = $(this);
             const iconType = $iconContainer.data('icon');
             const newIconType = isScrolled ? iconType + '-outline' : iconType;

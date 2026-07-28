@@ -37,6 +37,7 @@ require_pattern 'finfo' "$storage_service" 'uploaded images must be checked from
 require_pattern 'image/svg' "$storage_service" 'SVG uploads must be explicitly rejected'
 require_pattern 'objectKey' "$storage_service" 'stored metadata must retain the object key for deletion and migration'
 require_pattern 'attachmentHandle' "$storage_main" 'Typecho attachment URLs must preserve public object URLs'
+require_pattern 'is_array\(\$attachment\)' "$storage_main" 'attachment URL handling must support the Typecho 1.2 content-array hook'
 require_pattern 'deleteHandle' "$storage_main" 'deleting an attachment must delete its object key'
 
 require_pattern "request->get\('storage'" "$companion_action" 'the companion plugin must read the requested storage target'
@@ -44,8 +45,9 @@ require_pattern 'IcefoxStorage' "$companion_action" 'the companion plugin must c
 require_pattern 'cleanupUploadedObjects' "$companion_action" 'failed database writes must clean up newly uploaded objects'
 require_pattern 'rollbackAlbumWrite' "$companion_action" 'failed album saves must restore or remove the database record'
 require_pattern 'saveAlbum' "$companion_action" 'album uploads must use the upgraded companion plugin'
-require_pattern "'text' => json_encode" "$companion_action" 'Typecho 1.2 attachment metadata must be stored as JSON'
-require_pattern 'json_decode' "$theme_functions" 'theme attachment lookup must read Typecho 1.2 JSON metadata'
+require_pattern 'encodeAttachmentMetadata' "$companion_action" 'attachment metadata must follow the active Typecho serialization format'
+require_pattern 'Common::VERSION' "$companion_action" 'attachment serialization must account for the Typecho 1.2/1.3 format change'
+require_pattern 'json_decode' "$theme_functions" 'theme attachment lookup must read Typecho 1.3 JSON metadata'
 require_pattern 'unserialize' "$theme_functions" 'theme attachment lookup must retain legacy serialized metadata compatibility'
 
 echo 'Object storage plugin contracts are present'

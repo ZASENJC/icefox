@@ -60,5 +60,22 @@ namespace {
         exit(1);
     }
 
+    if (!$reflection->hasMethod('encodeAttachmentMetadata')) {
+        fwrite(STDERR, "Action::encodeAttachmentMetadata is missing\n");
+        exit(1);
+    }
+    $encode = $reflection->getMethod('encodeAttachmentMetadata');
+    $encode->setAccessible(true);
+    $legacy = $encode->invoke($action, $metadata, '1.2.1');
+    $modern = $encode->invoke($action, $metadata, '1.3.0');
+    if (@unserialize($legacy, ['allowed_classes' => false]) !== $expected) {
+        fwrite(STDERR, "Typecho 1.2 attachment metadata must use PHP serialization\n");
+        exit(1);
+    }
+    if (json_decode($modern, true) !== $expected) {
+        fwrite(STDERR, "Typecho 1.3 attachment metadata must use JSON\n");
+        exit(1);
+    }
+
     echo "Companion attachment metadata verified\n";
 }

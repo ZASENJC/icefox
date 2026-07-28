@@ -78,6 +78,14 @@ function themeConfig($form)
     $editPageUrl = new Typecho_Widget_Helper_Form_Element_Text('editPageUrl', NULL, '/edit.html', _t('文章发布页地址'), _t('设置文章发布页面的访问地址，默认为 /edit.html'));
     $form->addInput($editPageUrl);
 
+    // 相册页面地址
+    $albumPageUrl = new Typecho_Widget_Helper_Form_Element_Text('albumPageUrl', NULL, '/albums/', _t('相册页面地址'), _t('填写已设置为“相册模板”的独立页面地址，默认为 /albums/'));
+    $form->addInput($albumPageUrl);
+
+    // 相册页顶部背景图
+    $albumTopImage = new Typecho_Widget_Helper_Form_Element_Text('albumTopImage', NULL, NULL, _t('相册页顶部图片'), _t('相册首页和相册详情页使用的顶部图片 URL，详情页会优先显示相册封面'));
+    $form->addInput($albumTopImage);
+
     // 是否自动收起内容
     $autoCollapse = new Typecho_Widget_Helper_Form_Element_Radio(
         'autoCollapse',
@@ -124,6 +132,28 @@ function themeFields($layout)
     );
     $positionUrl->input->setAttribute('class', 't-default-find');
     $layout->addItem($positionUrl);
+
+    $albumOnly = new Typecho_Widget_Helper_Form_Element_Radio(
+        'albumOnly',
+        array(
+            '0' => _t('否（显示在博客）'),
+            '1' => _t('是（仅显示在相册）')
+        ),
+        '0',
+        _t('相册内容'),
+        _t('开启后该图文不会出现在博客首页、归档和搜索列表，由相册插件负责展示。')
+    );
+    $layout->addItem($albumOnly);
+
+    $albumId = new Typecho_Widget_Helper_Form_Element_Text(
+        'albumId',
+        null,
+        null,
+        _t('所属相册 ID'),
+        _t('可选。填写相册插件返回的相册 ID，让该图文归入指定相册。')
+    );
+    $albumId->input->setAttribute('class', 't-default-find');
+    $layout->addItem($albumId);
 }
 
 /**
@@ -689,15 +719,32 @@ function themeActivate()
     // 创建自定义字段
     $db = Typecho_Db::get();
 
-    // 检查是否已存在thumbnail字段
-    $exists = $db->fetchRow($db->select()->from('table.fields')->where('name = ?', 'thumbnail'));
-    if (!$exists) {
-        $db->query($db->insert('table.fields')->rows(array(
+    $customFields = array(
+        array(
             'name' => 'thumbnail',
             'type' => 'str',
             'title' => '缩略图',
             'description' => '文章缩略图URL'
-        )));
+        ),
+        array(
+            'name' => 'albumOnly',
+            'type' => 'int',
+            'title' => '相册内容',
+            'description' => '是否仅显示在相册'
+        ),
+        array(
+            'name' => 'albumId',
+            'type' => 'str',
+            'title' => '所属相册 ID',
+            'description' => '相册插件返回的相册标识'
+        )
+    );
+
+    foreach ($customFields as $field) {
+        $exists = $db->fetchRow($db->select()->from('table.fields')->where('name = ?', $field['name']));
+        if (!$exists) {
+            $db->query($db->insert('table.fields')->rows($field));
+        }
     }
 //
 //    // 添加主题设置主菜单
@@ -807,6 +854,9 @@ function getArchiveTimelineMoments($page = 1, $pageSize = 20)
     $currentDate = '';
 
     foreach ($posts as $post) {
+        if (isAlbumOnlyPost((int) $post['cid'])) {
+            continue;
+        }
         $year = date('Y', $post['created']);
 
         // 年份标题（仅在年份变化时显示）
@@ -1008,6 +1058,38 @@ function getPostField($archive, $fieldName, $type = 'str')
     $field = reset($fields);
 
     return $field && array_key_exists($valueColumn, $field) ? $field[$valueColumn] : null;
+}
+
+/**
+ * 判断图文是否仅用于相册展示。
+ *
+ * 兼容 Typecho 字段对象和直接查询字段的旧数据，避免字符串/整数值
+ * 在不同版本的 Typecho 中产生不同的判断结果。
+ */
+function isAlbumOnlyPost($archive)
+{
+    $value = getPostField($archive, 'albumOnly', 'int');
+    if ($value === null) {
+        $value = getPostField($archive, 'albumOnly', 'str');
+    }
+    if ($value === null && is_object($archive) && isset($archive->fields)) {
+        $value = $archive->fields->albumOnly;
+    }
+
+    return in_array((string) $value, array('1', 'true', 'yes'), true);
+}
+
+/**
+ * 获取图文所属相册标识。
+ */
+function getPostAlbumId($archive)
+{
+    $value = getPostField($archive, 'albumId', 'str');
+    if ($value === null && is_object($archive) && isset($archive->fields)) {
+        $value = $archive->fields->albumId;
+    }
+
+    return trim((string) $value);
 }
 
 /**

@@ -6,6 +6,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 <div class="scrollload-container">
     <div class="post-list scrollload-content" x-data="commentReplyManager()">
         <?php while ($this->next()): ?>
+            <?php if (isAlbumOnlyPost($this)): continue; endif; ?>
             <article class="post-item">
                 <div class="post-item-left">
                     <a href="<?php $this->author->permalink() ?>">

@@ -150,6 +150,7 @@ main {
 }
 
 .top-container .tc-music,
+.top-container .tc-album,
 .top-container .tc-edit,
 .top-container .tc-setting {
     height: 40px;
@@ -158,6 +159,16 @@ main {
     justify-content: center;
     align-items: center;
     cursor: pointer;
+}
+
+.top-container .tc-album {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: inherit;
+    text-decoration: none;
 }
 
 .top-container .tc-edit {
@@ -522,6 +533,299 @@ main {
 
 .post-image {
     position: relative;
+}
+
+/* ========================================
+   相册页面
+   ======================================== */
+
+.album-page-content {
+    width: 100%;
+    padding: 24px 20px 40px;
+    box-sizing: border-box;
+}
+
+.album-page-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.album-page-title {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.album-page-subtitle,
+.album-detail-meta,
+.album-card-meta {
+    color: var(--text-sub-color);
+    font-size: 13px;
+}
+
+.album-page-subtitle {
+    margin: 6px 0 0;
+}
+
+.album-back-link {
+    display: inline-block;
+    margin-bottom: 6px;
+    color: var(--link);
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.album-add-button {
+    display: none;
+}
+
+.album-list-grid,
+.album-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px 10px;
+}
+
+.album-card {
+    position: relative;
+    min-width: 0;
+}
+
+.album-card-link {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.album-card-edit {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 55%);
+    color: #fff;
+}
+
+.album-card-edit svg {
+    width: 16px;
+    height: 16px;
+}
+
+.album-card-cover {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--primary-background);
+}
+
+.album-card-cover img,
+.album-grid-item img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.album-card-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--text-sub-color);
+    font-size: 13px;
+}
+
+.album-card-name {
+    margin-top: 8px;
+    overflow: hidden;
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.album-card-meta {
+    margin-top: 3px;
+    font-size: 12px;
+}
+
+.album-grid-item {
+    display: block;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--primary-background);
+}
+
+.album-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin: -10px 0 18px;
+}
+
+.album-loading,
+.album-error,
+.album-empty {
+    padding: 42px 16px;
+    color: var(--text-sub-color);
+    text-align: center;
+    font-size: 14px;
+}
+
+/* 相册编辑弹窗 */
+.album-editor-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 110;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgb(0 0 0 / 55%);
+}
+
+.album-editor-container {
+    width: min(520px, 100%);
+    max-height: min(760px, calc(100vh - 40px));
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--main-background);
+    box-shadow: 0 20px 60px rgb(0 0 0 / 30%);
+}
+
+.album-editor-form {
+    display: flex;
+    max-height: min(760px, calc(100vh - 40px));
+    flex-direction: column;
+}
+
+.album-editor-header {
+    display: grid;
+    grid-template-columns: 70px minmax(0, 1fr) 70px;
+    align-items: center;
+    min-height: 56px;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+.album-editor-header h2 {
+    overflow: hidden;
+    color: var(--text-color);
+    font-size: 16px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.album-editor-close {
+    justify-self: start;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    color: var(--text-sub-color);
+    font-size: 26px;
+    line-height: 1;
+}
+
+.album-editor-body {
+    overflow-y: auto;
+    padding: 18px;
+}
+
+.album-editor-field {
+    display: block;
+    margin-bottom: 14px;
+    color: var(--text-sub-color);
+    font-size: 13px;
+}
+
+.album-editor-field > span {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.album-editor-field input[type="text"],
+.album-editor-field input[type="url"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 11px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--modal-input-background);
+    color: var(--text-color);
+}
+
+.album-editor-field small {
+    display: block;
+    margin-top: 6px;
+    color: var(--text-sub-color);
+    font-size: 12px;
+}
+
+.album-visibility-options {
+    display: flex;
+    gap: 8px;
+}
+
+.album-visibility-options button {
+    padding: 7px 16px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--text-sub-color);
+}
+
+.album-visibility-options button.active {
+    border-color: #07C160;
+    color: #07C160;
+}
+
+.album-editor-media {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.album-editor-media-item {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--primary-background);
+}
+
+.album-editor-media-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.album-editor-media-item button {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 60%);
+    color: #fff;
+}
+
+.album-editor-status {
+    padding-top: 14px;
+    color: #07C160;
+    text-align: center;
 }
 
 .post-image-zzc {
@@ -2649,6 +2953,34 @@ input:checked + .slider:before {
     .editor-modal {
         align-items: flex-end;
         padding: 0;
+    }
+
+    .album-editor-modal {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .album-editor-container,
+    .album-editor-form {
+        width: 100%;
+        max-height: min(88vh, 760px);
+    }
+
+    .album-editor-container {
+        border-right: 0;
+        border-bottom: 0;
+        border-left: 0;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .album-list-grid,
+    .album-grid {
+        gap: 10px 6px;
+    }
+
+    .album-page-content {
+        padding-right: 14px;
+        padding-left: 14px;
     }
 
     .editor-modal-container,

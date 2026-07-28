@@ -24,6 +24,7 @@ $this->need('header.php');
             <div class="post-list scrollload-content" x-data="commentReplyManager()">
                 <?php if ($this->have()): ?>
                     <?php while ($this->next()): ?>
+                        <?php if (isAlbumOnlyPost($this)): continue; endif; ?>
                         <article class="post-item">
                             <div class="post-item-left">
                                 <a href="<?php $this->author->permalink() ?>">

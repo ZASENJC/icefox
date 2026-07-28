@@ -21,6 +21,7 @@
 - **音乐卡片** - 内置音乐播放器短代码
 - **内容展开/收起** - 长文章智能折叠
 - **友情链接** - 动态加载友情链接
+- **独立相册** - 相册首页、相册详情、三列照片网格和登录后的相册编辑
 
 ### 📄 特色页面
 - **归档页面** - 优雅的文章归档展示
@@ -98,6 +99,7 @@ icefox/
 ├── footer.php           # 底部模板
 ├── post.php             # 文章详情页
 ├── page.php             # 独立页面
+├── album-page.php       # 相册独立页面模板
 ├── archive.php          # 归档页
 ├── functions.php        # 主题函数库
 └── comment_function.php # 评论函数
@@ -119,6 +121,14 @@ icefox/
 ### 主题切换
 
 用户可通过页面右上角的图标切换日间/夜间模式，设置会自动保存到 localStorage
+
+### 相册页面
+
+1. 在 Typecho 后台新建一个独立页面，选择 `album-page.php` 模板。
+2. 在主题设置中填写“相册页面地址”和“相册页顶部图片”。顶部栏的相册入口会使用这个地址。
+3. 配套 `icefox` 插件需要提供相册数据和写入动作：`getAlbums`（GET）、`getAlbum`（GET，参数 `album`）和 `saveAlbum`（POST multipart）。
+4. 插件返回的相册对象可使用 `id`/`slug`、`name`、`cover`、`tags`、`address`、`visibility` 和 `photos` 字段；未设置 `cover` 时，主题使用 `photos` 的第一张图片作为封面。
+5. 文章编辑页中的“相册内容”字段开启后，主题会从博客首页、归档和搜索结果中过滤该图文；`albumId` 可用于把图文关联到插件相册。
 
 ## 🛠️ 开发指南
 
@@ -151,6 +161,9 @@ $posts = $db->fetchAll(
 | `do=like` | POST | 切换点赞状态 |
 | `do=addComment` | POST | 添加评论 |
 | `do=getFriendLinks` | GET | 获取友情链接 |
+| `do=getAlbums` | GET | 获取可见相册列表 |
+| `do=getAlbum&album={id}` | GET | 获取相册详情和照片 |
+| `do=saveAlbum` | POST multipart | 新建或编辑相册并上传照片 |
 
 ## ⚙️ 配置要求
 

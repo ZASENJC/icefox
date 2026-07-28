@@ -16,7 +16,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
                 </div>
                 <div class="post-item-right">
                     <h2 class="post-title">
-                        <a href="<?php $this->author->permalink() ?>"><?php $this->author() ?></a>
+                        <a href="<?php $this->permalink() ?>"><?php $this->author() ?></a>
                         <?php
                         // 显示置顶标识
                         if (getPostIsTop($this->cid)):

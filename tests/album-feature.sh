@@ -19,11 +19,13 @@ require_pattern() {
 
 require_pattern "Form_Element_Text.*albumPageUrl" functions.php 'theme config must expose the album page URL'
 require_pattern "Form_Element_Text.*albumTopImage" functions.php 'theme config must expose the album top image'
+require_pattern "albumPageUrl.*'/albums'" functions.php 'album page URL must use the clean /albums path'
 require_pattern "albumOnly" functions.php 'post fields must expose the album-only switch'
 require_pattern 'class="tc-album"' components/head.php 'the top bar must include an album entry'
 require_pattern "options->albumPageUrl" components/head.php 'the album entry must use the configured URL'
 require_pattern 'getAlbums' components/album-gallery.php 'album page must load the album list from the plugin'
 require_pattern 'getAlbum' components/album-gallery.php 'album detail must load its photos from the plugin'
+require_pattern 'pathname.*album.slug' components/album-gallery.php 'album links must use the album slug as a path segment'
 require_pattern 'saveAlbum' components/modals/album-editor.php 'album editor must retain the plugin save contract'
 require_pattern 'class="album-grid"' components/album-gallery.php 'album photos must render in a dedicated grid'
 require_pattern 'components/modals/album-editor.php' album-page.php 'album page must render its editor modal'

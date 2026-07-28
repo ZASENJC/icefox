@@ -63,6 +63,14 @@ TYPECHO_CONFIG=/absolute/path/to/typecho/config.inc.php php scripts/migrate-lega
 - 前台创建文章时不再主动写入 `is_top`
 - 如果 `icefox_archive` 仍保存点赞计数，可以保留表和 `likes` 数据；确认迁移和回滚期限结束后，再单独移除废弃的 `is_top` 列
 
+相册排序还要求插件完成以下数据契约：
+
+- 相册表新增非负整数 `sort_order`，默认值为 `0`，并为现有表提供幂等迁移
+- `saveAlbum` 读取普通相册的 `sortOrder`，校验为非负整数后写入 `sort_order`
+- `getAlbums` 和 `getAlbum` 返回数值型 `sortOrder`
+- 相册列表依次按 `is_moments` 降序、`is_pinned` 降序、`sort_order` 升序排列；相同序号保留确定的原有顺序
+- “朋友圈”相册忽略手动排序值，始终置于列表第一位
+
 ## 插件契约测试
 
 `tests/album-plugin-*.sh` 和 `tests/album-plugin-moments-sync.php` 是插件契约测试，不是纯主题测试。它们需要通过 `ICEFOX_PLUGIN_ACTION`、`ICEFOX_PLUGIN_MAIN` 和可选的 `TYPECHO_CONFIG` 指向真实插件与 Typecho 环境。

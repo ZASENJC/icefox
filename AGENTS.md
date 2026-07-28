@@ -79,10 +79,14 @@ The frontend currently calls these plugin actions:
 | `createPost` | POST multipart | Create a post and upload media |
 | `getAlbums` | GET | Load the visible album list |
 | `getAlbum` | GET | Load one album and its photos |
-| `saveAlbum` | POST multipart | Create or update an album and upload photos |
+| `saveAlbum` | POST multipart | Create or update an album, set `sortOrder`, and upload photos |
 
 Do not implement these endpoints inside the theme unless the architecture is
 explicitly being changed. They belong to the companion plugin.
+
+Album responses expose `sortOrder` for regular albums. The Moments album does
+not participate in manual ordering and always renders first; remaining albums
+preserve pinning priority and then sort by ascending `sortOrder`.
 
 ## Theme Configuration And Fields
 

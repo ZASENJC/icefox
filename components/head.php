@@ -24,7 +24,7 @@ $albumPageUrl = $configuredAlbumUrl !== '' ? $configuredAlbumUrl : Typecho_Commo
         if ($user->hasLogin()):
         ?>
             <?php if ($isAlbumPage): ?>
-                <button type="button" class="tc-edit tc-album-create" data-icon="edit" aria-label="新建相册"
+                <button type="button" class="tc-edit tc-album-create" aria-label="新建相册"
                         @click="window.dispatchEvent(new CustomEvent('album-editor-open'))">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true">
                         <path stroke-linecap="round" d="M12 5v14M5 12h14" />

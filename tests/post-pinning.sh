@@ -30,6 +30,7 @@ require_pattern "cleanAttribute\('order'\)" core/post-pinning.php 'pinned-post o
 require_pattern "order\('icefox_pin\.cid IS NULL'" core/post-pinning.php 'pinned posts must sort before normal posts'
 require_pattern "order\('table\.contents\.created'" core/post-pinning.php 'posts within each pin group must sort by creation time'
 require_pattern "order\('table\.contents\.cid'" core/post-pinning.php 'post ordering must have a stable pagination tie-breaker'
+require_pattern 'getPostIsTop\(' archive.php 'archive, category, tag, and search lists must show the pinned badge'
 
 if [ -e core/plugin-bridge.php ]; then
     echo 'the legacy runtime plugin bridge must be removed' >&2

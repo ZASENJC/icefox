@@ -29,6 +29,8 @@ forbid_pattern() {
 
 require_pattern "Form_Element_Text.*albumPageUrl" functions.php 'theme config must expose the album page URL'
 require_pattern "Form_Element_Text.*albumTopImage" functions.php 'theme config must expose the album top image'
+require_pattern "Form_Element_Radio.*showMomentsAlbum" functions.php 'theme config must expose the moments album visibility switch'
+require_pattern "showMomentsAlbum.*'1'" functions.php 'the moments album visibility switch must default to enabled'
 require_pattern "albumPageUrl.*'/albums'" functions.php 'album page URL must use the clean /albums path'
 require_pattern "albumOnly" functions.php 'post fields must expose the album-only switch'
 require_pattern 'class="tc-album"' components/head.php 'the top bar must include an album entry'
@@ -60,5 +62,6 @@ if [ "$failures" -ne 0 ]; then
 fi
 
 node tests/album-remote-urls.js
+node tests/moments-album.js
 
 echo 'Album page contracts are present'

@@ -33,6 +33,8 @@ require_pattern 'openEditor\(this.album, true\)' components/album-gallery.php 'a
 require_pattern 'saveAlbum' components/modals/album-editor.php 'album editor must retain the plugin save contract'
 require_pattern 'uploadOnly' components/modals/album-editor.php 'album editor must expose a photo-upload-only mode'
 require_pattern "uploadOnly \\? '上传照片'" components/modals/album-editor.php 'album upload mode must have a dedicated title'
+require_pattern 'remotePhotoUrls' components/modals/album-editor.php 'album editor must accept remote photo URLs'
+require_pattern "formData.append\('remotePhotos'" components/modals/album-editor.php 'album editor must send remote photos to the plugin'
 require_pattern 'class="album-grid"' components/album-gallery.php 'album photos must render in a dedicated grid'
 require_pattern 'components/modals/album-editor.php' album-page.php 'album page must render its editor modal'
 require_pattern 'isAlbumOnlyPost' components/post-list.php 'blog feed must filter album-only posts'
@@ -42,5 +44,7 @@ if [ "$failures" -ne 0 ]; then
     echo "$failures album feature checks failed" >&2
     exit 1
 fi
+
+node tests/album-remote-urls.js
 
 echo 'Album page contracts are present'

@@ -786,6 +786,7 @@ main {
 
 .album-editor-field input[type="text"],
 .album-editor-field input[type="url"],
+.album-editor-field input[type="number"],
 .album-editor-field textarea {
     width: 100%;
     box-sizing: border-box;
@@ -836,6 +837,7 @@ main {
 
 .album-editor-field input[type="text"]:focus,
 .album-editor-field input[type="url"]:focus,
+.album-editor-field input[type="number"]:focus,
 .album-editor-field textarea:focus {
     outline: none;
     border-color: var(--album-editor-field-border);
@@ -844,6 +846,7 @@ main {
 
 .album-editor-field input[type="text"]::placeholder,
 .album-editor-field input[type="url"]::placeholder,
+.album-editor-field input[type="number"]::placeholder,
 .album-editor-field textarea::placeholder {
     color: #b2b2b2;
     opacity: 1;

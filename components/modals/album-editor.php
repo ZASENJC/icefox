@@ -16,6 +16,8 @@ function albumEditorManager() {
         address: '',
         visibility: 'public',
         isPinned: false,
+        sortOrder: 0,
+        isMomentsAlbum: false,
         uploadOnly: false,
         mediaFiles: [],
         remotePhotoUrls: '',
@@ -30,12 +32,30 @@ function albumEditorManager() {
             return value === true || value === 1 || value === '1' || value === 'true';
         },
 
+        normalizeSortOrder(value) {
+            const parsed = Number(value);
+            if (!Number.isFinite(parsed)) return 0;
+            return Math.min(2147483647, Math.max(0, Math.trunc(parsed)));
+        },
+
+        detectMomentsAlbum(album) {
+            const source = album || {};
+            const slug = String(source.slug || source.id || source.aid || '').toLowerCase();
+            const type = String(source.type || source.kind || '').toLowerCase();
+            const name = String(source.name || source.title || '').trim();
+            const markedAsMoments = source.isMoments === true || source.isMoments === 1 || source.isMoments === '1';
+            return markedAsMoments || type === 'moments' || ['moments', 'pengyouquan'].includes(slug) || name === '朋友圈';
+        },
+
         openModal(event) {
             const detail = event.detail || {};
             const album = Object.prototype.hasOwnProperty.call(detail, 'album') ? (detail.album || {}) : detail;
             const pinnedValue = Object.prototype.hasOwnProperty.call(album, 'isPinned')
                 ? album.isPinned
                 : (Object.prototype.hasOwnProperty.call(album, 'pinned') ? album.pinned : album.is_pinned);
+            const sortOrderValue = Object.prototype.hasOwnProperty.call(album, 'sortOrder')
+                ? album.sortOrder
+                : (Object.prototype.hasOwnProperty.call(album, 'sort_order') ? album.sort_order : album.order);
             this.uploadOnly = detail.uploadOnly === true;
             this.albumId = album.id || album.aid || album.albumId || album.slug || '';
             this.albumName = album.name || album.title || '';
@@ -44,6 +64,8 @@ function albumEditorManager() {
             this.address = album.address || album.location || '';
             this.visibility = album.visibility === 'private' ? 'private' : 'public';
             this.isPinned = this.normalizePinnedValue(pinnedValue);
+            this.isMomentsAlbum = this.detectMomentsAlbum(album);
+            this.sortOrder = this.isMomentsAlbum ? 0 : this.normalizeSortOrder(sortOrderValue);
             this.mediaFiles = [];
             this.remotePhotoUrls = '';
             this.submitStatus = '';
@@ -123,7 +145,10 @@ function albumEditorManager() {
                 formData.append('tags', this.tags);
                 formData.append('address', this.address);
                 formData.append('visibility', this.visibility);
-                if (!this.uploadOnly) formData.append('isPinned', this.isPinned ? '1' : '0');
+                if (!this.uploadOnly) {
+                    formData.append('isPinned', this.isPinned ? '1' : '0');
+                    if (!this.isMomentsAlbum) formData.append('sortOrder', String(this.normalizeSortOrder(this.sortOrder)));
+                }
                 formData.append('remotePhotos', JSON.stringify(remotePhotos));
                 this.mediaFiles.forEach((media, index) => formData.append(`media_${index}`, media.file));
 
@@ -185,6 +210,11 @@ function albumEditorManager() {
                             <button type="button" :class="{active: visibility === 'private'}" @click="visibility = 'private'">私密</button>
                         </div>
                     </div>
+                    <label class="album-editor-field" x-show="!isMomentsAlbum">
+                        <span>排序序号</span>
+                        <input type="number" x-model.number="sortOrder" min="0" max="2147483647" step="1" inputmode="numeric" placeholder="0">
+                        <small>序号越大越靠后，相同序号保持原有顺序</small>
+                    </label>
                     <label class="album-editor-pin-option">
                         <span class="album-editor-pin-label">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

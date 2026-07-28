@@ -52,12 +52,21 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
             return value === true || value === 1 || value === '1' || value === 'true';
         },
 
+        normalizeSortOrder(value) {
+            const parsed = Number(value);
+            if (!Number.isFinite(parsed)) return 0;
+            return Math.min(2147483647, Math.max(0, Math.trunc(parsed)));
+        },
+
         normalizeAlbum(album) {
             const source = album || {};
             const rawPhotos = source.photos || source.images || source.media || [];
             const photos = Array.isArray(rawPhotos) ? rawPhotos.map(photo => this.normalizePhoto(photo)).filter(photo => photo.src) : [];
             const tags = Array.isArray(source.tags) ? source.tags : (source.tags ? String(source.tags).split(',').map(tag => tag.trim()).filter(Boolean) : []);
             const cover = source.cover || source.coverUrl || source.firstImage || source.first_image || (photos[0] ? photos[0].src : '');
+            const sortOrderValue = Object.prototype.hasOwnProperty.call(source, 'sortOrder')
+                ? source.sortOrder
+                : (Object.prototype.hasOwnProperty.call(source, 'sort_order') ? source.sort_order : source.order);
             return {
                 ...source,
                 id: source.id || source.aid || source.albumId || '',
@@ -67,7 +76,9 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                 tags,
                 photos,
                 address: source.address || source.location || '',
-                isPinned: this.isAlbumPinned(source)
+                isPinned: this.isAlbumPinned(source),
+                isMoments: this.isMomentsAlbum(source),
+                sortOrder: this.normalizeSortOrder(sortOrderValue)
             };
         },
 
@@ -80,10 +91,14 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
             return markedAsMoments || type === 'moments' || ['moments', 'pengyouquan'].includes(slug) || name === '朋友圈';
         },
 
-        sortPinnedAlbums(albums) {
+        sortRegularAlbums(albums) {
             return albums
                 .map((album, index) => ({ album, index }))
-                .sort((left, right) => Number(right.album.isPinned) - Number(left.album.isPinned) || left.index - right.index)
+                .sort((left, right) =>
+                    Number(right.album.isPinned) - Number(left.album.isPinned)
+                    || left.album.sortOrder - right.album.sortOrder
+                    || left.index - right.index
+                )
                 .map(item => item.album);
         },
 
@@ -93,11 +108,13 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
             const regularAlbums = normalizedAlbums.filter(album => !this.isMomentsAlbum(album));
 
             if (!this.showMomentsAlbum) {
-                return this.sortPinnedAlbums(regularAlbums);
+                return this.sortRegularAlbums(regularAlbums);
             }
 
+            const sortedRegularAlbums = this.sortRegularAlbums(regularAlbums);
+
             if (!momentsAlbum) {
-                regularAlbums.unshift(this.normalizeAlbum({
+                sortedRegularAlbums.unshift(this.normalizeAlbum({
                     id: 'moments',
                     slug: 'moments',
                     name: '朋友圈',
@@ -105,11 +122,11 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                     isMoments: true,
                     photos: []
                 }));
-                return this.sortPinnedAlbums(regularAlbums);
+                return sortedRegularAlbums;
             }
 
-            regularAlbums.unshift(momentsAlbum);
-            return this.sortPinnedAlbums(regularAlbums);
+            sortedRegularAlbums.unshift(momentsAlbum);
+            return sortedRegularAlbums;
         },
 
         unwrap(payload) {

@@ -15,6 +15,11 @@ for file in "$storage_main" "$storage_client" "$storage_service" "$companion_act
     fi
 done
 
+if rg -n 'private const|protected const' "$storage_main" "$storage_client" "$storage_service" "$companion_action"; then
+    echo 'plugins must not use class-constant visibility that requires PHP 7.1+' >&2
+    exit 1
+fi
+
 require_pattern() {
     pattern=$1
     file=$2

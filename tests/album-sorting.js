@@ -37,6 +37,39 @@ assert.deepEqual(
     'moments must stay first, then regular albums sort by pin state and ascending sort order'
 );
 
+gallery.albums = sortedAlbums;
+assert.equal(
+    gallery.nextSortOrder(),
+    31,
+    'new albums must continue after the largest regular album sort order'
+);
+
+const momentsOnlyGallery = createGalleryManager('', true);
+momentsOnlyGallery.albums = [momentsOnlyGallery.normalizeAlbum({
+    id: 'moments',
+    slug: 'moments',
+    name: '朋友圈',
+    sortOrder: 999
+})];
+assert.equal(momentsOnlyGallery.nextSortOrder(), 1, 'the first regular album must start at sort order one');
+
+let editorOpenDetail = null;
+global.CustomEvent = class CustomEvent {
+    constructor(type, options) {
+        this.type = type;
+        this.detail = options.detail;
+    }
+};
+global.window = {
+    dispatchEvent(event) {
+        editorOpenDetail = event.detail;
+    }
+};
+gallery.openEditor();
+assert.equal(editorOpenDetail.suggestedSortOrder, 31, 'the create action must pass the next sort order to the editor');
+gallery.openEditor(sortedAlbums[1]);
+assert.equal(editorOpenDetail.suggestedSortOrder, undefined, 'editing an existing album must preserve its stored sort order');
+
 const hiddenMomentsGallery = createGalleryManager('', false);
 assert.deepEqual(
     hiddenMomentsGallery.normalizeAlbumList([
@@ -64,8 +97,10 @@ editor.openModal({ detail: { album: { id: 'moments', name: '朋友圈', sortOrde
 assert.equal(editor.isMomentsAlbum, true, 'the moments album must be recognized by stable identity');
 assert.equal(editor.sortOrder, 0, 'the moments album must not retain a manual sort order');
 
+editor.openModal({ detail: { album: null, suggestedSortOrder: 31 } });
+assert.equal(editor.sortOrder, 31, 'new albums must use the suggested next sort order');
 editor.openModal({ detail: { album: null } });
-assert.equal(editor.sortOrder, 0, 'new albums must default to sort order zero');
+assert.equal(editor.sortOrder, 1, 'new albums without list context must start at sort order one');
 assert.match(editorSource, /type="number"[^>]*x-model\.number="sortOrder"/);
 assert.match(editorSource, /x-show="!isMomentsAlbum"[\s\S]*?>排序序号</);
 

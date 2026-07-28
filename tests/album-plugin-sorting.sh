@@ -34,6 +34,8 @@ require_pattern "'sort_order'.*sortOrder" "$plugin_action" 'saveAlbum must persi
 require_pattern "order\('is_moments'.*SORT_DESC\)" "$plugin_action" 'getAlbums must keep the moments album first'
 require_pattern "order\('sort_order'.*SORT_ASC\)" "$plugin_action" 'getAlbums must sort lower album order values first'
 require_pattern "'sortOrder'.*sort_order" "$plugin_action" 'album JSON must expose sortOrder'
+require_pattern 'nextAlbumSortOrder' "$plugin_action" 'saveAlbum must assign a sort order when older clients omit it'
+require_pattern 'MAX\(sort_order\)' "$plugin_action" 'new album sorting must continue after the largest regular album order'
 
 if [ "$failures" -ne 0 ]; then
     echo "$failures album plugin sorting checks failed" >&2

@@ -160,7 +160,7 @@ function editPageManager() {
                 const result = await response.json();
 
                 if (result.success) {
-                    this.submitStatus = '发布成功！';
+                    this.submitStatus = result.message || '发布成功！';
                     setTimeout(() => {
                         window.location.href = result.redirect || '/';
                     }, 1000);
@@ -170,7 +170,7 @@ function editPageManager() {
                 }
             } catch (error) {
                 this.submitStatus = '';
-                alert('网络错误，请稍后重试');
+                alert(error.message || '网络错误，请稍后重试');
             }
         }
     }

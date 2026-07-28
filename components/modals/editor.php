@@ -134,13 +134,13 @@ function editorModalManager() {
                     throw new Error(result.message || '发布失败，请稍后重试');
                 }
 
-                this.submitStatus = '发布成功！';
+                this.submitStatus = result.message || '发布成功！';
                 const configuredHomeUrl = new URL(result.redirect || window.ICEFOX_CONFIG.homeUrl, window.location.href);
                 const homeUrl = new URL(configuredHomeUrl.pathname + configuredHomeUrl.search, window.location.origin);
                 homeUrl.searchParams.set('icefox_published', Date.now().toString());
                 window.setTimeout(() => {
                     window.location.replace(homeUrl.toString());
-                }, 500);
+                }, 1000);
             } catch (error) {
                 this.isSubmitting = false;
                 this.submitStatus = '';

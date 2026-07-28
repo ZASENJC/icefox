@@ -29,10 +29,23 @@ assert.deepEqual(
 
 assert.match(gallerySource, /class="album-card-pinned"[^>]*x-show="album\.isPinned"/);
 assert.match(gallerySource, /class="album-card-pinned"[\s\S]*?<svg[^>]*aria-hidden="true"/);
+assert.match(gallerySource, /class="album-card-pinned"[\s\S]*?<svg[^>]*fill="currentColor"/);
+const pinnedBadgeStyle = stylesheet.match(/\.album-card-pinned\s*\{([^}]*)\}/);
+assert.ok(pinnedBadgeStyle, 'the pinned SVG badge style must be present');
 assert.match(
+    pinnedBadgeStyle[1],
+    /top:\s*10px;[\s\S]*left:\s*10px;[\s\S]*color:\s*#e5484d;/,
+    'the simple red SVG must stay anchored to the cover top-left'
+);
+assert.doesNotMatch(
+    pinnedBadgeStyle[1],
+    /background:|border-radius:|box-shadow:/,
+    'the simple pinned SVG must not use a badge background, circle, or shadow'
+);
+assert.doesNotMatch(
     stylesheet,
-    /\.album-card-pinned\s*\{[^}]*top:\s*8px;[^}]*left:\s*8px;[^}]*background:\s*#e5484d;/s,
-    'the pinned SVG badge must be red and anchored to the cover top-left'
+    /\.album-card-pinned\s*\{[^}]*background:\s*#e5484d;/s,
+    'the old red circular badge must be removed'
 );
 
 const editorSource = fs.readFileSync('components/modals/album-editor.php', 'utf8');

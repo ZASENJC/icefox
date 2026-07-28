@@ -631,17 +631,14 @@ main {
 .album-card-pinned {
     position: absolute;
     z-index: 1;
-    top: 8px;
-    left: 8px;
+    top: 10px;
+    left: 10px;
     display: flex;
-    width: 28px;
-    height: 28px;
+    width: 20px;
+    height: 20px;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    background: #e5484d;
-    box-shadow: 0 2px 8px rgb(0 0 0 / 24%);
-    color: #fff;
+    color: #e5484d;
     pointer-events: none;
 }
 
@@ -650,8 +647,8 @@ main {
 }
 
 .album-card-pinned svg {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
 }
 
 .album-card-cover img,

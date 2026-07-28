@@ -187,11 +187,9 @@ function albumEditorManager() {
                     </div>
                     <label class="album-editor-pin-option">
                         <span class="album-editor-pin-label">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M12 17v5" />
-                                <path d="M5 17h14" />
-                                <path d="M9 9v1c0 2-1 3-2 4h10c-1-1-2-2-2-4V9" />
-                                <path d="M15 4.5c0 2 2 4.5 2 4.5H7s2-2.5 2-4.5a3 3 0 0 1 6 0Z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M8.5 3h7l-.85 6.3 2.85 3.2V14h-11v-1.5l2.85-3.2L8.5 3Z" />
+                                <path d="M11 14h2v7h-2z" />
                             </svg>
                             <span>置顶相册</span>
                         </span>

@@ -764,8 +764,11 @@ main {
     padding: 10px 11px;
     border: 1px solid var(--line);
     border-radius: 4px;
-    background: var(--modal-input-background);
+    background: var(--main-background);
     color: var(--text-color);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .album-editor-field textarea {
@@ -779,6 +782,13 @@ main {
     outline: none;
     border-color: var(--line);
     box-shadow: none;
+}
+
+.album-editor-field input[type="text"]::placeholder,
+.album-editor-field input[type="url"]::placeholder,
+.album-editor-field textarea::placeholder {
+    color: #b2b2b2;
+    opacity: 1;
 }
 
 .album-editor-field small {

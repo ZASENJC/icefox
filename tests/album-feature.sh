@@ -35,6 +35,8 @@ require_pattern 'uploadOnly' components/modals/album-editor.php 'album editor mu
 require_pattern "uploadOnly \\? '上传照片'" components/modals/album-editor.php 'album upload mode must have a dedicated title'
 require_pattern 'remotePhotoUrls' components/modals/album-editor.php 'album editor must accept remote photo URLs'
 require_pattern "formData.append\('remotePhotos'" components/modals/album-editor.php 'album editor must send remote photos to the plugin'
+require_pattern 'album-editor-field textarea:focus' assets/css/icefox.css 'album editor text fields must define a focus style without the browser ring'
+require_pattern 'box-shadow: none' assets/css/icefox.css 'album editor focus styling must remove the blue focus shadow'
 require_pattern 'class="album-grid"' components/album-gallery.php 'album photos must render in a dedicated grid'
 require_pattern 'components/modals/album-editor.php' album-page.php 'album page must render its editor modal'
 require_pattern 'isAlbumOnlyPost' components/post-list.php 'blog feed must filter album-only posts'

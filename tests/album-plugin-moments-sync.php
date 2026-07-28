@@ -45,3 +45,57 @@ if ($actual !== $expected) {
 }
 
 echo "Album Markdown image extraction verified\n";
+
+if (getenv('ICEFOX_DB_INTEGRATION') === '1') {
+    $db = \Typecho\Db::get();
+    $prefix = $db->getPrefix();
+    $before = $db->fetchRow(
+        $db->select()->from($prefix . 'icefox_albums')->where('is_moments = ?', 1)
+    );
+    if (!$before) {
+        fwrite(STDERR, "Stable moments album is missing\n");
+        exit(1);
+    }
+
+    $append = $reflection->getMethod('appendImagesToMomentsAlbum');
+    $append->setAccessible(true);
+    $integrationSrc = 'https://img.example.com/integration-moments.jpg';
+    $integrationError = '';
+    $db->query('START TRANSACTION');
+    try {
+        $count = $append->invoke(
+            $action,
+            [],
+            '![集成图片](' . $integrationSrc . ')',
+            (int) $before['created_by']
+        );
+        $during = $db->fetchRow(
+            $db->select()->from($prefix . 'icefox_albums')->where('id = ?', (int) $before['id'])
+        );
+        $duringPhotos = json_decode((string) $during['photos'], true);
+        $duringSources = array_map(function ($photo) {
+            return is_array($photo) ? ($photo['src'] ?? '') : (string) $photo;
+        }, is_array($duringPhotos) ? $duringPhotos : []);
+        if ($count !== 1 || !in_array($integrationSrc, $duringSources, true)) {
+            $integrationError = 'Markdown image was not written to the moments album; count=' . var_export($count, true)
+                . '; sources=' . json_encode($duringSources, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        }
+    } finally {
+        $db->query('ROLLBACK');
+    }
+
+    if ($integrationError !== '') {
+        fwrite(STDERR, $integrationError . "\n");
+        exit(1);
+    }
+
+    $after = $db->fetchRow(
+        $db->select()->from($prefix . 'icefox_albums')->where('id = ?', (int) $before['id'])
+    );
+    if ((string) $after['photos'] !== (string) $before['photos']) {
+        fwrite(STDERR, "Moments integration test rollback failed\n");
+        exit(1);
+    }
+
+    echo "Album moments database integration verified and rolled back\n";
+}

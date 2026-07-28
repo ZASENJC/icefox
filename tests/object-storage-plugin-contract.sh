@@ -35,10 +35,13 @@ require_pattern 'x-amz-content-sha256' "$storage_client" 'the S3 client must sig
 require_pattern 'finfo' "$storage_service" 'uploaded images must be checked from their actual MIME content'
 require_pattern 'image/svg' "$storage_service" 'SVG uploads must be explicitly rejected'
 require_pattern 'objectKey' "$storage_service" 'stored metadata must retain the object key for deletion and migration'
+require_pattern 'attachmentHandle' "$storage_main" 'Typecho attachment URLs must preserve public object URLs'
+require_pattern 'deleteHandle' "$storage_main" 'deleting an attachment must delete its object key'
 
 require_pattern "request->get\('storage'" "$companion_action" 'the companion plugin must read the requested storage target'
 require_pattern 'IcefoxStorage' "$companion_action" 'the companion plugin must call the standalone storage plugin'
 require_pattern 'cleanupUploadedObjects' "$companion_action" 'failed database writes must clean up newly uploaded objects'
+require_pattern 'rollbackAlbumWrite' "$companion_action" 'failed album saves must restore or remove the database record'
 require_pattern 'saveAlbum' "$companion_action" 'album uploads must use the upgraded companion plugin'
 
 echo 'Object storage plugin contracts are present'

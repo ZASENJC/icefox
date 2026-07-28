@@ -3,7 +3,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 $albumKey = isset($_GET['album']) ? trim((string) $_GET['album']) : '';
 $configuredAlbumUrl = trim((string) $this->options->albumPageUrl);
-$albumPageUrl = $configuredAlbumUrl !== '' ? $configuredAlbumUrl : Typecho_Common::url('albums/', $this->options->index);
+$albumPageUrl = $configuredAlbumUrl !== '' ? rtrim($configuredAlbumUrl, '/') : Typecho_Common::url('albums', $this->options->index);
 $albumEditorUser = \Widget\User::alloc();
 $canEditAlbums = $albumEditorUser->hasLogin();
 ?>
@@ -96,7 +96,8 @@ function albumGalleryManager(initialAlbumKey) {
 
         albumHref(album) {
             const url = new URL(window.ICEFOX_CONFIG.albumUrl, window.location.href);
-            url.searchParams.set('album', album.slug || album.id);
+            url.pathname = `${url.pathname.replace(/\/+$/, '')}/${encodeURIComponent(album.slug || album.pinyin || album.id)}`;
+            url.search = '';
             return url.toString();
         },
 

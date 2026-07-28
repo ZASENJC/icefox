@@ -48,7 +48,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
         window.ICEFOX_CONFIG = <?php echo json_encode([
             'actionUrl' => Typecho_Common::url('action/icefox', Helper::options()->index),
             'homeUrl' => Helper::options()->siteUrl,
-            'albumUrl' => trim((string) Helper::options()->albumPageUrl) ?: Typecho_Common::url('albums/', Helper::options()->index)
+            'albumUrl' => rtrim(trim((string) Helper::options()->albumPageUrl), '/') ?: Typecho_Common::url('albums', Helper::options()->index)
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
 
         (function cleanPublishedRefreshParameter() {

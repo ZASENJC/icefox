@@ -79,7 +79,7 @@ function themeConfig($form)
     $form->addInput($editPageUrl);
 
     // 相册页面地址
-    $albumPageUrl = new Typecho_Widget_Helper_Form_Element_Text('albumPageUrl', NULL, '/albums/', _t('相册页面地址'), _t('填写已设置为“相册模板”的独立页面地址，默认为 /albums/'));
+    $albumPageUrl = new Typecho_Widget_Helper_Form_Element_Text('albumPageUrl', NULL, '/albums', _t('相册页面地址'), _t('填写已设置为“相册模板”的独立页面地址，默认为 /albums'));
     $form->addInput($albumPageUrl);
 
     // 相册页顶部背景图

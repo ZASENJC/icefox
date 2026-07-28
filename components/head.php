@@ -1,7 +1,7 @@
 <?php
 $isAlbumPage = !empty($GLOBALS['ICEFOX_ALBUM_PAGE']);
 $configuredAlbumUrl = trim((string) $this->options->albumPageUrl);
-$albumPageUrl = $configuredAlbumUrl !== '' ? $configuredAlbumUrl : Typecho_Common::url('albums/', $this->options->index);
+$albumPageUrl = $configuredAlbumUrl !== '' ? rtrim($configuredAlbumUrl, '/') : Typecho_Common::url('albums', $this->options->index);
 ?>
 <section class="top-container" x-data>
     <div class="top-container-left">

@@ -680,8 +680,26 @@ main {
 }
 
 .album-card-meta {
+    display: flex;
+    min-width: 0;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
     margin-top: 3px;
     font-size: 12px;
+}
+
+.album-card-photo-count {
+    flex: 0 0 auto;
+}
+
+.album-card-address {
+    min-width: 0;
+    margin-left: auto;
+    overflow: hidden;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .album-grid-item {

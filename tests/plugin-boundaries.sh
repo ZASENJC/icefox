@@ -1,0 +1,57 @@
+#!/bin/sh
+
+set -eu
+
+runtime_files='header.php
+edit-page.php
+assets/js/icefox.js
+components/album-gallery.php
+components/modals/album-editor.php
+components/modals/editor.php
+components/modals/links.php'
+
+node tests/plugin-api.js
+
+if rg -n '\?do=(getLikes|like|addComment|getFriendLinks|createPost|getAlbums|getAlbum|saveAlbum)' $runtime_files; then
+    echo 'plugin actions must be routed through window.ICEFOX_PLUGIN' >&2
+    exit 1
+fi
+
+if ! rg -q 'icefox-plugin\.js' header.php; then
+    echo 'header.php must load the centralized plugin client' >&2
+    exit 1
+fi
+
+if [ ! -f core/plugin-bridge.php ]; then
+    echo 'plugin-owned database compatibility code must live in core/plugin-bridge.php' >&2
+    exit 1
+fi
+
+if ! rg -q '^function getPostIsTop\(' core/plugin-bridge.php; then
+    echo 'the pinned-post compatibility bridge is missing' >&2
+    exit 1
+fi
+
+if rg -q '^function getPostIsTop\(' functions.php; then
+    echo 'functions.php must not hide plugin-owned database access' >&2
+    exit 1
+fi
+
+if rg -n -- '->from\([^)]*icefox_' --glob '*.php' --glob '!core/plugin-bridge.php' --glob '!tests/**' .; then
+    echo 'plugin-owned tables may only be read by the compatibility bridge' >&2
+    exit 1
+fi
+
+if [ ! -f docs/plugin-boundaries.md ]; then
+    echo 'the theme/plugin ownership guide is missing' >&2
+    exit 1
+fi
+
+for heading in '主题直接实现' '主题界面 + 插件后端' '插件完全负责' '待迁移的兼容代码'; do
+    if ! rg -q "$heading" docs/plugin-boundaries.md; then
+        echo "ownership guide is missing section: $heading" >&2
+        exit 1
+    fi
+done
+
+echo 'Theme/plugin boundaries are explicit'

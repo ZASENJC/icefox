@@ -1,0 +1,47 @@
+<?php
+
+$configPath = getenv('TYPECHO_CONFIG');
+$actionPath = getenv('ICEFOX_PLUGIN_ACTION');
+
+if (!$configPath || !$actionPath || !is_file($configPath) || !is_file($actionPath)) {
+    fwrite(STDERR, "TYPECHO_CONFIG and ICEFOX_PLUGIN_ACTION must point to readable files\n");
+    exit(2);
+}
+
+require $configPath;
+require_once $actionPath;
+
+$reflection = new ReflectionClass('TypechoPlugin\\Icefox\\Action');
+if (!$reflection->hasMethod('extractPostImagePhotos')) {
+    fwrite(STDERR, "Action::extractPostImagePhotos is missing\n");
+    exit(1);
+}
+
+$action = $reflection->newInstanceWithoutConstructor();
+$extract = $reflection->getMethod('extractPostImagePhotos');
+$extract->setAccessible(true);
+
+$content = <<<'MARKDOWN'
+<!--markdown-->测试动态
+
+![远程图片](https://img.example.com/remote.jpg "远程标题")
+![本地图片](/usr/uploads/2026/07/local.webp)
+![重复图片](https://img.example.com/remote.jpg)
+<img src="https://img.example.com/from-html.png" alt="HTML 图片">
+![危险图片](javascript:alert(1))
+<img src="data:image/png;base64,AAAA" alt="内联图片">
+MARKDOWN;
+
+$actual = $extract->invoke($action, $content);
+$expected = [
+    ['src' => 'https://img.example.com/remote.jpg', 'alt' => '远程图片'],
+    ['src' => '/usr/uploads/2026/07/local.webp', 'alt' => '本地图片'],
+    ['src' => 'https://img.example.com/from-html.png', 'alt' => 'HTML 图片']
+];
+
+if ($actual !== $expected) {
+    fwrite(STDERR, "Markdown image extraction mismatch\nExpected: " . var_export($expected, true) . "\nActual: " . var_export($actual, true) . "\n");
+    exit(1);
+}
+
+echo "Album Markdown image extraction verified\n";

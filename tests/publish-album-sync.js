@@ -57,6 +57,11 @@ async function assertSyncContract(publisher) {
             expectedValue,
             `${publisher.file} must send the album sync choice as ${expectedValue}`
         );
+        assert.strictEqual(
+            manager.submitStatus,
+            '发布成功，已同步 1 张图片到朋友圈相册',
+            `${publisher.file} must show the plugin's actual publishing result`
+        );
     }
 }
 
@@ -65,7 +70,11 @@ global.alert = () => {};
 global.setTimeout = () => {};
 global.fetch = async () => ({
     ok: true,
-    json: async () => ({ success: true, redirect: '/' })
+    json: async () => ({
+        success: true,
+        message: '发布成功，已同步 1 张图片到朋友圈相册',
+        redirect: '/'
+    })
 });
 global.window = {
     ICEFOX_CONFIG: {

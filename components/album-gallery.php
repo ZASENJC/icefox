@@ -102,6 +102,14 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                 .map(item => item.album);
         },
 
+        nextSortOrder() {
+            const maxSortOrder = this.albums.reduce((currentMax, album) => {
+                if (this.isMomentsAlbum(album)) return currentMax;
+                return Math.max(currentMax, this.normalizeSortOrder(album.sortOrder));
+            }, 0);
+            return Math.min(2147483647, maxSortOrder + 1);
+        },
+
         normalizeAlbumList(albums) {
             const normalizedAlbums = (Array.isArray(albums) ? albums : []).map(album => this.normalizeAlbum(album));
             const momentsAlbum = normalizedAlbums.find(album => this.isMomentsAlbum(album));
@@ -192,11 +200,15 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
         },
 
         openEditor(album, uploadOnly = false) {
+            const detail = {
+                album: album || null,
+                uploadOnly
+            };
+            if (!album && !uploadOnly) {
+                detail.suggestedSortOrder = this.nextSortOrder();
+            }
             window.dispatchEvent(new CustomEvent('album-editor-open', {
-                detail: {
-                    album: album || null,
-                    uploadOnly
-                }
+                detail
             }));
         }
     };

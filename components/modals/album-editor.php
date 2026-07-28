@@ -56,6 +56,9 @@ function albumEditorManager() {
             const sortOrderValue = Object.prototype.hasOwnProperty.call(album, 'sortOrder')
                 ? album.sortOrder
                 : (Object.prototype.hasOwnProperty.call(album, 'sort_order') ? album.sort_order : album.order);
+            const suggestedSortOrder = Object.prototype.hasOwnProperty.call(detail, 'suggestedSortOrder')
+                ? detail.suggestedSortOrder
+                : 1;
             this.uploadOnly = detail.uploadOnly === true;
             this.albumId = album.id || album.aid || album.albumId || album.slug || '';
             this.albumName = album.name || album.title || '';
@@ -65,7 +68,9 @@ function albumEditorManager() {
             this.visibility = album.visibility === 'private' ? 'private' : 'public';
             this.isPinned = this.normalizePinnedValue(pinnedValue);
             this.isMomentsAlbum = this.detectMomentsAlbum(album);
-            this.sortOrder = this.isMomentsAlbum ? 0 : this.normalizeSortOrder(sortOrderValue);
+            this.sortOrder = this.isMomentsAlbum
+                ? 0
+                : (this.albumId ? this.normalizeSortOrder(sortOrderValue) : Math.max(1, this.normalizeSortOrder(suggestedSortOrder)));
             this.mediaFiles = [];
             this.remotePhotoUrls = '';
             this.submitStatus = '';
@@ -213,7 +218,7 @@ function albumEditorManager() {
                     <label class="album-editor-field" x-show="!isMomentsAlbum">
                         <span>排序序号</span>
                         <input type="number" x-model.number="sortOrder" min="0" max="2147483647" step="1" inputmode="numeric" placeholder="0">
-                        <small>序号越大越靠后，相同序号保持原有顺序</small>
+                        <small>新建时自动接续现有最大序号；序号越大越靠后</small>
                     </label>
                     <label class="album-editor-pin-option">
                         <span class="album-editor-pin-label">

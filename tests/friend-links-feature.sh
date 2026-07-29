@@ -45,6 +45,16 @@ require_pattern 'icefoxFriendLinksManager' components/modals/links.php 'the moda
 require_pattern 'links-page-content' links-page.php 'the independent page must render the same friend-link data outside the modal'
 require_pattern '(links-container|links-modal-header|links-field)' assets/css/icefox.css 'friend-link controls must have dedicated modal and form styles'
 
+for template in links-page.php components/modals/links.php; do
+    require_pattern 'class="link-address"[^>]*x-text="link\.url"' "$template" 'friend-link cards must show the site address below the site name'
+    require_pattern 'class="link-description"[^>]*x-text="link\.description"' "$template" 'friend-link cards must place the description in its own right-side region'
+done
+
+if rg -n 'link-arrow' links-page.php components/modals/links.php assets/css/icefox.css; then
+    echo 'friend-link cards must not render a trailing direction indicator' >&2
+    exit 1
+fi
+
 if ! rg -q -U '(?s)\.links-container \{.*?max-width: 540px;.*?border-radius: 8px;' assets/css/icefox.css; then
     echo 'the friend-link modal must use the same compact 8px container language as settings and publishing' >&2
     exit 1

@@ -23,13 +23,37 @@ class Action extends Widget implements ActionInterface {
             return;
         }
 
+        if ($do === 'getSecurityToken') {
+            if (!$user->hasLogin()) {
+                $this->returnJson(['success' => false, 'message' => '请先登录']);
+                return;
+            }
+            $security = Widget::widget('Widget_Security');
+            $this->returnJson([
+                'success' => true,
+                'token' => $security->getToken($this->request->getReferer())
+            ]);
+            return;
+        }
+
         $postActions = ['like', 'addComment', 'deleteFriendLink', 'deleteLikeRecord', 'createPost', 'saveAlbum'];
         if (in_array($do, $postActions, true) && !$this->request->isPost()) {
             $this->returnJson(['success' => false, 'message' => '该操作仅支持 POST 请求']);
             return;
         }
         if ($this->request->isPost()) {
-            Widget::widget('Widget_Security')->protect();
+            $security = Widget::widget('Widget_Security');
+            $providedToken = (string) $request->get('_', '');
+            $expectedToken = $security->getToken($this->request->getReferer());
+            if (!hash_equals($expectedToken, $providedToken)) {
+                $this->returnJson([
+                    'success' => false,
+                    'code' => 'security_token_expired',
+                    'message' => '登录状态已变化，请重新提交'
+                ]);
+                return;
+            }
+            $security->protect();
         }
 
         // 公开读取、点赞和评论操作不需要管理员权限

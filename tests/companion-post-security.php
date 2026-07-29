@@ -37,6 +37,9 @@ namespace Typecho {
                     ? 'getSecurityToken'
                     : 'createPost';
             }
+            if ($name === '_' && getenv('ICEFOX_SECURITY_TEST_MODE') !== 'token') {
+                return 'fresh-token';
+            }
 
             return $default;
         }

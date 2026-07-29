@@ -160,7 +160,8 @@ function albumEditorManager() {
                     window.ICEFOX_PLUGIN.appendStorageTarget(formData);
                 }
 
-                const response = await fetch(window.ICEFOX_PLUGIN.url(window.ICEFOX_PLUGIN.actions.saveAlbum), {
+                const actionUrl = await window.ICEFOX_PLUGIN.postUrl(window.ICEFOX_PLUGIN.actions.saveAlbum);
+                const response = await fetch(actionUrl, {
                     method: 'POST',
                     body: formData
                 });

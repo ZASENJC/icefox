@@ -83,7 +83,8 @@ global.window = {
     },
     ICEFOX_PLUGIN: {
         actions: { createPost: 'createPost' },
-        url: action => `/action/icefox?do=${action}`
+        url: action => `/action/icefox?do=${action}`,
+        postUrl: async action => `/action/icefox?do=${action}&_=fresh-token`
     },
     location: {
         href: 'https://example.com/current',

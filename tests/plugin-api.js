@@ -39,7 +39,7 @@ assert.deepEqual(
 
 assert.equal(
     plugin.url(plugin.actions.getAlbum, { album: '旅行 相册' }),
-    'https://example.com/blog/index.php/action/icefox?do=getAlbum&album=%E6%97%85%E8%A1%8C+%E7%9B%B8%E5%86%8C',
+    'https://example.com/blog/index.php/action/icefox?_=stale-token&do=getAlbum&album=%E6%97%85%E8%A1%8C+%E7%9B%B8%E5%86%8C',
     'plugin URLs must preserve non-rewrite paths and encode parameters'
 );
 assert.throws(

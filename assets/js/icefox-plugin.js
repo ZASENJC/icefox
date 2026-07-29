@@ -9,6 +9,7 @@
         createPost: 'createPost',
         getAlbums: 'getAlbums',
         getAlbum: 'getAlbum',
+        getSecurityToken: 'getSecurityToken',
         saveAlbum: 'saveAlbum'
     });
     const knownActions = Object.keys(actions).map(key => actions[key]);
@@ -37,5 +38,21 @@
         return formData;
     }
 
-    global.ICEFOX_PLUGIN = Object.freeze({ actions, url, appendStorageTarget });
+    async function postUrl(action, params) {
+        const response = await global.fetch(url(actions.getSecurityToken), {
+            headers: { 'Accept': 'application/json' },
+            credentials: 'same-origin',
+            cache: 'no-store'
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success || !result.token) {
+            throw new Error(result.message || '无法刷新登录状态，请重新登录');
+        }
+
+        const endpoint = new URL(url(action, params), global.location.href);
+        endpoint.searchParams.set('_', result.token);
+        return endpoint.toString();
+    }
+
+    global.ICEFOX_PLUGIN = Object.freeze({ actions, url, postUrl, appendStorageTarget });
 })(window);

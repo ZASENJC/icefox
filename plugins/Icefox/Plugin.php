@@ -44,6 +44,8 @@ class Plugin implements PluginInterface
 
         // 注册接口路由
         \Helper::addRoute('icefox_route', '/action/icefox', Action::class, 'action');
+        \Helper::addRoute('icefox_albums', '/albums', AlbumArchive::class, 'render', 'index');
+        \Helper::addRoute('icefox_album_detail', '/albums/[album]', AlbumArchive::class, 'render', 'icefox_albums');
 
         return 'Icefox 伴生插件已启用';
     }
@@ -60,7 +62,8 @@ class Plugin implements PluginInterface
     {
         // 移除路由
         \Helper::removeRoute('icefox_route');
-
+        \Helper::removeRoute('icefox_albums');
+        \Helper::removeRoute('icefox_album_detail');
     }
 
     /**

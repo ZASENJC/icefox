@@ -91,7 +91,7 @@
    COPY deploy/php-uploads.ini /usr/local/etc/php/conf.d/icefox-uploads.ini
    ```
 
-   配置将单文件上传上限设为 20MB、整次 POST 上限设为 128MB，并允许一次提交 40 个文件。修改 PHP 配置后需要重启 PHP-FPM、Apache 或对应容器。插件代码中的 `ini_set()` 无法修改 `upload_max_filesize` 和 `post_max_size`，因为 PHP 会在执行插件前处理上传请求。
+   配置将单文件上传上限设为 20MB、整次 POST 上限设为 512MB，并允许一次提交 100 个文件。修改 PHP 配置后需要重启 PHP-FPM、Apache 或对应容器。插件代码中的 `ini_set()` 无法修改 `upload_max_filesize` 和 `post_max_size`，因为 PHP 会在执行插件前处理上传请求。
 
 4. **启用主题**
 
@@ -219,7 +219,7 @@ $posts = $db->fetchAll(
 
 ### PHP 上传限制
 
-推荐加载 `deploy/php-uploads.ini`。Nginx 部署还应确保 `client_max_body_size` 不低于 `128M`；使用 PHP-FPM 的共享主机可以把同样三项配置写入 Typecho 根目录的 `.user.ini`。配置未生效时，对象存储相册会自动使用分片备用逻辑，但 Typecho 后台原生附件上传仍受服务器限制。
+推荐加载 `deploy/php-uploads.ini`。Nginx 部署还应确保 `client_max_body_size` 不低于 `512M`；使用 PHP-FPM 的共享主机可以把同样三项配置写入 Typecho 根目录的 `.user.ini`。配置未生效时，对象存储相册会自动使用分片备用逻辑，但 Typecho 后台原生附件上传仍受服务器限制。
 
 ### 数据库
 - 支持外键约束

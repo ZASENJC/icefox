@@ -173,7 +173,15 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                 this.error = error.message || '相册加载失败';
             } finally {
                 this.loading = false;
+                this.updatePrimaryActionVisibility();
             }
+        },
+
+        updatePrimaryActionVisibility() {
+            const primaryAction = document.querySelector('.tc-album-create');
+            if (!primaryAction) return;
+            const currentAlbum = this.album || { slug: this.albumKey };
+            primaryAction.hidden = this.isDetail && this.isMomentsAlbum(currentAlbum);
         },
 
         albumHref(album) {
@@ -192,6 +200,7 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
         openPrimaryAction() {
             if (this.isDetail) {
                 if (!this.album) return;
+                if (this.isMomentsAlbum(this.album)) return;
                 this.openEditor(this.album, true);
                 return;
             }

@@ -19,6 +19,8 @@ function albumEditorManager() {
         sortOrder: 0,
         isMomentsAlbum: false,
         uploadOnly: false,
+        albumPhotoLimit: 100,
+        existingPhotoCount: 0,
         mediaFiles: [],
         remotePhotoUrls: '',
         submitStatus: '',
@@ -26,6 +28,13 @@ function albumEditorManager() {
 
         get visibilityText() {
             return this.visibility === 'private' ? '私密' : '公开';
+        },
+
+        get remainingPhotoSlots() {
+            return Math.max(
+                0,
+                this.albumPhotoLimit - this.existingPhotoCount - this.mediaFiles.length - this.parseRemotePhotoUrls().length
+            );
         },
 
         normalizePinnedValue(value) {
@@ -68,6 +77,8 @@ function albumEditorManager() {
             this.visibility = album.visibility === 'private' ? 'private' : 'public';
             this.isPinned = this.normalizePinnedValue(pinnedValue);
             this.isMomentsAlbum = this.detectMomentsAlbum(album);
+            const existingPhotos = album.photos || album.images || album.media || [];
+            this.existingPhotoCount = Array.isArray(existingPhotos) ? existingPhotos.length : 0;
             this.sortOrder = this.isMomentsAlbum
                 ? 0
                 : (this.albumId ? this.normalizeSortOrder(sortOrderValue) : Math.max(1, this.normalizeSortOrder(suggestedSortOrder)));
@@ -86,10 +97,22 @@ function albumEditorManager() {
 
         handleMediaSelect(event) {
             const files = Array.from(event.target.files).filter(file => file.type.startsWith('image/'));
-            const remaining = Math.max(0, 30 - this.mediaFiles.length - this.parseRemotePhotoUrls().length);
+            if (this.isMomentsAlbum) {
+                event.target.value = '';
+                alert('朋友圈相册只接收发布动态时同步的图片');
+                return;
+            }
+            const remaining = this.remainingPhotoSlots;
+            if (files.length > remaining) {
+                alert(`每个相册最多 ${this.albumPhotoLimit} 张照片，本次只能再添加 ${remaining} 张`);
+            }
             files.slice(0, remaining).forEach(file => {
                 const reader = new FileReader();
-                reader.onload = loadEvent => this.mediaFiles.push({ file, preview: loadEvent.target.result });
+                this.mediaFiles.push({ file, preview: '' });
+                reader.onload = loadEvent => {
+                    const media = this.mediaFiles.find(item => item.file === file);
+                    if (media) media.preview = loadEvent.target.result;
+                };
                 reader.readAsDataURL(file);
             });
             event.target.value = '';
@@ -192,8 +215,12 @@ function albumEditorManager() {
                 alert(`图片链接格式不正确：${invalidRemotePhoto}`);
                 return;
             }
-            if (this.mediaFiles.length + remotePhotos.length > 30) {
-                alert('本地图片和远程图片合计最多 30 张');
+            if (this.isMomentsAlbum && (this.uploadOnly || this.mediaFiles.length > 0 || remotePhotos.length > 0)) {
+                alert('朋友圈相册只支持从动态同步图片');
+                return;
+            }
+            if (this.existingPhotoCount + this.mediaFiles.length + remotePhotos.length > this.albumPhotoLimit) {
+                alert(`每个相册最多 ${this.albumPhotoLimit} 张照片`);
                 return;
             }
             if (this.uploadOnly && this.mediaFiles.length === 0 && remotePhotos.length === 0) {
@@ -313,23 +340,25 @@ function albumEditorManager() {
                         </span>
                     </label>
                 </div>
-                <div class="album-editor-field">
-                    <span x-text="uploadOnly ? '选择照片' : '添加照片'"></span>
-                    <input type="file" accept="image/*" multiple @change="handleMediaSelect($event)">
-                    <small>本地图片与远程链接合计最多 30 张，未设置封面时自动使用第一张照片</small>
-                </div>
-                <label class="album-editor-field">
-                    <span>远程图片链接</span>
-                    <textarea x-model="remotePhotoUrls" rows="5" placeholder="https://example.com/photo-1.jpg&#10;https://example.com/photo-2.jpg"></textarea>
-                    <small>支持图片直链或图床链接，一行一张，仅支持 HTTP/HTTPS</small>
-                </label>
-                <div class="album-editor-media" x-show="mediaFiles.length">
-                    <template x-for="(media, index) in mediaFiles" :key="index">
-                        <div class="album-editor-media-item">
-                            <img :src="media.preview" alt="照片预览">
-                            <button type="button" aria-label="移除照片" @click="removeMedia(index)">×</button>
-                        </div>
-                    </template>
+                <div x-show="!isMomentsAlbum">
+                    <div class="album-editor-field">
+                        <span x-text="uploadOnly ? '选择照片' : '添加照片'"></span>
+                        <input type="file" accept="image/*" multiple @change="handleMediaSelect($event)">
+                        <small>每个相册最多 100 张照片，未设置封面时自动使用第一张照片</small>
+                    </div>
+                    <label class="album-editor-field">
+                        <span>远程图片链接</span>
+                        <textarea x-model="remotePhotoUrls" rows="5" placeholder="https://example.com/photo-1.jpg&#10;https://example.com/photo-2.jpg"></textarea>
+                        <small>支持图片直链或图床链接，一行一张，仅支持 HTTP/HTTPS</small>
+                    </label>
+                    <div class="album-editor-media" x-show="mediaFiles.length">
+                        <template x-for="(media, index) in mediaFiles" :key="index">
+                            <div class="album-editor-media-item">
+                                <img :src="media.preview" alt="照片预览">
+                                <button type="button" aria-label="移除照片" @click="removeMedia(index)">×</button>
+                            </div>
+                        </template>
+                    </div>
                 </div>
                 <div class="album-editor-status" x-show="submitStatus" x-text="submitStatus"></div>
             </div>

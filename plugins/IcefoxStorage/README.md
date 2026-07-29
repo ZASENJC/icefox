@@ -21,8 +21,8 @@ Secret Access Key 保存后不会回显。生产环境优先使用以下环境�
 
 建议把插件目录内的 `php-uploads.ini.example`（与主仓库
 `deploy/php-uploads.ini` 内容相同）加载到 PHP，将
-`upload_max_filesize` 设为 20MB、`post_max_size` 设为 128MB，并把
-`max_file_uploads` 设为 40。修改后必须重启 PHP-FPM、Apache 或容器；插件运行时
+`upload_max_filesize` 设为 20MB、`post_max_size` 设为 512MB，并把
+`max_file_uploads` 设为 100。修改后必须重启 PHP-FPM、Apache 或容器；插件运行时
 无法通过 `ini_set()` 修改这些在请求解析阶段生效的配置。
 
 配置容量允许时，相册图片使用普通 multipart 直接上传。单图或整次请求超过 PHP

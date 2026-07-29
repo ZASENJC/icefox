@@ -12,6 +12,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 }
 
 class Action extends Widget implements ActionInterface {
+    const ALBUM_PHOTO_LIMIT = 100;
     const STAGED_UPLOAD_CHUNK_SIZE = 1048576;
     const STAGED_UPLOAD_TTL = 3600;
 
@@ -950,23 +951,32 @@ class Action extends Widget implements ActionInterface {
 
         try {
             $remotePhotos = $this->parseAlbumRemotePhotos($request->get('remotePhotos', '[]'), $name);
+            $stagedUploads = $request->get('stagedUploads', '[]');
             $existing = $albumId !== '' ? $this->findAlbum($albumId) : null;
             if ($albumId !== '' && !$existing) {
                 throw new \InvalidArgumentException('要编辑的相册不存在');
             }
+            $isMoments = $existing && (int) $existing['is_moments'] === 1;
+            $existingPhotos = $existing ? $this->deduplicateAlbumPhotos($this->decodeAlbumPhotos($existing['photos'])) : [];
+            $photosWithRemote = $this->deduplicateAlbumPhotos(array_merge($existingPhotos, $remotePhotos));
+            $requestUploadCount = $this->albumRequestUploadCount($stagedUploads);
+            if ($isMoments && $this->albumRequestHasManualPhotos($remotePhotos, $stagedUploads)) {
+                throw new \InvalidArgumentException('朋友圈相册只支持从动态同步图片');
+            }
+            if (!$isMoments
+                && count($photosWithRemote) + $requestUploadCount > self::ALBUM_PHOTO_LIMIT
+                && (count($photosWithRemote) > count($existingPhotos) || $requestUploadCount > 0)) {
+                throw new \InvalidArgumentException('每个相册最多 ' . self::ALBUM_PHOTO_LIMIT . ' 张图片');
+            }
 
-            $uploadedFiles = $this->consumeStagedAlbumUploads($request->get('stagedUploads', '[]'));
-            $uploadedFiles = array_merge($uploadedFiles, $this->handleMediaUpload($storageTarget, 30, false));
+            $uploadedFiles = $this->consumeStagedAlbumUploads($stagedUploads);
+            $uploadedFiles = array_merge($uploadedFiles, $this->handleMediaUpload($storageTarget, self::ALBUM_PHOTO_LIMIT, false));
             foreach ($uploadedFiles as $file) {
                 if ($file['type'] !== 'image') {
                     throw new \InvalidArgumentException('相册只允许上传图片');
                 }
             }
-            if (count($uploadedFiles) + count($remotePhotos) > 30) {
-                throw new \InvalidArgumentException('每次最多添加 30 张图片');
-            }
-
-            $photos = $existing ? $this->decodeAlbumPhotos($existing['photos']) : [];
+            $photos = $existingPhotos;
             foreach ($uploadedFiles as $file) {
                 $photos[] = [
                     'src' => $file['path'],
@@ -977,11 +987,15 @@ class Action extends Widget implements ActionInterface {
                 ];
             }
             $photos = $this->deduplicateAlbumPhotos(array_merge($photos, $remotePhotos));
+            if (!$isMoments
+                && count($photos) > self::ALBUM_PHOTO_LIMIT
+                && count($photos) > count($existingPhotos)) {
+                throw new \InvalidArgumentException('每个相册最多 ' . self::ALBUM_PHOTO_LIMIT . ' 张图片');
+            }
             if ($cover === '' && !empty($photos)) {
                 $cover = $photos[0]['src'];
             }
 
-            $isMoments = $existing && (int) $existing['is_moments'] === 1;
             $isPinned = $isMoments
                 ? 1
                 : ($request->get('isPinned', null) === null
@@ -1158,7 +1172,7 @@ class Action extends Widget implements ActionInterface {
         if ($receipts === null || $receipts === '') {
             return [];
         }
-        if (!is_array($receipts) || count($receipts) > 30) {
+        if (!is_array($receipts) || count($receipts) > self::ALBUM_PHOTO_LIMIT) {
             throw new \InvalidArgumentException('图片暂存凭据格式不正确');
         }
 
@@ -1208,6 +1222,25 @@ class Action extends Widget implements ActionInterface {
         }
 
         return $uploadedFiles;
+    }
+
+    private function albumRequestHasManualPhotos(array $remotePhotos, $stagedUploads) {
+        return !empty($remotePhotos) || $this->albumRequestUploadCount($stagedUploads) > 0;
+    }
+
+    private function albumRequestUploadCount($stagedUploads) {
+        $receipts = is_array($stagedUploads) ? $stagedUploads : json_decode((string) $stagedUploads, true);
+        $uploadCount = is_array($receipts) ? count($receipts) : 0;
+
+        foreach ($_FILES as $key => $file) {
+            if (strpos($key, 'media_') === 0
+                && is_array($file)
+                && ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                $uploadCount++;
+            }
+        }
+
+        return $uploadCount;
     }
 
     private function stagedUploadRoot() {

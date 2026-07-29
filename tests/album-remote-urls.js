@@ -34,9 +34,12 @@ global.FormData = class FormDataMock {
     }
 };
 global.window = {
-    ICEFOX_CONFIG: { actionUrl: '/action/icefox' },
+    ICEFOX_CONFIG: { actionUrl: '/action/icefox', uploadStorage: 'local' },
     ICEFOX_PLUGIN: {
         actions: { saveAlbum: 'saveAlbum' },
+        appendStorageTarget() {},
+        postUrl: async action => `/action/icefox?do=${action}`,
+        shouldStageObjectFiles: () => false,
         url: action => `/action/icefox?do=${action}`
     },
     setTimeout() {}

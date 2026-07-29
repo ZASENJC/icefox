@@ -47,7 +47,7 @@
 
 `plugins/Icefox/` 读取主题提交的 `storage=local/object`，但必须在服务端白名单化。选择 `object` 时，只有图片交给 `IcefoxStorage`；视频继续使用本地存储。对象上传后若文章、附件、相册或朋友圈同步写入失败，伴生插件必须删除本次新对象作为补偿回滚。
 
-相册选择对象存储时，浏览器先通过 `stageAlbumUpload` 按 1MB 分片把原图暂存到服务器，再由 `saveAlbum` 调用 `IcefoxStorage` 上传完整文件。这个流程不会压缩图片，并避免 PHP 默认 `upload_max_filesize=2M` 在插件执行前拒绝较大的相册图片。
+相册选择对象存储时，未超过 PHP 单文件和整次请求上限的图片直接通过 `saveAlbum` 上传。只有超过限制或无法读取有效限制时，浏览器才通过 `stageAlbumUpload` 按 1MB 分片暂存原图，再由 `saveAlbum` 调用 `IcefoxStorage` 上传完整文件。两条路径都不会压缩图片，分片仅作为低上传上限环境的备用逻辑。
 
 数据库保存完整公开 URL，并额外保存 `storage` 和 `objectKey`。完整 URL 保证数据库恢复后可直接显示，`objectKey` 用于后台删除、存储迁移和失败清理。数据库备份不包含对象文件，存储桶仍需独立备份。
 

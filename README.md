@@ -85,6 +85,14 @@
 
    启用 `IcefoxStorage`，在插件设置页填写 Endpoint、Region、Bucket、访问凭证、公开访问域名和路径前缀。Cloudflare R2 的 Region 使用 `auto`。Endpoint 是 S3 API 地址，公开访问域名应填写绑定到存储桶的稳定图片域名。
 
+   建议同时把仓库中的 [`deploy/php-uploads.ini`](deploy/php-uploads.ini) 加载到 PHP：
+
+   ```dockerfile
+   COPY deploy/php-uploads.ini /usr/local/etc/php/conf.d/icefox-uploads.ini
+   ```
+
+   配置将单文件上传上限设为 20MB、整次 POST 上限设为 128MB，并允许一次提交 40 个文件。修改 PHP 配置后需要重启 PHP-FPM、Apache 或对应容器。插件代码中的 `ini_set()` 无法修改 `upload_max_filesize` 和 `post_max_size`，因为 PHP 会在执行插件前处理上传请求。
+
 4. **启用主题**
 
    登录 Typecho 后台 → 外观 → 启用 Icefox 主题
@@ -142,6 +150,8 @@ icefox/
 
 选择对象存储后，动态和相册上传的图片会先写入 R2/S3。文章正文、Typecho 附件元数据和相册照片数据保存完整公开 URL，同时保留 `objectKey` 供删除和迁移使用。对象存储失败会终止发布，不会静默保存到本地。
 
+相册图片在单文件和整次请求均不超过 PHP 上限时直接上传；只有超过 `upload_max_filesize`、预计超过 `post_max_size`，或服务器未能报告有效限制时，才使用 1MB 分片暂存作为备用逻辑。两种路径最终都会由服务端上传完整原图到 R2/S3。
+
 建议使用长期固定的自定义图片域名，例如 `https://img.example.com`。恢复数据库后，只要该域名、存储桶和对象仍然存在，历史图片无需迁移即可继续显示。
 
 数据库备份只保存图片引用，不包含图片文件。完整灾备必须同时包含：
@@ -195,6 +205,7 @@ $posts = $db->fetchAll(
 | `do=createPost` | POST multipart | 发布动态；`storage=object` 上传图片到 R2/S3，`syncToAlbum=1` 时同步到“朋友圈”相册 |
 | `do=getAlbums` | GET | 获取可见相册列表 |
 | `do=getAlbum&album={id}` | GET | 获取相册详情和照片 |
+| `do=stageAlbumUpload` | POST binary | PHP 上传限制不足时暂存相册图片分片 |
 | `do=saveAlbum` | POST multipart | 新建或编辑相册并上传照片；支持 `storage=local/object`、`isPinned` 和 `sortOrder` |
 
 ## ⚙️ 配置要求
@@ -205,6 +216,10 @@ $posts = $db->fetchAll(
 - json
 - fileinfo
 - curl（使用 R2/S3 时）
+
+### PHP 上传限制
+
+推荐加载 `deploy/php-uploads.ini`。Nginx 部署还应确保 `client_max_body_size` 不低于 `128M`；使用 PHP-FPM 的共享主机可以把同样三项配置写入 Typecho 根目录的 `.user.ini`。配置未生效时，对象存储相册会自动使用分片备用逻辑，但 Typecho 后台原生附件上传仍受服务器限制。
 
 ### 数据库
 - 支持外键约束

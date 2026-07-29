@@ -13,5 +13,7 @@ rg -q "consumeStagedAlbumUploads" "$action_file"
 rg -q "public static function uploadPath\(" "$storage_plugin"
 rg -q "stageObjectFiles" "$album_editor"
 rg -q "stagedUploads" "$album_editor"
+rg -q "shouldStageObjectFiles" "$album_editor"
+rg -q "if \(!useChunkFallback\)" "$album_editor"
 
 echo "album object chunk upload contract passed"

@@ -208,8 +208,11 @@ function albumEditorManager() {
                 const configuredTarget = window.ICEFOX_CONFIG && window.ICEFOX_CONFIG.uploadStorage === 'object'
                     ? 'object'
                     : 'local';
-                const stagedUploads = configuredTarget === 'object'
-                    ? await this.stageObjectFiles(this.mediaFiles.map(media => media.file))
+                const selectedFiles = this.mediaFiles.map(media => media.file);
+                const useChunkFallback = configuredTarget === 'object'
+                    && window.ICEFOX_PLUGIN.shouldStageObjectFiles(selectedFiles);
+                const stagedUploads = useChunkFallback
+                    ? await this.stageObjectFiles(selectedFiles)
                     : [];
                 if (this.albumId) formData.append('albumId', this.albumId);
                 formData.append('name', this.albumName.trim());
@@ -223,7 +226,7 @@ function albumEditorManager() {
                 }
                 formData.append('remotePhotos', JSON.stringify(remotePhotos));
                 formData.append('stagedUploads', JSON.stringify(stagedUploads));
-                if (configuredTarget !== 'object') {
+                if (!useChunkFallback) {
                     this.mediaFiles.forEach((media, index) => formData.append(`media_${index}`, media.file));
                 }
                 if (typeof window.ICEFOX_PLUGIN.appendStorageTarget === 'function') {

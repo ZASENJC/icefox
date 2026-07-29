@@ -1,6 +1,37 @@
 <?php
 
 /**
+ * Convert a PHP ini size such as 20M into bytes.
+ */
+function icefoxIniSizeToBytes($value)
+{
+    $value = trim((string) $value);
+    if ($value === '') {
+        return 0;
+    }
+
+    $number = (float) $value;
+    if ($number <= 0) {
+        return 0;
+    }
+
+    $unit = strtolower(substr($value, -1));
+    if ($unit === 'g') {
+        $number *= 1024;
+        $unit = 'm';
+    }
+    if ($unit === 'm') {
+        $number *= 1024;
+        $unit = 'k';
+    }
+    if ($unit === 'k') {
+        $number *= 1024;
+    }
+
+    return (int) floor($number);
+}
+
+/**
  * 提取图片
  */
 function extractImageSrcs($html)

@@ -39,6 +39,32 @@
         return formData;
     }
 
+    function shouldStageObjectFiles(files) {
+        const selectedFiles = Array.from(files || []);
+        if (selectedFiles.length === 0) {
+            return false;
+        }
+
+        const config = global.ICEFOX_CONFIG || {};
+        const uploadMaxBytes = Number(config.phpUploadMaxBytes);
+        const postMaxBytes = Number(config.phpPostMaxBytes);
+        if (!Number.isFinite(uploadMaxBytes) || uploadMaxBytes <= 0
+            || !Number.isFinite(postMaxBytes) || postMaxBytes <= 0) {
+            return true;
+        }
+
+        let estimatedRequestBytes = 512 * 1024;
+        for (const file of selectedFiles) {
+            const fileSize = Number(file && file.size);
+            if (!Number.isFinite(fileSize) || fileSize < 0 || fileSize > uploadMaxBytes) {
+                return true;
+            }
+            estimatedRequestBytes += fileSize + (64 * 1024);
+        }
+
+        return estimatedRequestBytes > postMaxBytes;
+    }
+
     async function postUrl(action, params) {
         const response = await global.fetch(url(actions.getSecurityToken), {
             headers: { 'Accept': 'application/json' },
@@ -55,5 +81,5 @@
         return endpoint.toString();
     }
 
-    global.ICEFOX_PLUGIN = Object.freeze({ actions, url, postUrl, appendStorageTarget });
+    global.ICEFOX_PLUGIN = Object.freeze({ actions, url, postUrl, appendStorageTarget, shouldStageObjectFiles });
 })(window);

@@ -52,9 +52,9 @@ $friendLinksPageUrl = icefoxFriendLinksPageUrl($this->options);
                                 </span>
                                 <span class="link-info">
                                     <span class="link-name" x-text="link.name"></span>
-                                    <span class="link-description" x-text="link.description || link.url"></span>
+                                    <span class="link-address" x-text="link.url"></span>
                                 </span>
-                                <span class="link-arrow" aria-hidden="true">›</span>
+                                <span class="link-description" x-text="link.description"></span>
                             </a>
                             <button type="button" class="link-edit-button" x-show="canEdit" :aria-label="`编辑${link.name}`" @click="startEdit(link)">编辑</button>
                         </article>

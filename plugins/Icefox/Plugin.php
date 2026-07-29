@@ -425,6 +425,7 @@ class Plugin implements PluginInterface
             `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
             `slug` varchar(191) NOT NULL,
             `name` varchar(80) NOT NULL,
+            `description` text,
             `cover` varchar(1000) DEFAULT NULL,
             `tags` text,
             `address` varchar(255) DEFAULT NULL,
@@ -455,6 +456,9 @@ class Plugin implements PluginInterface
         }
         if (!in_array('sort_order', $columnNames, true)) {
             $db->query("ALTER TABLE `{$prefix}icefox_albums` ADD COLUMN `sort_order` int(10) unsigned NOT NULL DEFAULT '0'");
+        }
+        if (!in_array('description', $columnNames, true)) {
+            $db->query("ALTER TABLE `{$prefix}icefox_albums` ADD COLUMN `description` text AFTER `name`");
         }
     }
 

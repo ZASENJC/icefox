@@ -68,6 +68,7 @@ node tests/moments-album.js
 node tests/album-pinning.js
 node tests/album-sorting.js
 node tests/album-card-location.js
+node tests/album-description.js
 sh tests/album-plugin-pinning.sh
 sh tests/album-plugin-sorting.sh
 

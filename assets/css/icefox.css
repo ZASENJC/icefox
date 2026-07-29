@@ -719,6 +719,15 @@ main {
     margin: -10px 0 18px;
 }
 
+.album-detail-description {
+    margin: -8px 0 18px;
+    color: var(--text-color);
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
 .album-loading,
 .album-error,
 .album-empty {

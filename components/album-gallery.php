@@ -75,6 +75,7 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                 cover,
                 tags,
                 photos,
+                description: String(source.description || source.summary || ''),
                 address: source.address || source.location || '',
                 isPinned: this.isAlbumPinned(source),
                 isMoments: this.isMomentsAlbum(source),
@@ -272,10 +273,11 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
     </div>
 
     <div class="album-detail-view" x-show="!loading && !error && isDetail">
-        <div class="album-detail-meta" x-show="album">
+        <div class="album-detail-meta" x-show="album && (album.address || album.tags.length)">
             <span class="album-detail-address" x-show="album && album.address" x-text="album && album.address"></span>
             <span class="album-detail-tags" x-show="album && album.tags.length" x-text="album && album.tags.join(' · ')"></span>
         </div>
+        <p class="album-detail-description" x-show="album && album.description" x-text="album && album.description"></p>
         <div class="album-grid" x-show="album && album.photos.length">
             <template x-for="(photo, index) in (album ? album.photos : [])" :key="photo.src + '-' + index">
                 <a class="album-grid-item" :href="photo.src" data-fancybox="album-photos" :data-caption="photo.alt || albumTitle">

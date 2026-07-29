@@ -11,6 +11,7 @@ function albumEditorManager() {
         albumEditorShow: false,
         albumId: '',
         albumName: '',
+        description: '',
         cover: '',
         tags: '',
         address: '',
@@ -71,6 +72,7 @@ function albumEditorManager() {
             this.uploadOnly = detail.uploadOnly === true;
             this.albumId = album.id || album.aid || album.albumId || album.slug || '';
             this.albumName = album.name || album.title || '';
+            this.description = String(album.description || album.summary || '');
             this.cover = album.cover || '';
             this.tags = Array.isArray(album.tags) ? album.tags.join(', ') : (album.tags || '');
             this.address = album.address || album.location || '';
@@ -243,6 +245,7 @@ function albumEditorManager() {
                     : [];
                 if (this.albumId) formData.append('albumId', this.albumId);
                 formData.append('name', this.albumName.trim());
+                formData.append('description', this.description.trim());
                 formData.append('cover', this.cover.trim());
                 formData.append('tags', this.tags);
                 formData.append('address', this.address);
@@ -299,6 +302,10 @@ function albumEditorManager() {
                     <label class="album-editor-field">
                         <span>相册名称</span>
                         <input type="text" x-model="albumName" maxlength="80" required placeholder="例如：春日散步">
+                    </label>
+                    <label class="album-editor-field">
+                        <span>相册说明</span>
+                        <textarea x-model="description" rows="4" maxlength="1000" placeholder="写下这个相册的故事"></textarea>
                     </label>
                     <label class="album-editor-field">
                         <span>封面图 URL</span>

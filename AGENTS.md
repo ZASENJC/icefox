@@ -51,6 +51,8 @@ Core responsibilities:
   construction.
 - `header.php`: document head, global browser configuration, comment/reply
   controller, and script loading.
+- `assets/js/icefox-plugin.js`: shared companion-plugin action URLs, fresh POST
+  security tokens, upload target selection, and album upload fallback decisions.
 - `assets/js/icefox.js`: infinite scrolling, likes, content expansion, icon
   state, and back-to-top behavior.
 - `assets/js/music-player.js`: per-card audio players and global playback
@@ -68,9 +70,12 @@ plugin owns Icefox-specific persistence for likes, friend links, and albums.
 `scripts/migrate-legacy-pins.php`; runtime pinning uses the Typecho `isTop`
 post field.
 
-`header.php` publishes the plugin route as `window.ICEFOX_CONFIG.actionUrl`.
-Keep pseudo-static and non-pseudo-static Typecho installations compatible by
-building URLs from this value instead of hardcoding `/action/icefox`.
+`header.php` publishes the plugin route as `window.ICEFOX_CONFIG.actionUrl`, and
+`assets/js/icefox-plugin.js` exposes it through `window.ICEFOX_PLUGIN`. Keep
+pseudo-static and non-pseudo-static Typecho installations compatible by using
+that client instead of hardcoding `/action/icefox`. Mutating requests must use
+its `postUrl()` helper so they receive a fresh Typecho security token rather
+than reusing the token embedded in an older page.
 
 The frontend currently calls these plugin actions:
 
@@ -83,14 +88,24 @@ The frontend currently calls these plugin actions:
 | `createPost` | POST multipart | Create a post and upload media |
 | `getAlbums` | GET | Load the visible album list |
 | `getAlbum` | GET | Load one album and its photos |
-| `saveAlbum` | POST multipart | Create or update an album, set `sortOrder`, and upload photos |
+| `getSecurityToken` | GET | Refresh the current user's Typecho security token |
+| `stageAlbumUpload` | POST binary | Stage one object-backed album image when PHP multipart limits require fallback |
+| `saveAlbum` | POST multipart | Create or update an album, including description, ordering, and photos |
 
 Do not implement these endpoints inside the theme unless the architecture is
 explicitly being changed. They belong to the companion plugin.
 
-Album responses expose `sortOrder` for regular albums. The Moments album does
-not participate in manual ordering and always renders first; remaining albums
-preserve pinning priority and then sort by ascending `sortOrder`.
+Album responses expose a plain-text `description`; regular albums also expose
+`sortOrder`. Descriptions are limited to 1000 characters and must render as
+escaped text. A regular album holds at most 100 photos. The Moments album accepts
+photos only through post synchronization, does not participate in manual
+ordering, and always renders first; remaining albums preserve pinning priority
+and then sort by ascending `sortOrder`.
+
+Object-backed album uploads should use normal multipart upload when the selected
+files fit the published PHP upload limits. Use `stageAlbumUpload` only as the
+fallback for requests that would exceed those limits, then pass the returned
+receipts to `saveAlbum`.
 
 ## Theme Configuration And Fields
 
@@ -151,7 +166,14 @@ behavior.
 This repository alone cannot provide a meaningful local preview. Use a Typecho
 test installation with the Icefox plugin enabled and a configured database.
 
-For changes, run the checks available in the environment:
+Scale verification effort to the risk and complexity of the change. For simple,
+localized changes, make the requested edit, inspect the diff, and leave runtime
+verification to the user; do not run broad or unrelated tests unless explicitly
+requested. Use targeted automated checks when the affected behavior or blast
+radius warrants them.
+
+For changes that warrant automated verification, run the relevant checks
+available in the environment:
 
 ```sh
 find . -name '*.php' -not -path './.git/*' -exec php -l {} \;

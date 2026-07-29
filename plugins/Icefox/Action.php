@@ -932,6 +932,7 @@ class Action extends Widget implements ActionInterface {
         $db = Db::get();
         $albumId = trim((string) $request->get('albumId', ''));
         $name = trim((string) $request->get('name', ''));
+        $requestedDescription = $request->get('description', null);
         $cover = trim((string) $request->get('cover', ''));
         $visibility = $request->get('visibility', 'public') === 'private' ? 'private' : 'public';
         $storageTarget = $this->resolveStorageTarget($request->get('storage', 'local'));
@@ -946,6 +947,10 @@ class Action extends Widget implements ActionInterface {
         }
         if ($cover !== '' && !$this->isImageReference($cover)) {
             $this->returnJson(['success' => false, 'message' => '相册封面必须是 HTTP/HTTPS 图片地址']);
+            return;
+        }
+        if ($requestedDescription !== null && mb_strlen(trim((string) $requestedDescription), 'UTF-8') > 1000) {
+            $this->returnJson(['success' => false, 'message' => '相册说明最多 1000 个字符']);
             return;
         }
 
@@ -968,6 +973,9 @@ class Action extends Widget implements ActionInterface {
                 && (count($photosWithRemote) > count($existingPhotos) || $requestUploadCount > 0)) {
                 throw new \InvalidArgumentException('每个相册最多 ' . self::ALBUM_PHOTO_LIMIT . ' 张图片');
             }
+            $description = $requestedDescription === null
+                ? trim((string) ($existing['description'] ?? ''))
+                : trim((string) $requestedDescription);
 
             $uploadedFiles = $this->consumeStagedAlbumUploads($stagedUploads);
             $uploadedFiles = array_merge($uploadedFiles, $this->handleMediaUpload($storageTarget, self::ALBUM_PHOTO_LIMIT, false));
@@ -1010,6 +1018,7 @@ class Action extends Widget implements ActionInterface {
             $now = time();
             $rows = [
                 'name' => $name,
+                'description' => $description,
                 'cover' => $cover,
                 'tags' => trim((string) $request->get('tags', '')),
                 'address' => trim((string) $request->get('address', '')),
@@ -1315,7 +1324,7 @@ class Action extends Widget implements ActionInterface {
 
             $rows = [];
             foreach ([
-                'slug', 'name', 'cover', 'tags', 'address', 'visibility', 'photos',
+                'slug', 'name', 'description', 'cover', 'tags', 'address', 'visibility', 'photos',
                 'is_pinned', 'is_moments', 'sort_order', 'created_at', 'updated_at'
             ] as $column) {
                 if (array_key_exists($column, $existing)) {
@@ -1357,6 +1366,7 @@ class Action extends Widget implements ActionInterface {
         $id = $db->query($db->insert('table.icefox_albums')->rows([
             'slug' => 'moments',
             'name' => '朋友圈',
+            'description' => '',
             'cover' => '',
             'tags' => '',
             'address' => '',
@@ -1496,6 +1506,7 @@ class Action extends Widget implements ActionInterface {
             'id' => (int) $album['id'],
             'slug' => (string) $album['slug'],
             'name' => (string) $album['name'],
+            'description' => (string) ($album['description'] ?? ''),
             'cover' => (string) ($album['cover'] ?: ($photos[0]['src'] ?? '')),
             'tags' => $tags,
             'address' => (string) ($album['address'] ?? ''),

@@ -2,6 +2,7 @@ const assert = require('assert');
 const fs = require('fs');
 
 const source = fs.readFileSync('components/album-gallery.php', 'utf8');
+const styles = fs.readFileSync('assets/css/icefox.css', 'utf8');
 const scriptMatch = source.match(/<script>\s*([\s\S]*?)\s*<\/script>/);
 assert.ok(scriptMatch, 'album gallery manager script must be present');
 
@@ -22,6 +23,49 @@ async function loadAlbums(showMomentsAlbum, albums) {
 }
 
 async function run() {
+    const manager = createManager('', true);
+    const coverSource = Array.from({ length: 12 }, (_, index) => ({
+        src: `photo-${index + 1}.jpg`,
+        alt: `照片 ${index + 1}`
+    }));
+    const zeroRandomCover = manager.buildMomentsCoverPhotos(coverSource, () => 0);
+    const highRandomCover = manager.buildMomentsCoverPhotos(coverSource, () => 0.999999);
+    assert.strictEqual(zeroRandomCover.length, 9, 'moments cover must render as a nine-cell grid');
+    assert.strictEqual(new Set(zeroRandomCover.map(photo => photo.src)).size, 9, 'albums with enough photos must sample nine different images');
+    assert.ok(zeroRandomCover.every(photo => coverSource.includes(photo)), 'moments cover cells must come from that album');
+    assert.notDeepStrictEqual(
+        zeroRandomCover.map(photo => photo.src),
+        highRandomCover.map(photo => photo.src),
+        'different random sequences must produce different cover arrangements'
+    );
+
+    const shortCoverSource = coverSource.slice(0, 2);
+    const repeatedCover = manager.buildMomentsCoverPhotos(shortCoverSource, () => 0);
+    assert.strictEqual(repeatedCover.length, 9, 'moments albums with fewer photos must still fill all nine cells');
+    assert.deepStrictEqual(
+        new Set(repeatedCover.map(photo => photo.src)),
+        new Set(shortCoverSource.map(photo => photo.src)),
+        'short moments albums must only repeat their own photos'
+    );
+    assert.deepStrictEqual(manager.buildMomentsCoverPhotos([], () => 0), [], 'empty moments albums must keep the placeholder');
+
+    const normalizedMoments = manager.normalizeAlbum({
+        id: 'moments',
+        name: '朋友圈',
+        photos: coverSource
+    });
+    const normalizedRegular = manager.normalizeAlbum({
+        id: 'trip',
+        name: '旅行',
+        photos: coverSource
+    });
+    assert.strictEqual(normalizedMoments.coverPhotos.length, 9, 'only the moments album must prepare a nine-cell cover');
+    assert.deepStrictEqual(normalizedRegular.coverPhotos, [], 'regular album cover behavior must remain unchanged');
+    assert.match(source, /class="album-card-cover-grid"[^>]*x-show="album\.isMoments && album\.coverPhotos\.length"/);
+    assert.match(source, /x-for="\(photo, index\) in album\.coverPhotos"/);
+    assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+    assert.match(styles, /\.album-card-cover-grid img\s*\{[\s\S]*?filter:\s*blur\(/);
+
     const defaultAlbums = await loadAlbums(true, []);
     assert.strictEqual(defaultAlbums.length, 1, 'enabled moments album must be shown when the plugin list is empty');
     assert.strictEqual(defaultAlbums[0].name, '朋友圈', 'the default album must use the moments name');

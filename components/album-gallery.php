@@ -58,6 +58,31 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
             return Math.min(2147483647, Math.max(0, Math.trunc(parsed)));
         },
 
+        shufflePhotos(photos, random = Math.random) {
+            const shuffled = photos.slice();
+            for (let index = shuffled.length - 1; index > 0; index -= 1) {
+                const randomValue = Number(random());
+                const safeRandomValue = Number.isFinite(randomValue)
+                    ? Math.min(0.9999999999999999, Math.max(0, randomValue))
+                    : 0;
+                const swapIndex = Math.floor(safeRandomValue * (index + 1));
+                [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+            }
+            return shuffled;
+        },
+
+        buildMomentsCoverPhotos(photos, random = Math.random) {
+            const availablePhotos = Array.isArray(photos) ? photos.filter(photo => photo && photo.src) : [];
+            if (availablePhotos.length === 0) return [];
+
+            const shuffledPhotos = this.shufflePhotos(availablePhotos, random);
+            const coverPhotos = shuffledPhotos.slice(0, 9);
+            while (coverPhotos.length < 9) {
+                coverPhotos.push(shuffledPhotos[coverPhotos.length % shuffledPhotos.length]);
+            }
+            return this.shufflePhotos(coverPhotos, random);
+        },
+
         normalizeAlbum(album) {
             const source = album || {};
             const rawPhotos = source.photos || source.images || source.media || [];
@@ -67,6 +92,7 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
             const sortOrderValue = Object.prototype.hasOwnProperty.call(source, 'sortOrder')
                 ? source.sortOrder
                 : (Object.prototype.hasOwnProperty.call(source, 'sort_order') ? source.sort_order : source.order);
+            const isMoments = this.isMomentsAlbum(source);
             return {
                 ...source,
                 id: source.id || source.aid || source.albumId || '',
@@ -78,7 +104,8 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                 description: String(source.description || source.summary || ''),
                 address: source.address || source.location || '',
                 isPinned: this.isAlbumPinned(source),
-                isMoments: this.isMomentsAlbum(source),
+                isMoments,
+                coverPhotos: isMoments ? this.buildMomentsCoverPhotos(photos) : [],
                 sortOrder: this.normalizeSortOrder(sortOrderValue)
             };
         },
@@ -249,8 +276,15 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                                 <path d="M11 14h2v7h-2z" />
                             </svg>
                         </span>
-                        <template x-if="album.cover"><img :src="album.cover" :alt="album.name" decoding="async"></template>
-                        <template x-if="!album.cover"><div class="album-card-placeholder">相册</div></template>
+                        <div class="album-card-cover-grid" x-show="album.isMoments && album.coverPhotos.length">
+                            <template x-for="(photo, index) in album.coverPhotos" :key="photo.src + '-' + index">
+                                <span class="album-card-cover-cell">
+                                    <img :src="photo.src" alt="" decoding="async">
+                                </span>
+                            </template>
+                        </div>
+                        <template x-if="!album.isMoments && album.cover"><img :src="album.cover" :alt="album.name" decoding="async"></template>
+                        <template x-if="(!album.isMoments && !album.cover) || (album.isMoments && !album.coverPhotos.length)"><div class="album-card-placeholder">相册</div></template>
                     </div>
                     <div class="album-card-heading">
                         <span class="album-card-name" x-text="album.name"></span>

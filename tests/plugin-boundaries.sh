@@ -57,6 +57,22 @@ if [ -n "$plugin_main" ] && [ -f "$plugin_main" ]; then
         echo 'the companion plugin must remove its old article-pinning admin button' >&2
         exit 1
     fi
+
+    plugin_album_archive=$(dirname "$plugin_main")/AlbumArchive.php
+    if [ ! -f "$plugin_album_archive" ]; then
+        echo 'the companion plugin must provide the album page route target' >&2
+        exit 1
+    fi
+    if ! rg -q "addRoute\\('icefox_albums'.*'/albums'" "$plugin_main" \
+        || ! rg -q "addRoute\\('icefox_album_detail'.*'/albums/\\[album\\]'" "$plugin_main"; then
+        echo 'the companion plugin must register album root and detail routes' >&2
+        exit 1
+    fi
+    if ! rg -q "removeRoute\\('icefox_albums'" "$plugin_main" \
+        || ! rg -q "removeRoute\\('icefox_album_detail'" "$plugin_main"; then
+        echo 'the companion plugin must remove album routes when deactivated' >&2
+        exit 1
+    fi
 fi
 
 if [ -n "$plugin_action" ] && [ -f "$plugin_action" ]; then

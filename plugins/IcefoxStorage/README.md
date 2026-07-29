@@ -18,3 +18,7 @@ Secret Access Key 保存后不会回显。生产环境优先使用以下环境�
 
 插件要求 PHP `fileinfo` 和 `curl` 扩展。对象存储失败时不会静默回退本地，避免
 在管理员认为图片已经进入存储桶时产生未备份的本地文件。
+
+相册图片由 Icefox 伴生插件按 1MB 分片暂存后再上传完整原图，因此不受 PHP
+默认 2MB 文件上传上限影响。Typecho 后台原生附件上传仍受服务器自身的
+`upload_max_filesize` 和 `post_max_size` 配置约束。

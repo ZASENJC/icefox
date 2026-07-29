@@ -115,6 +115,67 @@ function albumEditorManager() {
             }
         },
 
+        createUploadId() {
+            if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+                const bytes = new Uint8Array(16);
+                window.crypto.getRandomValues(bytes);
+                return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+            }
+            return Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        },
+
+        async readJsonResponse(response, fallbackMessage) {
+            const responseText = await response.text();
+            try {
+                return JSON.parse(responseText);
+            } catch (error) {
+                throw new Error(fallbackMessage);
+            }
+        },
+
+        async stageObjectFiles(files) {
+            const chunkSize = 1024 * 1024;
+            const receipts = [];
+            if (!files.length) return receipts;
+
+            const actionUrl = await window.ICEFOX_PLUGIN.postUrl(window.ICEFOX_PLUGIN.actions.stageAlbumUpload);
+            for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+                const file = files[fileIndex];
+                const uploadId = this.createUploadId();
+                const chunkCount = Math.ceil(file.size / chunkSize);
+                for (let chunkIndex = 0; chunkIndex < chunkCount; chunkIndex++) {
+                    this.submitStatus = `上传图片 ${fileIndex + 1}/${files.length}（${chunkIndex + 1}/${chunkCount}）`;
+                    const endpoint = new URL(actionUrl, window.location.href);
+                    endpoint.searchParams.set('storage', 'object');
+                    endpoint.searchParams.set('uploadId', uploadId);
+                    endpoint.searchParams.set('name', file.name);
+                    endpoint.searchParams.set('size', String(file.size));
+                    endpoint.searchParams.set('chunkIndex', String(chunkIndex));
+                    endpoint.searchParams.set('chunkCount', String(chunkCount));
+                    const response = await fetch(endpoint.toString(), {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/octet-stream'
+                        },
+                        credentials: 'same-origin',
+                        body: file.slice(chunkIndex * chunkSize, Math.min(file.size, (chunkIndex + 1) * chunkSize))
+                    });
+                    const result = await this.readJsonResponse(response, '图片分片上传失败，服务器未返回有效结果');
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.message || '图片分片上传失败');
+                    }
+                    if (chunkIndex === chunkCount - 1) {
+                        if (!result.complete || !result.receipt) {
+                            throw new Error('图片分片上传未完成');
+                        }
+                        receipts.push(result.receipt);
+                    }
+                }
+            }
+            return receipts;
+        },
+
         async submitAlbum() {
             if (this.isSubmitting) return;
             const remotePhotos = this.parseRemotePhotoUrls();
@@ -144,6 +205,12 @@ function albumEditorManager() {
             this.submitStatus = this.uploadOnly ? '上传中...' : '保存中...';
             try {
                 const formData = new FormData();
+                const configuredTarget = window.ICEFOX_CONFIG && window.ICEFOX_CONFIG.uploadStorage === 'object'
+                    ? 'object'
+                    : 'local';
+                const stagedUploads = configuredTarget === 'object'
+                    ? await this.stageObjectFiles(this.mediaFiles.map(media => media.file))
+                    : [];
                 if (this.albumId) formData.append('albumId', this.albumId);
                 formData.append('name', this.albumName.trim());
                 formData.append('cover', this.cover.trim());
@@ -155,7 +222,10 @@ function albumEditorManager() {
                     if (!this.isMomentsAlbum) formData.append('sortOrder', String(this.normalizeSortOrder(this.sortOrder)));
                 }
                 formData.append('remotePhotos', JSON.stringify(remotePhotos));
-                this.mediaFiles.forEach((media, index) => formData.append(`media_${index}`, media.file));
+                formData.append('stagedUploads', JSON.stringify(stagedUploads));
+                if (configuredTarget !== 'object') {
+                    this.mediaFiles.forEach((media, index) => formData.append(`media_${index}`, media.file));
+                }
                 if (typeof window.ICEFOX_PLUGIN.appendStorageTarget === 'function') {
                     window.ICEFOX_PLUGIN.appendStorageTarget(formData);
                 }

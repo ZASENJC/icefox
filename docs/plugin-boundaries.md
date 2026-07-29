@@ -25,7 +25,7 @@
 | 评论 | 表单、回复树展示 | `addComment` 的校验和写入 |
 | 友情链接 | 弹窗和列表样式 | `getFriendLinks` 和链接数据 |
 | 前台发布 | 编辑器、图片预览和选项 | `createPost`、媒体上传和文章写入 |
-| 独立相册 | 相册列表、三列网格、灯箱和编辑弹窗 | `getAlbums`、`getAlbum`、`saveAlbum` |
+| 独立相册 | 相册列表、三列网格、灯箱和编辑弹窗 | `getAlbums`、`getAlbum`、`stageAlbumUpload`、`saveAlbum` |
 | 对象存储 | 选择默认上传目标 | `Icefox` 调用 `IcefoxStorage` 上传、回滚和保存对象元数据 |
 
 主题中的所有插件 URL 都必须通过 `window.ICEFOX_PLUGIN` 生成，不要在组件里手写 `?do=...`。
@@ -46,6 +46,8 @@
 `plugins/IcefoxStorage/` 是独立 Typecho 插件，负责 S3 Signature V4、R2/S3 配置、图片真实性与大小校验、上传、删除和公开 URL 生成。Access Key、Secret、Endpoint 和 Bucket 不得进入主题配置或浏览器全局变量。
 
 `plugins/Icefox/` 读取主题提交的 `storage=local/object`，但必须在服务端白名单化。选择 `object` 时，只有图片交给 `IcefoxStorage`；视频继续使用本地存储。对象上传后若文章、附件、相册或朋友圈同步写入失败，伴生插件必须删除本次新对象作为补偿回滚。
+
+相册选择对象存储时，浏览器先通过 `stageAlbumUpload` 按 1MB 分片把原图暂存到服务器，再由 `saveAlbum` 调用 `IcefoxStorage` 上传完整文件。这个流程不会压缩图片，并避免 PHP 默认 `upload_max_filesize=2M` 在插件执行前拒绝较大的相册图片。
 
 数据库保存完整公开 URL，并额外保存 `storage` 和 `objectKey`。完整 URL 保证数据库恢复后可直接显示，`objectKey` 用于后台删除、存储迁移和失败清理。数据库备份不包含对象文件，存储桶仍需独立备份。
 

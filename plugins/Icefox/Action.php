@@ -12,6 +12,9 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 }
 
 class Action extends Widget implements ActionInterface {
+    const STAGED_UPLOAD_CHUNK_SIZE = 1048576;
+    const STAGED_UPLOAD_TTL = 3600;
+
     public function action(){
         $request = Request::getInstance();
         $user = Widget::widget('Widget_User');
@@ -36,7 +39,7 @@ class Action extends Widget implements ActionInterface {
             return;
         }
 
-        $postActions = ['like', 'addComment', 'deleteFriendLink', 'deleteLikeRecord', 'createPost', 'saveAlbum'];
+        $postActions = ['like', 'addComment', 'deleteFriendLink', 'deleteLikeRecord', 'createPost', 'saveAlbum', 'stageAlbumUpload'];
         if (in_array($do, $postActions, true) && !$this->request->isPost()) {
             $this->returnJson(['success' => false, 'message' => '该操作仅支持 POST 请求']);
             return;
@@ -105,13 +108,15 @@ class Action extends Widget implements ActionInterface {
         }
 
         // 发布文章和保存相册需要登录
-        if ($do === 'createPost' || $do === 'saveAlbum') {
+        if ($do === 'createPost' || $do === 'saveAlbum' || $do === 'stageAlbumUpload') {
             if (!$user->hasLogin()) {
                 $this->returnJson(['success' => false, 'message' => '请先登录']);
                 return;
             }
             if ($do === 'createPost') {
                 $this->createPost();
+            } else if ($do === 'stageAlbumUpload') {
+                $this->stageAlbumUpload();
             } else {
                 $this->saveAlbum();
             }
@@ -950,7 +955,8 @@ class Action extends Widget implements ActionInterface {
                 throw new \InvalidArgumentException('要编辑的相册不存在');
             }
 
-            $uploadedFiles = $this->handleMediaUpload($storageTarget, 30, false);
+            $uploadedFiles = $this->consumeStagedAlbumUploads($request->get('stagedUploads', '[]'));
+            $uploadedFiles = array_merge($uploadedFiles, $this->handleMediaUpload($storageTarget, 30, false));
             foreach ($uploadedFiles as $file) {
                 if ($file['type'] !== 'image') {
                     throw new \InvalidArgumentException('相册只允许上传图片');
@@ -1026,6 +1032,242 @@ class Action extends Widget implements ActionInterface {
             $this->cleanupUploadedObjects($uploadedFiles);
             $this->returnJson(['success' => false, 'message' => '相册保存失败：' . $error->getMessage()]);
         }
+    }
+
+    private function stageAlbumUpload() {
+        $request = Request::getInstance();
+        $pluginClass = '\\TypechoPlugin\\IcefoxStorage\\Plugin';
+        $uploadId = strtolower(trim((string) $request->get('uploadId', '')));
+        $fileName = trim((string) $request->get('name', ''));
+        $fileSize = (int) $request->get('size', 0);
+        $chunkIndex = (int) $request->get('chunkIndex', -1);
+        $chunkCount = (int) $request->get('chunkCount', 0);
+
+        try {
+            if ($request->get('storage', 'local') !== 'object') {
+                throw new \InvalidArgumentException('分片上传仅用于对象存储');
+            }
+            if (!preg_match('/^[a-f0-9]{32}$/', $uploadId)) {
+                throw new \InvalidArgumentException('上传任务标识无效');
+            }
+            if ($fileName === '' || mb_strlen($fileName, 'UTF-8') > 255) {
+                throw new \InvalidArgumentException('图片文件名无效');
+            }
+            if (!class_exists($pluginClass) || !$pluginClass::isConfigured()) {
+                throw new \RuntimeException('IcefoxStorage 插件未启用或对象存储配置不完整');
+            }
+
+            $maxFileSize = $pluginClass::maxFileSizeBytes();
+            $expectedChunks = (int) ceil($fileSize / self::STAGED_UPLOAD_CHUNK_SIZE);
+            if ($fileSize <= 0 || $fileSize > $maxFileSize) {
+                throw new \InvalidArgumentException('图片大小超过对象存储插件限制');
+            }
+            if ($chunkCount !== $expectedChunks || $chunkIndex < 0 || $chunkIndex >= $chunkCount) {
+                throw new \InvalidArgumentException('图片分片参数无效');
+            }
+
+            $body = file_get_contents('php://input');
+            $expectedChunkSize = $chunkIndex === $chunkCount - 1
+                ? $fileSize - ($chunkIndex * self::STAGED_UPLOAD_CHUNK_SIZE)
+                : self::STAGED_UPLOAD_CHUNK_SIZE;
+            if (!is_string($body) || strlen($body) !== $expectedChunkSize) {
+                throw new \RuntimeException('图片分片接收不完整');
+            }
+
+            $user = Widget::widget('Widget_User');
+            $root = $this->stagedUploadRoot();
+            $this->cleanupExpiredStagedUploads($root);
+            $directory = $this->stagedUploadDirectory($uploadId, $user);
+            if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
+                throw new \RuntimeException('无法创建图片分片暂存目录');
+            }
+
+            $partPath = $directory . '/' . sprintf('%04d.part', $chunkIndex);
+            if (file_put_contents($partPath, $body, LOCK_EX) !== $expectedChunkSize) {
+                throw new \RuntimeException('图片分片暂存失败');
+            }
+
+            if ($chunkIndex !== $chunkCount - 1) {
+                $this->returnJson([
+                    'success' => true,
+                    'complete' => false,
+                    'received' => $chunkIndex + 1,
+                    'total' => $chunkCount
+                ]);
+                return;
+            }
+
+            $completePath = $directory . '/upload.bin';
+            $output = fopen($completePath . '.tmp', 'wb');
+            if ($output === false) {
+                throw new \RuntimeException('无法合并图片分片');
+            }
+            try {
+                for ($index = 0; $index < $chunkCount; $index++) {
+                    $currentPart = $directory . '/' . sprintf('%04d.part', $index);
+                    $input = fopen($currentPart, 'rb');
+                    if ($input === false) {
+                        throw new \RuntimeException('图片分片缺失，请重新上传');
+                    }
+                    try {
+                        if (stream_copy_to_stream($input, $output) === false) {
+                            throw new \RuntimeException('图片分片合并失败');
+                        }
+                    } finally {
+                        fclose($input);
+                    }
+                }
+            } finally {
+                fclose($output);
+            }
+
+            if (!rename($completePath . '.tmp', $completePath) || filesize($completePath) !== $fileSize) {
+                throw new \RuntimeException('图片分片合并结果不完整');
+            }
+            for ($index = 0; $index < $chunkCount; $index++) {
+                @unlink($directory . '/' . sprintf('%04d.part', $index));
+            }
+
+            $createdAt = time();
+            $receiptSignature = $this->stagedUploadReceiptSignature($uploadId, $fileName, $fileSize, $createdAt, $user);
+            $manifest = [
+                'uploadId' => $uploadId,
+                'name' => $fileName,
+                'size' => $fileSize,
+                'createdAt' => $createdAt,
+                'uid' => (int) $user->uid,
+                'signature' => $receiptSignature
+            ];
+            $manifestJson = json_encode($manifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            if ($manifestJson === false || file_put_contents($directory . '/manifest.json', $manifestJson, LOCK_EX) === false) {
+                throw new \RuntimeException('无法生成图片暂存凭据');
+            }
+
+            $this->returnJson([
+                'success' => true,
+                'complete' => true,
+                'receipt' => $uploadId . '.' . $receiptSignature
+            ]);
+        } catch (\Exception $error) {
+            $this->returnJson(['success' => false, 'message' => '图片暂存失败：' . $error->getMessage()]);
+        }
+    }
+
+    private function consumeStagedAlbumUploads($rawValue) {
+        $receipts = is_array($rawValue) ? $rawValue : json_decode((string) $rawValue, true);
+        if ($receipts === null || $receipts === '') {
+            return [];
+        }
+        if (!is_array($receipts) || count($receipts) > 30) {
+            throw new \InvalidArgumentException('图片暂存凭据格式不正确');
+        }
+
+        $pluginClass = '\\TypechoPlugin\\IcefoxStorage\\Plugin';
+        if ($receipts && (!class_exists($pluginClass) || !$pluginClass::isConfigured())) {
+            throw new \RuntimeException('IcefoxStorage 插件未启用或对象存储配置不完整');
+        }
+
+        $user = Widget::widget('Widget_User');
+        $uploadedFiles = [];
+        try {
+            foreach ($receipts as $receipt) {
+                if (!is_string($receipt) || !preg_match('/^([a-f0-9]{32})\.([a-f0-9]{64})$/', $receipt, $matches)) {
+                    throw new \InvalidArgumentException('图片暂存凭据无效');
+                }
+
+                $uploadId = $matches[1];
+                $signature = $matches[2];
+                $directory = $this->stagedUploadDirectory($uploadId, $user);
+                $manifestPath = $directory . '/manifest.json';
+                $completePath = $directory . '/upload.bin';
+                $manifest = is_file($manifestPath)
+                    ? json_decode((string) file_get_contents($manifestPath), true)
+                    : null;
+                if (!is_array($manifest) || !is_file($completePath)) {
+                    throw new \RuntimeException('图片暂存已失效，请重新选择图片');
+                }
+
+                $fileName = (string) ($manifest['name'] ?? '');
+                $fileSize = (int) ($manifest['size'] ?? 0);
+                $createdAt = (int) ($manifest['createdAt'] ?? 0);
+                $expectedSignature = $this->stagedUploadReceiptSignature($uploadId, $fileName, $fileSize, $createdAt, $user);
+                if ((int) ($manifest['uid'] ?? 0) !== (int) $user->uid
+                    || !hash_equals($expectedSignature, $signature)
+                    || !hash_equals((string) ($manifest['signature'] ?? ''), $signature)
+                    || $createdAt < time() - self::STAGED_UPLOAD_TTL
+                    || filesize($completePath) !== $fileSize) {
+                    throw new \RuntimeException('图片暂存凭据校验失败，请重新上传');
+                }
+
+                $uploadedFiles[] = $pluginClass::uploadPath($completePath, $fileName);
+                $this->removeStagedUploadDirectory($directory);
+            }
+        } catch (\Exception $error) {
+            $this->cleanupUploadedObjects($uploadedFiles);
+            throw $error;
+        }
+
+        return $uploadedFiles;
+    }
+
+    private function stagedUploadRoot() {
+        return rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'icefox-staged-uploads';
+    }
+
+    private function stagedUploadDirectory($uploadId, $user) {
+        $directoryName = hash_hmac('sha256', (string) $uploadId, $this->stagedUploadSecret($user));
+        return $this->stagedUploadRoot() . DIRECTORY_SEPARATOR . $directoryName;
+    }
+
+    private function stagedUploadSecret($user) {
+        $options = Widget::widget('Widget_Options');
+        return hash('sha256', (string) $options->secret . '|' . (int) $user->uid . '|' . (string) $user->authCode);
+    }
+
+    private function stagedUploadReceiptSignature($uploadId, $fileName, $fileSize, $createdAt, $user) {
+        return hash_hmac(
+            'sha256',
+            implode('|', [(string) $uploadId, (string) $fileName, (int) $fileSize, (int) $createdAt]),
+            $this->stagedUploadSecret($user)
+        );
+    }
+
+    private function cleanupExpiredStagedUploads($root) {
+        if (!is_dir($root)) {
+            return;
+        }
+        $entries = scandir($root);
+        if (!is_array($entries)) {
+            return;
+        }
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..' || !preg_match('/^[a-f0-9]{64}$/', $entry)) {
+                continue;
+            }
+            $directory = $root . DIRECTORY_SEPARATOR . $entry;
+            $modifiedAt = filemtime($directory);
+            if (is_dir($directory) && $modifiedAt !== false && $modifiedAt < time() - self::STAGED_UPLOAD_TTL) {
+                $this->removeStagedUploadDirectory($directory);
+            }
+        }
+    }
+
+    private function removeStagedUploadDirectory($directory) {
+        if (!is_dir($directory) || strpos($directory, $this->stagedUploadRoot() . DIRECTORY_SEPARATOR) !== 0) {
+            return;
+        }
+        $entries = scandir($directory);
+        if (is_array($entries)) {
+            foreach ($entries as $entry) {
+                if ($entry !== '.' && $entry !== '..') {
+                    $path = $directory . DIRECTORY_SEPARATOR . $entry;
+                    if (is_file($path)) {
+                        @unlink($path);
+                    }
+                }
+            }
+        }
+        @rmdir($directory);
     }
 
     private function rollbackAlbumWrite($existing, $savedId) {

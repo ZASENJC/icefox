@@ -10,6 +10,7 @@
         getAlbums: 'getAlbums',
         getAlbum: 'getAlbum',
         getSecurityToken: 'getSecurityToken',
+        stageAlbumUpload: 'stageAlbumUpload',
         saveAlbum: 'saveAlbum'
     });
     const knownActions = Object.keys(actions).map(key => actions[key]);

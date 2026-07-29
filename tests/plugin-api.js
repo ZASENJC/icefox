@@ -32,7 +32,8 @@ assert.deepEqual(
         'getLikes',
         'getSecurityToken',
         'like',
-        'saveAlbum'
+        'saveAlbum',
+        'stageAlbumUpload'
     ],
     'the plugin client must list every action used by the theme'
 );

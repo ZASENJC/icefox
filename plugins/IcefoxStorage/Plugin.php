@@ -24,7 +24,7 @@ require_once __DIR__ . '/StorageService.php';
  *
  * @package IcefoxStorage
  * @author Icefox contributors
- * @version 1.0.0
+ * @version 1.0.1
  * @link https://github.com/ZASENJC/icefox
  */
 class Plugin implements PluginInterface
@@ -117,6 +117,17 @@ class Plugin implements PluginInterface
         }
 
         return self::createService()->uploadFile($file['tmp_name'], $file['name'] ?? 'image');
+    }
+
+    public static function uploadPath($filePath, $originalName)
+    {
+        return self::createService()->uploadFile((string) $filePath, (string) $originalName);
+    }
+
+    public static function maxFileSizeBytes()
+    {
+        $config = self::getConfig();
+        return max(1, (int) ($config['maxFileSizeMb'] ?? 10)) * 1024 * 1024;
     }
 
     public static function delete($objectKey)

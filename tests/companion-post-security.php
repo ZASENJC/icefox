@@ -32,7 +32,13 @@ namespace Typecho {
 
         public function get($name, $default = null)
         {
-            return $name === 'do' ? 'createPost' : $default;
+            if ($name === 'do') {
+                return getenv('ICEFOX_SECURITY_TEST_MODE') === 'token'
+                    ? 'getSecurityToken'
+                    : 'createPost';
+            }
+
+            return $default;
         }
     }
 }
@@ -48,7 +54,12 @@ namespace {
     {
         public function isPost()
         {
-            return true;
+            return getenv('ICEFOX_SECURITY_TEST_MODE') !== 'token';
+        }
+
+        public function getReferer()
+        {
+            return 'https://example.com/';
         }
     }
 
@@ -56,7 +67,11 @@ namespace {
     {
         public function setStatus($status)
         {
-            if (empty($GLOBALS['icefox_security_protected'])) {
+            $tokenMode = getenv('ICEFOX_SECURITY_TEST_MODE') === 'token';
+            if ($tokenMode && empty($GLOBALS['icefox_security_token_generated'])) {
+                throw new RuntimeException('Fresh CSRF token was not generated');
+            }
+            if (!$tokenMode && empty($GLOBALS['icefox_security_protected'])) {
                 throw new RuntimeException('POST response was emitted without CSRF protection');
             }
             if ($status !== 200) {
@@ -78,13 +93,22 @@ namespace {
         {
             $GLOBALS['icefox_security_protected'] = true;
         }
+
+        public function getToken($referer)
+        {
+            if ($referer !== 'https://example.com/') {
+                throw new RuntimeException('CSRF token must use the current referer');
+            }
+            $GLOBALS['icefox_security_token_generated'] = true;
+            return 'fresh-token';
+        }
     }
 
     class TestUser
     {
         public function hasLogin()
         {
-            return false;
+            return getenv('ICEFOX_SECURITY_TEST_MODE') === 'token';
         }
     }
 

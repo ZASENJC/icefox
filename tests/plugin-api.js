@@ -5,11 +5,15 @@ const vm = require('node:vm');
 const source = fs.readFileSync('assets/js/icefox-plugin.js', 'utf8');
 const window = {
     ICEFOX_CONFIG: {
-        actionUrl: '/blog/index.php/action/icefox'
+        actionUrl: '/blog/index.php/action/icefox?_=stale-token'
     },
     location: {
         href: 'https://example.com/blog/albums'
-    }
+    },
+    fetch: async () => ({
+        ok: true,
+        json: async () => ({ success: true, token: 'fresh-token' })
+    })
 };
 
 vm.runInNewContext(source, { window, URL });
@@ -26,6 +30,7 @@ assert.deepEqual(
         'getAlbums',
         'getFriendLinks',
         'getLikes',
+        'getSecurityToken',
         'like',
         'saveAlbum'
     ],
@@ -43,4 +48,14 @@ assert.throws(
     'unknown plugin actions must fail before a network request is made'
 );
 
-console.log('Plugin API client contract verified');
+plugin.postUrl(plugin.actions.createPost).then(postUrl => {
+    assert.equal(
+        postUrl,
+        'https://example.com/blog/index.php/action/icefox?_=fresh-token&do=createPost',
+        'POST URLs must replace stale page tokens with a token from the current session'
+    );
+    console.log('Plugin API client contract verified');
+}).catch(error => {
+    console.error(error);
+    process.exit(1);
+});

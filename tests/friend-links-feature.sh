@@ -43,6 +43,17 @@ require_pattern 'protect\(' core/friend-links.php 'friend-link writes must invok
 require_pattern "components/modals/links.php" components/head.php 'the top friend-link control and its modal must be mounted together'
 require_pattern 'icefoxFriendLinksManager' components/modals/links.php 'the modal must use the shared theme client'
 require_pattern 'links-page-content' links-page.php 'the independent page must render the same friend-link data outside the modal'
+require_pattern '(links-container|links-modal-header|links-field)' assets/css/icefox.css 'friend-link controls must have dedicated modal and form styles'
+
+if ! rg -q -U '(?s)\.links-container \{.*?max-width: 540px;.*?border-radius: 8px;' assets/css/icefox.css; then
+    echo 'the friend-link modal must use the same compact 8px container language as settings and publishing' >&2
+    exit 1
+fi
+
+if ! rg -q -U '(?s)\.links-modal-header \{.*?position: sticky;.*?border-bottom: 1px solid var\(--line\);' assets/css/icefox.css; then
+    echo 'the friend-link modal header must match the established sticky divider layout' >&2
+    exit 1
+fi
 
 if rg -n 'getFriendLinks|deleteFriendLink|icefox_links' assets/js/icefox-plugin.js plugins/Icefox/Action.php plugins/Icefox/Plugin.php; then
     echo 'friend-link runtime persistence must no longer depend on the companion plugin' >&2
@@ -59,8 +70,8 @@ test -f scripts/migrate-plugin-links.php || {
     exit 1
 }
 
-require_pattern 'hash.*sha256\|sha256' scripts/migrate-plugin-links.php 'the migration must report a checksum for the copied JSON'
-require_pattern 'source table.*not.*deleted\|不会删除源表' scripts/migrate-plugin-links.php 'the migration must explicitly preserve the source table'
+require_pattern 'hash.*sha256|SHA-256' scripts/migrate-plugin-links.php 'the migration must report a checksum for the copied JSON'
+require_pattern 'source table.*not.*deleted|不会删除源表' scripts/migrate-plugin-links.php 'the migration must explicitly preserve the source table'
 
 node tests/friend-links-client.js
 

@@ -13,6 +13,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 include_once 'comment_function.php';
 include_once 'core/core.php';
 include_once 'core/post-pinning.php';
+include_once 'core/friend-links.php';
 include_once __TYPECHO_ROOT_DIR__ . '/var/Utils/Markdown.php';
 
 /**
@@ -86,6 +87,16 @@ function themeConfig($form)
     // 相册页面地址
     $albumPageUrl = new Typecho_Widget_Helper_Form_Element_Text('albumPageUrl', NULL, '/albums', _t('相册页面地址'), _t('填写已设置为“相册模板”的独立页面地址，默认为 /albums'));
     $form->addInput($albumPageUrl);
+
+    // 友情链接页面地址
+    $friendLinksPageUrl = new Typecho_Widget_Helper_Form_Element_Text(
+        'friendLinksPageUrl',
+        NULL,
+        NULL,
+        _t('友情链接页面地址'),
+        _t('填写已设置为“友情链接页面模板”的独立页面地址。留空时根据站点地址生成 links 路径，友情链接数据保存在该页面的自定义字段中。')
+    );
+    $form->addInput($friendLinksPageUrl);
 
     // 相册页顶部背景图
     $albumTopImage = new Typecho_Widget_Helper_Form_Element_Text('albumTopImage', NULL, NULL, _t('相册页顶部图片'), _t('相册首页和相册详情页使用的顶部图片 URL，详情页会优先显示相册封面'));

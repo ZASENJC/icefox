@@ -49,6 +49,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
             'actionUrl' => Helper::security()->getIndex('/action/icefox'),
             'homeUrl' => Helper::options()->siteUrl,
             'albumUrl' => rtrim(trim((string) Helper::options()->albumPageUrl), '/') ?: Typecho_Common::url('albums', Helper::options()->index),
+            'friendLinksUrl' => icefoxFriendLinksPageUrl(Helper::options()),
             'uploadStorage' => (string) Helper::options()->uploadStorage === 'object' ? 'object' : 'local',
             'phpUploadMaxBytes' => icefoxIniSizeToBytes(ini_get('upload_max_filesize')),
             'phpPostMaxBytes' => icefoxIniSizeToBytes(ini_get('post_max_size'))
@@ -774,6 +775,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     <?php endif; ?>
 
     <script defer src="<?php $this->options->themeUrl('/assets/js/icefox-plugin.js?v=3.0.3-upload2'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/friend-links.js?v=3.0.3-links-page'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/jquery.min.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/alpinejs.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>

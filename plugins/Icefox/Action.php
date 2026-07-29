@@ -40,7 +40,7 @@ class Action extends Widget implements ActionInterface {
             return;
         }
 
-        $postActions = ['like', 'addComment', 'deleteFriendLink', 'deleteLikeRecord', 'createPost', 'saveAlbum', 'stageAlbumUpload'];
+        $postActions = ['like', 'addComment', 'deleteLikeRecord', 'createPost', 'saveAlbum', 'stageAlbumUpload'];
         if (in_array($do, $postActions, true) && !$this->request->isPost()) {
             $this->returnJson(['success' => false, 'message' => '该操作仅支持 POST 请求']);
             return;
@@ -61,30 +61,18 @@ class Action extends Widget implements ActionInterface {
         }
 
         // 公开读取、点赞和评论操作不需要管理员权限
-        if ($do === 'like' || $do === 'getLikes' || $do === 'addComment' || $do === 'getFriendLinks' || $do === 'getAlbums' || $do === 'getAlbum') {
+        if ($do === 'like' || $do === 'getLikes' || $do === 'addComment' || $do === 'getAlbums' || $do === 'getAlbum') {
             if ($do === 'like') {
                 $this->toggleLike();
             } else if ($do === 'getLikes') {
                 $this->getLikes();
             } else if ($do === 'addComment') {
                 $this->addComment();
-            } else if ($do === 'getFriendLinks') {
-                $this->getFriendLinks();
             } else if ($do === 'getAlbums') {
                 $this->getAlbums();
             } else if ($do === 'getAlbum') {
                 $this->getAlbum();
             }
-            return;
-        }
-
-        // 删除友情链接需要管理员权限
-        if ($do === 'deleteFriendLink') {
-            if (!$user->pass('administrator')) {
-                $this->returnJson(['success' => false, 'message' => '无权操作']);
-                return;
-            }
-            $this->deleteFriendLink();
             return;
         }
 
@@ -1530,79 +1518,6 @@ class Action extends Widget implements ActionInterface {
         return (isset($value[0]) && $value[0] === '/' && strpos($value, '//') !== 0) || $this->isHttpUrl($value);
     }
 
-
-    /**
-     * 获取友情链接列表
-     */
-    private function getFriendLinks() {
-        $db = Db::get();
-        $prefix = $db->getPrefix();
-
-        try {
-            $links = $db->fetchAll(
-                $db->select()
-                    ->from($prefix . 'icefox_links')
-                    ->where('status = ?', 1)
-                    ->order('sort', Db::SORT_ASC)
-            );
-
-            $this->returnJson([
-                'success' => true,
-                'data' => $links ? $links : []
-            ]);
-        } catch (\Exception $e) {
-            $this->returnJson([
-                'success' => false,
-                'message' => '获取友情链接失败：' . $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * 删除友情链接
-     */
-    private function deleteFriendLink() {
-        $request = Request::getInstance();
-        $db = Db::get();
-        $prefix = $db->getPrefix();
-
-        $id = intval($request->get('id'));
-
-        if (empty($id)) {
-            $this->returnJson(['success' => false, 'message' => '链接ID缺失']);
-            return;
-        }
-
-        try {
-            // 检查链接是否存在
-            $link = $db->fetchRow(
-                $db->select()
-                    ->from($prefix . 'icefox_links')
-                    ->where('id = ?', $id)
-            );
-
-            if (!$link) {
-                $this->returnJson(['success' => false, 'message' => '链接不存在']);
-                return;
-            }
-
-            // 执行删除
-            $db->query(
-                $db->delete($prefix . 'icefox_links')
-                    ->where('id = ?', $id)
-            );
-
-            $this->returnJson([
-                'success' => true,
-                'message' => '友情链接「' . htmlspecialchars($link['name'], ENT_QUOTES, 'UTF-8') . '」已删除'
-            ]);
-        } catch (\Exception $e) {
-            $this->returnJson([
-                'success' => false,
-                'message' => '删除失败：' . $e->getMessage()
-            ]);
-        }
-    }
 
     /**
      * 获取文章点赞记录列表（支持分页）

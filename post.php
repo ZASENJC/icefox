@@ -150,7 +150,6 @@ $this->need('header.php');
     </section>
 
     <?php $this->need('components/modals/setting.php'); ?>
-    <?php $this->need('components/modals/links.php'); ?>
     <?php $this->need('components/modals/editor.php'); ?>
 </main>
 

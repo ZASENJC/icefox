@@ -111,19 +111,35 @@ manager.$nextTick = callback => callback();
     assert.equal(manager.editorOpen, false, 'a successful save must return to the list');
 
     manager.startEdit(manager.links[0]);
+    manager.form.description = '更新后的朋友';
+    await manager.saveLink();
+    assert.equal(JSON.parse(requests[2].options.body).link.id, 'friend-b', 'editing must preserve the stable friend-link id');
+    assert.equal(JSON.parse(requests[2].options.body).link.description, '更新后的朋友');
+
+    manager.startEdit(manager.links[0]);
     await manager.deleteLink();
-    assert.equal(JSON.parse(requests[2].options.body).action, 'delete');
+    assert.equal(JSON.parse(requests[3].options.body).action, 'delete');
     assert.equal(manager.links.length, 0, 'a successful delete must refresh the displayed list');
 
     manager.startCreate();
     manager.form.name = '坏链接';
     manager.form.url = 'javascript:alert(1)';
     await manager.saveLink();
-    assert.equal(requests.length, 3, 'invalid URLs must be rejected before a request is sent');
+    assert.equal(requests.length, 4, 'invalid URLs must be rejected before a request is sent');
     assert.match(manager.formError, /HTTP|HTTPS/);
 
     manager.closeModal();
     assert.equal(window.document.body.style.overflow, '', 'closing the modal must restore page scrolling');
+
+    const guestPage = window.icefoxFriendLinksManager({
+        mode: 'page',
+        initialLinks: serverLinks,
+        canEdit: false
+    });
+    await guestPage.initializePage();
+    guestPage.startCreate();
+    assert.equal(requests.length, 4, 'the server-rendered guest page must not make a management request');
+    assert.equal(guestPage.editorOpen, false, 'guest visitors must not be able to open the friend-link editor');
     console.log('Friend-link modal client contract verified');
 })().catch(error => {
     console.error(error);

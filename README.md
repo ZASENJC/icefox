@@ -20,7 +20,7 @@
 - **无限滚动** - 自动加载更多文章
 - **音乐卡片** - 内置音乐播放器短代码
 - **内容展开/收起** - 长文章智能折叠
-- **友情链接** - 动态加载友情链接
+- **友情链接** - 独立页面、全站弹窗和登录态直接管理
 - **独立相册** - 相册首页、相册详情、三列照片网格和登录后的相册编辑
 
 ### 📄 特色页面
@@ -69,9 +69,9 @@
    ```
 
    插件负责：
-   - 创建和升级点赞、相册和友情链接等插件数据
+   - 创建和升级点赞、相册等插件数据
    - 注册 `/action/icefox` 和相册详情路由
-   - 处理点赞、评论写入、友情链接、前台发布和相册接口
+   - 处理点赞、评论写入、前台发布和相册接口
 
    详细的主题/插件分工见 [`docs/plugin-boundaries.md`](docs/plugin-boundaries.md)。
 
@@ -123,6 +123,7 @@ icefox/
 ├── footer.php           # 底部模板
 ├── post.php             # 文章详情页
 ├── page.php             # 独立页面
+├── links-page.php       # 友情链接独立页面模板
 ├── album-page.php       # 相册独立页面模板
 ├── archive.php          # 归档页
 ├── functions.php        # 主题函数库
@@ -171,6 +172,23 @@ icefox/
 5. 文章编辑页中的“相册内容”字段开启后，主题会从博客首页、归档和搜索结果中过滤该图文；`albumId` 可用于把图文关联到插件相册。
 6. 前端发布动态时可开启“同步到「朋友圈」相册”；主题会向 `createPost` 发送 `syncToAlbum=1`，配套插件负责把正文中的 Markdown/HTML 图片和本次上传的图片去重后追加到具有稳定身份标识的“朋友圈”相册，动态本身仍保留在信息流中。
 
+### 友情链接页面
+
+1. 在 Typecho 后台新建并公开发布一个独立页面，选择 `links-page.php` 模板，建议缩略名使用 `links`。
+2. 在主题设置中把“友情链接页面地址”设为该页面地址；留空时主题会根据站点地址生成 `links` 路径。
+3. 游客可以从顶部入口打开友链弹窗或访问独立页面。任意 Typecho 登录用户都可以在弹窗或页面中添加、编辑和删除友链。
+4. 友链以 JSON 保存在该独立页面的 `friendLinks` 自定义字段中，不依赖 Icefox 插件或额外数据表。
+
+从旧版插件升级时，先备份数据库并创建友情链接页面，再复制旧数据：
+
+```sh
+TYPECHO_CONFIG=/absolute/path/to/typecho/config.inc.php \
+FRIEND_LINKS_PAGE_CID=123 \
+php scripts/migrate-plugin-links.php
+```
+
+脚本会校验写入后的 SHA-256，并保留原 `icefox_links` 表。目标页面已经存在友链数据时默认拒绝覆盖；确认后可显式设置 `ICEFOX_OVERWRITE_LINKS=1`。
+
 ## 🛠️ 开发指南
 
 ### 修改主题样式
@@ -201,7 +219,6 @@ $posts = $db->fetchAll(
 | `do=getLikes` | GET | 获取文章点赞数据 |
 | `do=like` | POST | 切换点赞状态 |
 | `do=addComment` | POST | 添加评论 |
-| `do=getFriendLinks` | GET | 获取友情链接 |
 | `do=createPost` | POST multipart | 发布动态；`storage=object` 上传图片到 R2/S3，`syncToAlbum=1` 时同步到“朋友圈”相册 |
 | `do=getAlbums` | GET | 获取可见相册列表 |
 | `do=getAlbum&album={id}` | GET | 获取相册详情和照片 |

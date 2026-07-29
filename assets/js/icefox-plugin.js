@@ -5,7 +5,6 @@
         getLikes: 'getLikes',
         like: 'like',
         addComment: 'addComment',
-        getFriendLinks: 'getFriendLinks',
         createPost: 'createPost',
         getAlbums: 'getAlbums',
         getAlbum: 'getAlbum',

@@ -28,7 +28,6 @@ assert.deepEqual(
         'createPost',
         'getAlbum',
         'getAlbums',
-        'getFriendLinks',
         'getLikes',
         'getSecurityToken',
         'like',

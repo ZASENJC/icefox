@@ -2,7 +2,8 @@
 
 This directory is the installable Typecho companion plugin for the Icefox
 theme. Copy the directory to `usr/plugins/Icefox/` and enable it before using
-the theme's likes, comments, frontend publishing, friend links, or albums.
+the theme's likes, comments, frontend publishing, or albums. Friend links are
+owned by the theme's independent `links-page.php` template.
 
 The plugin owns `/action/icefox`, the `icefox_*` tables, media attachment
 metadata, album ordering, and Moments synchronization. When a theme request

@@ -7,12 +7,11 @@ edit-page.php
 assets/js/icefox.js
 components/album-gallery.php
 components/modals/album-editor.php
-components/modals/editor.php
-components/modals/links.php'
+components/modals/editor.php'
 
 node tests/plugin-api.js
 
-if rg -n '\?do=(getLikes|like|addComment|getFriendLinks|createPost|getAlbums|getAlbum|saveAlbum)' $runtime_files; then
+if rg -n '\?do=(getLikes|like|addComment|createPost|getAlbums|getAlbum|saveAlbum)' $runtime_files; then
     echo 'plugin actions must be routed through window.ICEFOX_PLUGIN' >&2
     exit 1
 fi

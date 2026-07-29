@@ -161,29 +161,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
         </div>
     </div>
 
-    <!-- 友情链接 -->
-    <?php if ($this->options->links): ?>
-    <div class="sidebar-widget">
-        <h3 class="widget-title">友情链接</h3>
-        <div class="widget-content">
-            <ul>
-                <?php $links = explode("\n", $this->options->links); ?>
-                <?php foreach ($links as $link): ?>
-                    <?php $link = trim($link); ?>
-                    <?php if ($link): ?>
-                        <?php if (strpos($link, '|') !== false): ?>
-                            <?php list($name, $url) = explode('|', $link); ?>
-                            <li><a href="<?php echo trim($url); ?>" target="_blank"><?php echo trim($name); ?></a></li>
-                        <?php else: ?>
-                            <li><a href="<?php echo $link; ?>" target="_blank"><?php echo $link; ?></a></li>
-                        <?php endif; ?>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    </div>
-    <?php endif; ?>
-
     <!-- 网站统计 -->
     <div class="sidebar-widget">
         <h3 class="widget-title">网站统计</h3>

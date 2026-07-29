@@ -36,6 +36,7 @@ Important templates:
 - `archive.php`: category, tag, search, and author result pages.
 - `post.php`: post detail page.
 - `page.php`: regular standalone page.
+- `links-page.php`: standalone friend-links page and theme-owned read/write endpoint.
 - `archive-page.php`: custom timeline archive page.
 - `edit-page.php`: authenticated frontend post creation page.
 - `album-page.php`: standalone album index and detail page.
@@ -53,6 +54,7 @@ Core responsibilities:
   controller, and script loading.
 - `assets/js/icefox-plugin.js`: shared companion-plugin action URLs, fresh POST
   security tokens, upload target selection, and album upload fallback decisions.
+- `assets/js/friend-links.js`: shared friend-link page/modal loading and logged-in CRUD state.
 - `assets/js/icefox.js`: infinite scrolling, likes, content expansion, icon
   state, and back-to-top behavior.
 - `assets/js/music-player.js`: per-card audio players and global playback
@@ -65,7 +67,8 @@ Core responsibilities:
 
 The theme reads standard Typecho tables directly, especially `contents`,
 `comments`, `users`, `metas`, `relationships`, and `fields`. The companion
-plugin owns Icefox-specific persistence for likes, friend links, and albums.
+plugin owns Icefox-specific persistence for likes and albums. Friend links are
+stored in the Typecho `friendLinks` field of the independent links page.
 `icefox_archive` is only a legacy pinning source for
 `scripts/migrate-legacy-pins.php`; runtime pinning uses the Typecho `isTop`
 post field.
@@ -84,7 +87,6 @@ The frontend currently calls these plugin actions:
 | `getLikes` | GET | Load like count, users, and current-user state |
 | `like` | POST | Toggle a post like |
 | `addComment` | POST JSON | Add a top-level comment or reply |
-| `getFriendLinks` | GET | Load friend links |
 | `createPost` | POST multipart | Create a post and upload media |
 | `getAlbums` | GET | Load the visible album list |
 | `getAlbum` | GET | Load one album and its photos |
@@ -114,7 +116,7 @@ receipts to `saveAlbum`.
 - `topVideo`, `topImage`, `logoUrl`, `avatarLink`
 - `beianInfo`, `beianUrl`, `gravatarUrl`
 - `customCss`, `customJs`, `analytics`
-- `editPageUrl`, `albumPageUrl`, `albumTopImage`
+- `editPageUrl`, `albumPageUrl`, `friendLinksPageUrl`, `albumTopImage`
 - `showMomentsAlbum`, `autoCollapse`
 - `uploadStorage`
 
@@ -193,6 +195,7 @@ Exercise these workflows after behavior changes:
 - Image gallery, video, and music-card rendering.
 - Light/dark mode persistence.
 - Frontend post creation with image/video limits.
+- Friend-links page and modal loading, plus logged-in add/edit/delete flows.
 - Album list, detail, editing, pinning, and Moments synchronization.
 - Local and object-backed image publishing, partial-upload rollback, and
   Typecho attachment deletion.
@@ -209,8 +212,6 @@ tasks:
 - `README.md` claims GPL-3.0, but no `LICENSE` file is committed.
 - `favicon.ico` is referenced but missing.
 - `assets/fonts/HarmonyOS-Sans.woff2` is referenced but missing.
-- `assets/images/default-avatar.png` is referenced by the friend-link fallback
-  but missing.
 - The upstream companion plugin README declares MIT, but its release omits the
   referenced `LICENSE`; provenance is documented in `plugins/Icefox/UPSTREAM.md`.
 - Standard templates rely on browser HTML recovery for final document closing

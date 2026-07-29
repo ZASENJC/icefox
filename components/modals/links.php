@@ -1,99 +1,108 @@
 <?php
-/** 初始化上下文 */
-\Widget\Options::alloc()->to($options);
+if (!defined('__TYPECHO_ROOT_DIR__')) exit;
+
+$friendLinksPageUrl = icefoxFriendLinksPageUrl($this->options);
 ?>
 
 <div class="links-modal" x-cloak
-     x-data="{
-         linksModalShow: false,
-         links: [],
-         loading: false,
-         error: null,
-         async loadLinks() {
-             this.loading = true;
-             this.error = null;
-             try {
-                 const response = await fetch(window.ICEFOX_PLUGIN.url(window.ICEFOX_PLUGIN.actions.getFriendLinks));
-                 const result = await response.json();
-
-                 if (result.success) {
-                     this.links = result.data || [];
-                 } else {
-                     this.error = result.message || '加载失败';
-                 }
-             } catch (error) {
-                 this.error = '网络错误，请稍后重试';
-             } finally {
-                 this.loading = false;
-             }
-         }
-     }"
+     x-data="icefoxFriendLinksManager({ mode: 'modal' })"
      x-show="linksModalShow"
-     x-transition.opacity.duration.300ms
-     @click.self="linksModalShow = false"
-     @links-modal-open.window="linksModalShow = true; loadLinks();">
-
-    <div class="links-container" x-transition.scale.duration.300ms>
-        <div>
-            <!-- 弹框标题 -->
-            <div class="links-modal-header">
-                <div class="links-modal-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="20" height="20" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
-                    </svg>
-                    友情链接
+     @links-modal-open.window="openModal()"
+     @keydown.escape.window="closeModal()"
+     @click.self="closeModal()"
+     x-transition.opacity.duration.200ms>
+    <div class="links-container" role="dialog" aria-modal="true" aria-labelledby="links-modal-title"
+         x-transition.scale.duration.200ms>
+        <div class="links-modal-body">
+            <header class="links-modal-header">
+                <div class="links-modal-heading">
+                    <h2 class="links-modal-title" id="links-modal-title" x-text="editorOpen ? (form.id ? '编辑友情链接' : '添加友情链接') : '友情链接'"></h2>
+                    <p class="links-modal-subtitle" x-text="editorOpen ? '名称和链接地址为必填项' : '记录一路相遇的朋友与站点'"></p>
                 </div>
-                <button type="button" class="links-modal-close" @click="linksModalShow = false">×</button>
+                <div class="links-modal-actions">
+                    <button type="button" class="links-primary-button links-modal-add" x-show="canEdit && !editorOpen" @click="startCreate()">添加</button>
+                    <button type="button" class="links-modal-close" aria-label="关闭友情链接" @click="closeModal()">×</button>
+                </div>
+            </header>
+
+            <div class="links-status links-loading" x-show="loading && links.length === 0">
+                <span class="links-spinner" aria-hidden="true"></span>
+                <p>加载中...</p>
             </div>
 
-            <!-- 友情链接区域 -->
-            <div class="links-section">
-                <!-- 加载状态 -->
-                <div x-show="loading" class="links-loading">
-                    <svg class="links-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="40" height="40">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <p>加载中...</p>
-                </div>
+            <div class="links-status links-error" x-show="error && links.length === 0">
+                <p x-text="error"></p>
+                <button type="button" class="links-secondary-button" @click="loadLinks()">重新加载</button>
+            </div>
 
-                <!-- 错误提示 -->
-                <div x-show="error && !loading" class="links-error">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="24" height="24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                    </svg>
-                    <p x-text="error"></p>
-                </div>
+            <div class="links-notice" x-show="notice" x-text="notice"></div>
 
-                <!-- 友情链接列表 -->
-                <div x-show="!loading && !error && links.length > 0" class="links-list">
+            <div x-show="!editorOpen">
+                <div class="links-list" x-show="links.length > 0">
                     <template x-for="link in links" :key="link.id">
-                        <a :href="link.url" target="_blank" rel="noopener noreferrer" class="link-item">
-                            <div class="link-avatar">
-                                <img :src="link.avatar || '/usr/themes/icefox/assets/images/default-avatar.png'"
-                                     :alt="link.name"
-                                     loading="lazy"
-                                     onerror="this.src='/usr/themes/icefox/assets/images/default-avatar.png'">
-                            </div>
-                            <div class="link-info">
-                                <div class="link-name" x-text="link.name"></div>
-                                <div class="link-description" x-text="link.description || '暂无描述'"></div>
-                            </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="16" height="16" stroke-width="1.5" stroke="currentColor" class="link-arrow">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                            </svg>
-                        </a>
+                        <article class="link-item">
+                            <a class="link-main" :href="link.url" target="_blank" rel="noopener noreferrer">
+                                <span class="link-avatar">
+                                    <template x-if="link.avatar">
+                                        <img :src="link.avatar" :alt="link.name" loading="lazy" @error="clearBrokenAvatar(link)">
+                                    </template>
+                                    <template x-if="!link.avatar">
+                                        <span class="link-avatar-fallback" x-text="avatarInitial(link)"></span>
+                                    </template>
+                                </span>
+                                <span class="link-info">
+                                    <span class="link-name" x-text="link.name"></span>
+                                    <span class="link-description" x-text="link.description || link.url"></span>
+                                </span>
+                                <span class="link-arrow" aria-hidden="true">›</span>
+                            </a>
+                            <button type="button" class="link-edit-button" x-show="canEdit" :aria-label="`编辑${link.name}`" @click="startEdit(link)">编辑</button>
+                        </article>
                     </template>
                 </div>
 
-                <!-- 空状态 -->
-                <div x-show="!loading && !error && links.length === 0" class="links-empty">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" width="48" height="48" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-                    </svg>
-                    <p>暂无友情链接</p>
+                <div class="links-status links-empty" x-show="!loading && !error && links.length === 0">
+                    <div class="links-empty-icon" aria-hidden="true">↗</div>
+                    <h3>暂无友情链接</h3>
+                    <p x-text="canEdit ? '添加第一位朋友吧' : '站长还没有添加友情链接'"></p>
                 </div>
+
+                <footer class="links-modal-footer" x-show="!loading && !error">
+                    <a href="<?php echo htmlspecialchars($friendLinksPageUrl, ENT_QUOTES, 'UTF-8'); ?>">打开友情链接页面</a>
+                </footer>
             </div>
+
+            <form class="links-editor" x-show="editorOpen" @submit.prevent="saveLink()">
+                <label class="links-field">
+                    <span>名称</span>
+                    <input type="text" x-ref="nameInput" x-model="form.name" maxlength="100" placeholder="朋友或站点名称" required>
+                </label>
+                <label class="links-field">
+                    <span>链接地址</span>
+                    <input type="url" x-model="form.url" maxlength="500" placeholder="https://example.com" required>
+                </label>
+                <label class="links-field">
+                    <span>头像地址</span>
+                    <input type="url" x-model="form.avatar" maxlength="500" placeholder="可选，留空显示名称首字">
+                </label>
+                <label class="links-field">
+                    <span>描述</span>
+                    <textarea x-model="form.description" maxlength="200" rows="3" placeholder="简单介绍一下这位朋友"></textarea>
+                </label>
+                <label class="links-field links-sort-field">
+                    <span>排序</span>
+                    <input type="number" x-model="form.sort" min="0" step="1">
+                    <small>数字越小越靠前</small>
+                </label>
+
+                <div class="links-form-error" x-show="formError" x-text="formError"></div>
+                <div class="links-editor-actions">
+                    <button type="button" class="links-danger-button" x-show="form.id" :disabled="isSubmitting" @click="deleteLink()">删除</button>
+                    <span class="links-editor-actions-spacer"></span>
+                    <button type="button" class="links-secondary-button" :disabled="isSubmitting" @click="closeEditor()">取消</button>
+                    <button type="submit" class="links-primary-button" :disabled="isSubmitting" x-text="isSubmitting ? '保存中...' : '保存'"></button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

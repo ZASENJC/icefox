@@ -29,8 +29,25 @@ editor.openModal({ detail: { album: { id: '7', name: '旅行', photos: existingP
 
 assert.equal(editor.existingPhotoCount, 99, 'the editor must account for photos already stored in the album');
 assert.equal(editor.remainingPhotoSlots, 1, 'a regular album with 99 photos must accept one more photo');
-editor.mediaFiles = [{ file: { name: 'last-photo.jpg' } }];
+global.FileReader = class FileReaderMock {
+    readAsDataURL() {}
+};
+global.alert = () => {};
+editor.handleMediaSelect({
+    target: {
+        files: [{ name: 'last-photo.jpg', type: 'image/jpeg' }],
+        value: 'selected'
+    }
+});
+assert.equal(editor.mediaFiles.length, 1, 'selected photos must reserve their slots before preview loading finishes');
 assert.equal(editor.remainingPhotoSlots, 0, 'the 100th pending photo must fill the album');
+editor.handleMediaSelect({
+    target: {
+        files: [{ name: 'over-limit.jpg', type: 'image/jpeg' }],
+        value: 'selected'
+    }
+});
+assert.equal(editor.mediaFiles.length, 1, 'the 101st photo must be rejected even while previews are loading');
 
 assert.match(
     editorModule.source,

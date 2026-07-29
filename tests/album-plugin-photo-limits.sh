@@ -9,6 +9,8 @@ rg -q 'handleMediaUpload\(\$storageTarget, self::ALBUM_PHOTO_LIMIT, false\)' "$a
 rg -q 'count\(\$photos\) > self::ALBUM_PHOTO_LIMIT' "$action_file"
 rg -q '朋友圈相册只支持从动态同步图片' "$action_file"
 rg -q 'albumRequestHasManualPhotos' "$action_file"
+rg -q 'albumRequestUploadCount' "$action_file"
+rg -q 'count\(\$photosWithRemote\) \+ \$requestUploadCount > self::ALBUM_PHOTO_LIMIT' "$action_file"
 rg -q 'appendImagesToMomentsAlbum' "$action_file"
 
 echo "Album plugin photo limit contracts passed"

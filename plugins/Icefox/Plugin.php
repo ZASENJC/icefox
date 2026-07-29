@@ -7,6 +7,9 @@ use Typecho\Plugin\Exception;
 use Typecho\Plugin\PluginInterface;
 use Typecho\Widget\Helper\Form\Element\Hidden;
 use Typecho\Db;
+use Typecho\Router;
+use Typecho\Validate;
+use Widget\Base\Metas;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
@@ -20,6 +23,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 class Plugin implements PluginInterface
 {
+    private static $albumTagSchemaReady = false;
+
     /**
      * 激活插件方法,如果激活失败直接抛出异常
      *
@@ -196,12 +201,281 @@ class Plugin implements PluginInterface
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
         $db->query($sql);
         self::ensureAlbumTableSchema();
+        self::migrateLegacyAlbumTags();
     }
 
     public static function ensureAlbumTableSchema()
     {
         $db = Db::get();
         self::migrateAlbumTable($db, $db->getPrefix());
+        self::ensureAlbumTagTableSchema();
+    }
+
+    public static function ensureAlbumTagTableSchema()
+    {
+        if (self::$albumTagSchemaReady) {
+            return;
+        }
+
+        $db = Db::get();
+        $prefix = $db->getPrefix();
+        $sql = "CREATE TABLE IF NOT EXISTS `{$prefix}icefox_album_tags` (
+            `album_id` int(10) unsigned NOT NULL,
+            `mid` int(10) unsigned NOT NULL,
+            `sort_order` int(10) unsigned NOT NULL DEFAULT '0',
+            PRIMARY KEY (`album_id`, `mid`),
+            KEY `idx_mid` (`mid`),
+            FOREIGN KEY (`album_id`) REFERENCES `{$prefix}icefox_albums`(`id`) ON DELETE CASCADE,
+            FOREIGN KEY (`mid`) REFERENCES `{$prefix}metas`(`mid`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+        $db->query($sql);
+        self::$albumTagSchemaReady = true;
+    }
+
+    public static function normalizeAlbumTags($rawTags)
+    {
+        $parts = is_array($rawTags)
+            ? $rawTags
+            : preg_split('/[,，]/u', (string) $rawTags);
+        $result = [];
+        $seen = [];
+
+        foreach (is_array($parts) ? $parts : [] as $tag) {
+            $name = trim((string) $tag);
+            if ($name === '' || !Validate::xssCheck($name) || isset($seen[$name])) {
+                continue;
+            }
+            $seen[$name] = true;
+            $result[] = $name;
+        }
+
+        return $result;
+    }
+
+    public static function syncAlbumTags($albumId, $rawTags, $replace = true)
+    {
+        $albumId = (int) $albumId;
+        if ($albumId <= 0) {
+            return ['inserted' => 0, 'removed' => 0, 'total' => 0];
+        }
+
+        self::ensureAlbumTagTableSchema();
+        $db = Db::get();
+        $tagNames = self::normalizeAlbumTags($rawTags);
+        $tagIds = $tagNames ? Metas::alloc()->scanTags($tagNames) : [];
+        $tagIds = array_values(array_unique(array_map('intval', is_array($tagIds) ? $tagIds : [])));
+        $existingRows = $db->fetchAll(
+            $db->select('mid')->from('table.icefox_album_tags')->where('album_id = ?', $albumId)
+        );
+        $existingIds = array_map('intval', array_column($existingRows, 'mid'));
+        $removed = 0;
+        $inserted = 0;
+
+        if ($replace) {
+            foreach (array_diff($existingIds, $tagIds) as $mid) {
+                $removed += (int) $db->query(
+                    $db->delete('table.icefox_album_tags')
+                        ->where('album_id = ?', $albumId)
+                        ->where('mid = ?', $mid)
+                );
+            }
+        }
+
+        foreach ($tagIds as $position => $mid) {
+            if (in_array($mid, $existingIds, true)) {
+                $db->query(
+                    $db->update('table.icefox_album_tags')
+                        ->rows(['sort_order' => $position])
+                        ->where('album_id = ?', $albumId)
+                        ->where('mid = ?', $mid)
+                );
+                continue;
+            }
+
+            $db->query($db->insert('table.icefox_album_tags')->rows([
+                'album_id' => $albumId,
+                'mid' => $mid,
+                'sort_order' => $position
+            ]));
+            $inserted++;
+        }
+
+        // Typecho's metas.count remains the published-post count; album counts live in the join table.
+        return ['inserted' => $inserted, 'removed' => $removed, 'total' => count($tagIds)];
+    }
+
+    public static function migrateLegacyAlbumTags()
+    {
+        self::ensureAlbumTagTableSchema();
+        $db = Db::get();
+        $albums = $db->fetchAll(
+            $db->select('id', 'tags')->from('table.icefox_albums')
+                ->where('tags IS NOT NULL')
+                ->where('tags <> ?', '')
+        );
+        $migratedAlbums = 0;
+        $insertedRelationships = 0;
+
+        foreach ($albums as $album) {
+            $result = self::syncAlbumTags((int) $album['id'], $album['tags'], false);
+            if ($result['inserted'] > 0) {
+                $migratedAlbums++;
+                $insertedRelationships += $result['inserted'];
+            }
+        }
+
+        return [
+            'albums' => $migratedAlbums,
+            'relationships' => $insertedRelationships
+        ];
+    }
+
+    public static function getAlbumTagLinks($albumId, $legacyTags = '')
+    {
+        self::ensureAlbumTagTableSchema();
+        $db = Db::get();
+        $albumId = (int) $albumId;
+        $rows = self::fetchAlbumTagRows($albumId);
+        $legacyNames = self::normalizeAlbumTags($legacyTags);
+        $linkedNames = array_values(array_unique(array_map(function ($row) {
+            return (string) ($row['name'] ?? '');
+        }, $rows)));
+
+        if ($legacyNames && array_diff($legacyNames, $linkedNames)) {
+            self::syncAlbumTags((int) $albumId, $legacyNames, false);
+            $rows = self::fetchAlbumTagRows($albumId);
+        }
+
+        if (!$rows && $legacyNames) {
+            $metaRows = $db->fetchAll(
+                $db->select()->from('table.metas')
+                    ->where('type = ?', 'tag')
+                    ->where('name IN ?', $legacyNames)
+            );
+            $rowsByName = [];
+            foreach ($metaRows as $row) {
+                $rowsByName[$row['name']] = $row;
+            }
+            foreach ($legacyNames as $name) {
+                $rows[] = $rowsByName[$name] ?? [
+                    'mid' => 0,
+                    'name' => $name,
+                    'slug' => '',
+                    'type' => 'tag'
+                ];
+            }
+        }
+
+        $links = [];
+        foreach ($rows as $row) {
+            $links[] = [
+                'name' => (string) $row['name'],
+                'slug' => (string) ($row['slug'] ?? ''),
+                'url' => !empty($row['mid'])
+                    ? Router::url('tag', $row, \Widget\Options::alloc()->index)
+                    : ''
+            ];
+        }
+
+        return $links;
+    }
+
+    private static function fetchAlbumTagRows($albumId)
+    {
+        $db = Db::get();
+        return $db->fetchAll(
+            $db->select('table.metas.*')
+                ->from('table.metas')
+                ->join('table.icefox_album_tags', 'table.icefox_album_tags.mid = table.metas.mid')
+                ->where('table.icefox_album_tags.album_id = ?', (int) $albumId)
+                ->where('table.metas.type = ?', 'tag')
+                ->order('table.icefox_album_tags.sort_order', Db::SORT_ASC)
+        );
+    }
+
+    public static function getVisibleTagAlbumCount($mid, $includePrivate = false)
+    {
+        $mid = (int) $mid;
+        if ($mid <= 0) {
+            return 0;
+        }
+
+        self::ensureAlbumTagTableSchema();
+        $db = Db::get();
+        $query = $db->select(['COUNT(table.icefox_album_tags.album_id)' => 'num'])
+            ->from('table.icefox_album_tags')
+            ->join(
+                'table.icefox_albums',
+                'table.icefox_albums.id = table.icefox_album_tags.album_id'
+            )
+            ->where('table.icefox_album_tags.mid = ?', $mid);
+        if (!$includePrivate) {
+            $query->where('table.icefox_albums.visibility = ?', 'public');
+        }
+
+        $result = $db->fetchObject($query);
+        return $result ? (int) $result->num : 0;
+    }
+
+    public static function getTagArchiveAlbums($slug, $includePrivate = false)
+    {
+        $slug = trim((string) $slug);
+        if ($slug === '') {
+            return [];
+        }
+
+        self::ensureAlbumTagTableSchema();
+        $db = Db::get();
+        $tag = $db->fetchRow(
+            $db->select('mid')->from('table.metas')
+                ->where('type = ?', 'tag')
+                ->where('slug = ?', $slug)
+                ->limit(1)
+        );
+        if (!$tag) {
+            return [];
+        }
+
+        $query = $db->select('table.icefox_albums.*')
+            ->from('table.icefox_albums')
+            ->join(
+                'table.icefox_album_tags',
+                'table.icefox_album_tags.album_id = table.icefox_albums.id'
+            )
+            ->where('table.icefox_album_tags.mid = ?', (int) $tag['mid']);
+        if (!$includePrivate) {
+            $query->where('table.icefox_albums.visibility = ?', 'public');
+        }
+
+        $rows = $db->fetchAll(
+            $query->order('table.icefox_albums.is_moments', Db::SORT_DESC)
+                ->order('table.icefox_albums.is_pinned', Db::SORT_DESC)
+                ->order('table.icefox_albums.sort_order', Db::SORT_ASC)
+                ->order('table.icefox_albums.id', Db::SORT_ASC)
+        );
+        $albums = [];
+        foreach ($rows as $row) {
+            $photos = json_decode((string) ($row['photos'] ?? '[]'), true);
+            $photos = is_array($photos) ? $photos : [];
+            $cover = trim((string) ($row['cover'] ?? ''));
+            if ($cover === '' && !empty($photos)) {
+                $firstPhoto = $photos[0];
+                $cover = is_array($firstPhoto)
+                    ? trim((string) ($firstPhoto['src'] ?? $firstPhoto['url'] ?? ''))
+                    : trim((string) $firstPhoto);
+            }
+
+            $albums[] = [
+                'id' => (int) $row['id'],
+                'name' => (string) $row['name'],
+                'slug' => (string) $row['slug'],
+                'cover' => $cover,
+                'address' => (string) ($row['address'] ?? ''),
+                'photoCount' => count($photos)
+            ];
+        }
+
+        return $albums;
     }
 
     private static function migrateAlbumTable($db, $prefix)

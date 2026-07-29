@@ -2,8 +2,6 @@
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 $albumKey = trim((string) $this->request->get('album', ''));
-$configuredAlbumUrl = trim((string) $this->options->albumPageUrl);
-$albumPageUrl = $configuredAlbumUrl !== '' ? rtrim($configuredAlbumUrl, '/') : Typecho_Common::url('albums', $this->options->index);
 $albumEditorUser = \Widget\User::alloc();
 $canEditAlbums = $albumEditorUser->hasLogin();
 $showMomentsAlbum = (string) $this->options->showMomentsAlbum !== '0';
@@ -87,7 +85,21 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
             const source = album || {};
             const rawPhotos = source.photos || source.images || source.media || [];
             const photos = Array.isArray(rawPhotos) ? rawPhotos.map(photo => this.normalizePhoto(photo)).filter(photo => photo.src) : [];
-            const tags = Array.isArray(source.tags) ? source.tags : (source.tags ? String(source.tags).split(',').map(tag => tag.trim()).filter(Boolean) : []);
+            const rawTags = Array.isArray(source.tags) ? source.tags : (source.tags ? String(source.tags).split(',') : []);
+            const rawTagLinks = Array.isArray(source.tagLinks) ? source.tagLinks : rawTags.filter(tag => tag && typeof tag === 'object');
+            const tags = rawTags
+                .map(tag => typeof tag === 'object' ? String(tag.name || tag.title || '').trim() : String(tag).trim())
+                .filter(Boolean);
+            const linksByName = new Map(rawTagLinks.map(tag => {
+                const name = String((tag && (tag.name || tag.title)) || '').trim();
+                return [name, {
+                    name,
+                    slug: String((tag && tag.slug) || ''),
+                    url: String((tag && (tag.url || tag.permalink)) || '')
+                }];
+            }).filter(([name]) => name));
+            const tagNames = tags.length ? tags : Array.from(linksByName.keys());
+            const tagLinks = tagNames.map(name => linksByName.get(name) || { name, slug: '', url: '' });
             const cover = source.cover || source.coverUrl || source.firstImage || source.first_image || (photos[0] ? photos[0].src : '');
             const sortOrderValue = Object.prototype.hasOwnProperty.call(source, 'sortOrder')
                 ? source.sortOrder
@@ -99,7 +111,8 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                 slug: source.slug || source.id || source.aid || '',
                 name: source.name || source.title || '未命名相册',
                 cover,
-                tags,
+                tags: tagNames,
+                tagLinks,
                 photos,
                 description: String(source.description || source.summary || ''),
                 address: source.address || source.location || '',
@@ -255,9 +268,30 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
 <div class="album-page-content" x-data="albumGalleryManager(<?php echo htmlspecialchars(json_encode($albumKey, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8'); ?>, <?php echo $showMomentsAlbum ? 'true' : 'false'; ?>)" x-init="init()" @album-primary-action.window="openPrimaryAction()" @album-updated.window="load()">
     <div class="album-page-heading">
         <div>
-            <a class="album-back-link" href="<?php echo htmlspecialchars($albumPageUrl ?? '', ENT_QUOTES, 'UTF-8'); ?>" x-show="isDetail">相册</a>
-            <h1 class="album-page-title" x-text="albumTitle"></h1>
+            <div class="album-page-title-row">
+                <h1 class="album-page-title" x-text="albumTitle"></h1>
+                <span class="album-detail-title-address" x-show="isDetail && album && album.address">
+                    <span aria-hidden="true">·</span>
+                    <span x-text="album && album.address"></span>
+                </span>
+            </div>
             <p class="album-page-subtitle" x-show="!isDetail">记录每一个值得留下的瞬间</p>
+            <p class="album-page-subtitle album-detail-summary" x-show="isDetail && album && (album.description || album.tagLinks.length)">
+                <span class="album-detail-description" x-show="album && album.description" x-text="album && album.description"></span>
+                <span class="album-detail-tags" x-show="album && album.tagLinks.length">
+                    <template x-for="(tag, index) in (album ? album.tagLinks : [])" :key="tag.slug || tag.name">
+                        <span class="album-detail-tag">
+                            <span x-show="index > 0" aria-hidden="true"> · </span>
+                            <template x-if="tag.url">
+                                <a class="album-detail-tag-link" :href="tag.url" x-text="tag.name"></a>
+                            </template>
+                            <template x-if="!tag.url">
+                                <span x-text="tag.name"></span>
+                            </template>
+                        </span>
+                    </template>
+                </span>
+            </p>
         </div>
         <button type="button" class="album-add-button" aria-label="新建相册" x-show="!isDetail" @click="openEditor()">+</button>
     </div>
@@ -307,11 +341,6 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
     </div>
 
     <div class="album-detail-view" x-show="!loading && !error && isDetail">
-        <div class="album-detail-meta" x-show="album && (album.address || album.tags.length)">
-            <span class="album-detail-address" x-show="album && album.address" x-text="album && album.address"></span>
-            <span class="album-detail-tags" x-show="album && album.tags.length" x-text="album && album.tags.join(' · ')"></span>
-        </div>
-        <p class="album-detail-description" x-show="album && album.description" x-text="album && album.description"></p>
         <div class="album-grid" x-show="album && album.photos.length">
             <template x-for="(photo, index) in (album ? album.photos : [])" :key="photo.src + '-' + index">
                 <a class="album-grid-item" :href="photo.src" data-fancybox="album-photos" :data-caption="photo.alt || albumTitle">

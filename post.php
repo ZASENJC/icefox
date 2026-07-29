@@ -41,10 +41,32 @@ $this->need('header.php');
 
                     <!-- 文章内容（完整显示） -->
                     <div class="post-content">
-                        <?php echo themeContent($this); ?>
+                        <?php
+                        // 正文只保留信息流使用的文本标签，媒体统一由下方组件限位渲染。
+                        $filtered = filterContent($this->content);
+                        $contentView = generateContentWithSummaryAndMusic($filtered, PHP_INT_MAX);
+                        echo $contentView['full_content'];
+
+                        if (!empty($contentView['music_shortcodes'])) {
+                            echo parseMusicShortcode($contentView['music_shortcodes']);
+                        }
+                        ?>
                     </div>
 
-                    <!-- 详情页不需要单独显示视频和图片，因为已经在 content 中显示了 -->
+                    <?php
+                    // 与信息流保持一致：视频优先，否则渲染图片画廊。
+                    $videoSrc = extractVideoSrc($this->content);
+                    if ($videoSrc) {
+                        $this->videoUrl = $videoSrc;
+                        $this->need('components/post/post-video.php');
+                    } else {
+                        $images = extractImageSrcs($this->content);
+                        if (!empty($images)) {
+                            $this->images = $images;
+                            $this->need('components/post/post-images.php');
+                        }
+                    }
+                    ?>
 
                     <!-- 文章位置 -->
                     <?php $this->need('components/post/post-position.php'); ?>

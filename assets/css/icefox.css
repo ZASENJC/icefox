@@ -84,6 +84,15 @@ body {
     display: none!important;
 }
 
+html.icefox-feed-restoring,
+html.icefox-feed-restoring body {
+    scroll-behavior: auto !important;
+}
+
+html.icefox-feed-restoring main {
+    visibility: hidden;
+}
+
 .cursor-help {
     cursor: help;
 }
@@ -150,25 +159,41 @@ main {
 }
 
 .top-container .tc-home,
+.top-container .tc-links,
 .top-container .tc-music,
 .top-container .tc-album,
 .top-container .tc-edit,
 .top-container .tc-setting {
     height: 40px;
     width: 40px;
+    flex: 0 0 40px;
     display: flex;
     justify-content: center;
     align-items: center;
+    box-sizing: border-box;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
     cursor: pointer;
+    font: inherit;
+    line-height: 1;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.top-container .tc-home:hover,
+.top-container .tc-links:hover,
+.top-container .tc-music:hover,
+.top-container .tc-album:hover,
+.top-container .tc-edit:hover,
+.top-container .tc-setting:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    transform: scale(1.1);
 }
 
 .top-container .tc-home,
 .top-container .tc-album {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
     color: inherit;
     text-decoration: none;
 }
@@ -184,10 +209,19 @@ main {
 }
 
 .top-container svg {
-    height: 20px;
-    width: 20px;
+    height: 22px;
+    width: 22px;
     color: #ffffff;
-    transition: color 0.3s ease;
+    transition: color 0.3s ease, filter 0.3s ease;
+}
+
+.top-container:not(.scrolled).has-light-background svg {
+    color: #555555;
+}
+
+.top-container:not(.scrolled).has-media-sampling-fallback svg {
+    color: #ffffff;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9));
 }
 
 .top-container.scrolled svg {
@@ -345,6 +379,7 @@ main {
 .post-item-left img {
     height: 36px;
     width: 36px;
+    border-radius: 33.333%;
     display: flex;
     flex: 1;
 }
@@ -366,6 +401,19 @@ main {
 .post-title a {
     text-decoration: none;
     color: var(--link);
+}
+
+.post-list .post-title {
+    margin-bottom: 5px;
+}
+
+.post-list .post-content {
+    margin-bottom: 5px;
+}
+
+.post-list .post-time {
+    position: relative;
+    top: -2px;
 }
 
 /* 置顶标识 */
@@ -562,8 +610,25 @@ main {
     font-weight: 600;
 }
 
+.album-page-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 20px;
+    row-gap: 4px;
+}
+
+.album-detail-title-address {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-sub-color);
+    font-size: 24px;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+}
+
 .album-page-subtitle,
-.album-detail-meta,
 .album-card-meta {
     color: var(--text-sub-color);
     font-size: 13px;
@@ -571,14 +636,28 @@ main {
 
 .album-page-subtitle {
     margin: 6px 0 0;
+    overflow-wrap: anywhere;
 }
 
-.album-back-link {
-    display: inline-block;
-    margin-bottom: 6px;
+.album-detail-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 14px;
+}
+
+.album-detail-description {
+    white-space: pre-wrap;
+}
+
+.album-detail-tag-link {
     color: var(--link);
-    font-size: 13px;
     text-decoration: none;
+    text-underline-offset: 3px;
+}
+
+.album-detail-tag-link:hover {
+    text-decoration: underline;
 }
 
 .album-add-button {
@@ -730,22 +809,6 @@ main {
     aspect-ratio: 1 / 1;
     overflow: hidden;
     background: var(--primary-background);
-}
-
-.album-detail-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 14px;
-    margin: -10px 0 18px;
-}
-
-.album-detail-description {
-    margin: -8px 0 18px;
-    color: var(--text-color);
-    overflow-wrap: anywhere;
-    white-space: pre-wrap;
-    font-size: 14px;
-    line-height: 1.7;
 }
 
 .album-loading,
@@ -2128,6 +2191,26 @@ main {
     font-size: 24px;
 }
 
+.tag-archive-albums {
+    padding: 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.tag-archive-articles-heading {
+    padding: 20px 20px 12px;
+}
+
+.tag-result-section-title {
+    margin: 0 0 12px;
+    color: var(--text-color);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.tag-archive-articles-heading .tag-result-section-title {
+    margin-bottom: 0;
+}
+
 .archive-empty {
     display: flex;
     flex-direction: column;
@@ -2242,7 +2325,6 @@ main {
 
 .post-detail-item {
     border-bottom: none;
-    padding-top: 15px;
 }
 
 .post-detail-item .post-item-right {
@@ -2251,13 +2333,30 @@ main {
 }
 
 .post-detail-item .post-item-left {
-    padding-top: 5px;
+    padding-top: 0;
 }
 
 .post-detail-item .post-item-left img {
-    height: 40px;
-    width: 40px;
-    border-radius: 4px;
+    height: 36px;
+    width: 36px;
+    border-radius: 33.333%;
+}
+
+.post-detail-item .post-title {
+    margin-bottom: 5px;
+}
+
+.post-detail-item .post-content {
+    margin-bottom: 7px;
+}
+
+.post-detail-item .post-content > :last-child {
+    margin-bottom: 0;
+}
+
+.post-detail-item .post-time {
+    position: relative;
+    top: 0;
 }
 
 /* 文章标题 */
@@ -3304,16 +3403,6 @@ input:checked + .slider:before {
         margin-right: 15px;
     }
 
-    .header-container > .header-info > .header-user > .header-site-title > span {
-        font-size: 14px;
-    }
-
-    .header-container > .header-info > .header-user > .header-avatar-link > img,
-    .header-container > .header-info > .header-user > .header-avatar-nolink > img {
-        height: 50px;
-        width: 50px;
-    }
-
     /* 归档页 */
     .archive-header {
         padding: 15px;
@@ -3325,6 +3414,14 @@ input:checked + .slider:before {
 
     .archive-title::before {
         font-size: 20px;
+    }
+
+    .tag-archive-albums {
+        padding: 15px;
+    }
+
+    .tag-archive-articles-heading {
+        padding: 15px 15px 10px;
     }
 
     .archive-empty {
@@ -3764,30 +3861,6 @@ input:checked + .slider:before {
 /* ========================================
    友情链接页面与弹窗
    ======================================== */
-
-.tc-links {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-    font: inherit;
-    transition: all 0.3s ease;
-}
-
-.tc-links:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-    transform: scale(1.1);
-}
-
-.tc-links svg {
-    width: 24px;
-    height: 24px;
-}
 
 .links-modal {
     inset: 0;

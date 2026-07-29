@@ -54,10 +54,19 @@ global.alert = message => {
 const gallerySource = fs.readFileSync('components/album-gallery.php', 'utf8');
 const galleryScript = gallerySource.match(/<script>\s*([\s\S]*?)\s*<\/script>/);
 assert.ok(galleryScript, 'album gallery manager script must be present');
+const galleryHeading = gallerySource.match(
+    /<div class="album-page-heading">([\s\S]*?)<\/div>\s*<div class="album-loading"/
+);
+assert.ok(galleryHeading, 'album gallery heading markup must be present');
 assert.match(
-    gallerySource,
-    /class="album-detail-description"[^>]*x-show="album && album\.description"[^>]*x-text="album && album\.description"/,
-    'album detail must render the description as escaped text'
+    galleryHeading[1],
+    /<h1 class="album-page-title" x-text="albumTitle"><\/h1>[\s\S]*?<p class="album-page-subtitle album-detail-summary"[^>]*x-show="isDetail && album && \(album\.description \|\| album\.tagLinks\.length\)"[^>]*>[\s\S]*?<span class="album-detail-description"[^>]*x-show="album && album\.description"[^>]*x-text="album && album\.description"><\/span>[\s\S]*?<span class="album-detail-tags"[^>]*x-show="album && album\.tagLinks\.length"/,
+    'album detail must render escaped tags after the description below the shared page title'
+);
+assert.doesNotMatch(
+    galleryHeading[1],
+    /album-back-link/,
+    'album detail title must keep the same vertical position as the album index title'
 );
 
 const createGalleryManager = new Function(`${galleryScript[1]}\nreturn albumGalleryManager;`)();

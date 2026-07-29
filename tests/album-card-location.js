@@ -30,5 +30,20 @@ assert.match(
     /\.album-card-address\s*\{[^}]*margin-left:\s*auto;[^}]*text-align:\s*right;/s,
     'the album address must align to the right edge of the metadata row'
 );
+assert.match(
+    gallerySource,
+    /<div class="album-page-title-row">[\s\S]*?<h1 class="album-page-title" x-text="albumTitle"><\/h1>[\s\S]*?<span class="album-detail-title-address"[^>]*x-show="isDetail && album && album\.address"[^>]*>[\s\S]*?<span aria-hidden="true">·<\/span>[\s\S]*?<span x-text="album && album\.address"><\/span>[\s\S]*?<\/span>[\s\S]*?<p class="album-page-subtitle"/,
+    'album details must render a dot and the address after the title and before the description'
+);
+assert.match(
+    stylesheet,
+    /\.album-page-title-row\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*column-gap:\s*20px;/s,
+    'the album detail title and address must be centered with a generous horizontal gap'
+);
+assert.match(
+    stylesheet,
+    /\.album-detail-title-address\s*\{[^}]*font-size:\s*24px;/s,
+    'the album detail address must match the title size'
+);
 
 console.log('Album card location layout is present');

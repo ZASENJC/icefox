@@ -14,6 +14,7 @@ include_once 'comment_function.php';
 include_once 'core/core.php';
 include_once 'core/post-pinning.php';
 include_once 'core/friend-links.php';
+include_once 'core/album-tags.php';
 include_once __TYPECHO_ROOT_DIR__ . '/var/Utils/Markdown.php';
 
 /**
@@ -83,10 +84,6 @@ function themeConfig($form)
     // 文章发布页地址
     $editPageUrl = new Typecho_Widget_Helper_Form_Element_Text('editPageUrl', NULL, '/edit.html', _t('文章发布页地址'), _t('设置文章发布页面的访问地址，默认为 /edit.html'));
     $form->addInput($editPageUrl);
-
-    // 相册页面地址
-    $albumPageUrl = new Typecho_Widget_Helper_Form_Element_Text('albumPageUrl', NULL, '/albums', _t('相册页面地址'), _t('填写已设置为“相册模板”的独立页面地址，默认为 /albums'));
-    $form->addInput($albumPageUrl);
 
     // 友情链接页面地址
     $friendLinksPageUrl = new Typecho_Widget_Helper_Form_Element_Text(
@@ -695,7 +692,7 @@ function seoInfo($archive)
         if ($archive->is('category')) {
             $archiveTitle = '分类 ' . $archive->getDescription() . ' 下的文章';
         } elseif ($archive->is('tag')) {
-            $archiveTitle = '标签 ' . $archive->getDescription() . ' 下的文章';
+            $archiveTitle = '标签 ' . $archive->getDescription() . ' 下的内容';
         } elseif ($archive->is('author')) {
             $archiveTitle = $archive->getDescription() . ' 发布的文章';
         } elseif ($archive->is('search')) {
@@ -963,27 +960,27 @@ function getArchiveTagsCloud()
         </div>';
     }
 
-    // 获取每个标签的文章数量
+    // 标签实体与文章共用；展示数量包含当前访客可见的相册。
     foreach ($tags as &$tag) {
-        $count = $db->fetchObject($db->select(array('COUNT(cid)' => 'count'))
+        $postCount = $db->fetchObject($db->select(array('COUNT(cid)' => 'count'))
             ->from('table.relationships')
             ->where('mid = ?', $tag['mid']))->count;
-        $tag['count'] = $count;
+        $tag['count'] = (int) $postCount + icefoxGetVisibleTagAlbumCount((int) $tag['mid']);
     }
 
-    // 按文章数量排序
+    // 按文章和可见相册的内容总数排序
     usort($tags, function ($a, $b) {
         return $b['count'] - $a['count'];
     });
 
     $html = '<div class="tags-cloud">';
 
-    $maxCount = !empty($tags) ? max(array_column($tags, 'count')) : 1;
+    $maxCount = max(1, max(array_column($tags, 'count')));
 
     foreach ($tags as $tag) {
         $tagUrl = Typecho_Router::url('tag', $tag);
 
-        // 根据文章数量确定标签大小
+        // 根据内容总数确定标签大小
         $sizeRatio = $tag['count'] / $maxCount;
         $sizeClass = 'tag-size-small';
         if ($sizeRatio > 0.6) {

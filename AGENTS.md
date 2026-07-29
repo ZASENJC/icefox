@@ -116,7 +116,7 @@ receipts to `saveAlbum`.
 - `topVideo`, `topImage`, `logoUrl`, `avatarLink`
 - `beianInfo`, `beianUrl`, `gravatarUrl`
 - `customCss`, `customJs`, `analytics`
-- `editPageUrl`, `albumPageUrl`, `friendLinksPageUrl`, `albumTopImage`
+- `editPageUrl`, `friendLinksPageUrl`, `albumTopImage`
 - `showMomentsAlbum`, `autoCollapse`
 - `uploadStorage`
 

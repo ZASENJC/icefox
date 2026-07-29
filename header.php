@@ -48,7 +48,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
         window.ICEFOX_CONFIG = <?php echo json_encode([
             'actionUrl' => Helper::security()->getIndex('/action/icefox'),
             'homeUrl' => Helper::options()->siteUrl,
-            'albumUrl' => rtrim(trim((string) Helper::options()->albumPageUrl), '/') ?: Typecho_Common::url('albums', Helper::options()->index),
+            'albumUrl' => Typecho_Common::url('albums', Helper::options()->index),
             'friendLinksUrl' => icefoxFriendLinksPageUrl(Helper::options()),
             'uploadStorage' => (string) Helper::options()->uploadStorage === 'object' ? 'object' : 'local',
             'phpUploadMaxBytes' => icefoxIniSizeToBytes(ini_get('upload_max_filesize')),
@@ -61,6 +61,15 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
             currentUrl.searchParams.delete('icefox_published');
             window.history.replaceState({}, document.title, currentUrl.toString());
+        })();
+
+        (function markFeedScrollRestore() {
+            const state = window.history.state;
+            const feedState = state && state.icefoxFeed;
+            const currentKey = window.location.pathname + window.location.search;
+            if (feedState && feedState.key === currentKey && Number(feedState.scrollY) > 0) {
+                document.documentElement.classList.add('icefox-feed-restoring');
+            }
         })();
     </script>
 
@@ -781,6 +790,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     <script defer src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/scrollload.min.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/music-player.js'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/top-icon-contrast.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/icefox.js'); ?>"></script>
 
     <?php if ($this->options->customJs): ?>

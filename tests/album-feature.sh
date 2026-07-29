@@ -27,14 +27,16 @@ forbid_pattern() {
     fi
 }
 
-require_pattern "Form_Element_Text.*albumPageUrl" functions.php 'theme config must expose the album page URL'
+forbid_pattern "Form_Element_Text.*albumPageUrl" functions.php 'the fixed album route must not be exposed as a theme setting'
 require_pattern "Form_Element_Text.*albumTopImage" functions.php 'theme config must expose the album top image'
 require_pattern "Form_Element_Radio.*showMomentsAlbum" functions.php 'theme config must expose the moments album visibility switch'
 require_pattern "showMomentsAlbum.*'1'" functions.php 'the moments album visibility switch must default to enabled'
-require_pattern "albumPageUrl.*'/albums'" functions.php 'album page URL must use the clean /albums path'
 require_pattern "albumOnly" functions.php 'post fields must expose the album-only switch'
 require_pattern 'class="tc-album"' components/head.php 'the top bar must include an album entry'
-require_pattern "options->albumPageUrl" components/head.php 'the album entry must use the configured URL'
+require_pattern "Typecho_Common::url\('albums'" components/head.php 'the album entry must use the fixed plugin route'
+require_pattern "Typecho_Common::url\('albums'" header.php 'the client album URL must use the fixed plugin route'
+forbid_pattern "albumPageUrl" header.php 'the client album URL must ignore removed theme settings'
+forbid_pattern "options->albumPageUrl" components/head.php 'the album entry must ignore removed theme settings'
 require_pattern 'album-primary-action' components/head.php 'the album top-right control must delegate to the active album view'
 require_pattern 'getAlbums' components/album-gallery.php 'album page must load the album list from the plugin'
 require_pattern 'getAlbum' components/album-gallery.php 'album detail must load its photos from the plugin'
@@ -69,6 +71,7 @@ node tests/album-pinning.js
 node tests/album-sorting.js
 node tests/album-card-location.js
 node tests/album-description.js
+node tests/album-tags.js
 sh tests/album-plugin-pinning.sh
 sh tests/album-plugin-sorting.sh
 

@@ -1,6 +1,10 @@
 <?php
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
+$tagAlbums = $this->is('tag') ? icefoxGetTagArchiveAlbums($this) : array();
+$this->icefoxTagAlbums = $tagAlbums;
+$hasArchivePosts = $this->have();
+
 // 包含头部文件
 $this->need('header.php');
 ?>
@@ -14,15 +18,25 @@ $this->need('header.php');
             <h2 class="archive-title"><?php $this->archiveTitle([
                 'category' => _t('分类 %s 下的文章'),
                 'search'   => _t('包含关键字 %s 的文章'),
-                'tag'      => _t('标签 %s 下的文章'),
+                'tag'      => _t('标签 %s 下的内容'),
                 'author'   => _t('%s 发布的文章')
             ], '', ''); ?></h2>
         </div>
 
+        <?php if ($tagAlbums): ?>
+            <?php $this->need('components/tag-albums.php'); ?>
+        <?php endif; ?>
+
+        <?php if ($this->is('tag') && $hasArchivePosts): ?>
+            <div class="tag-archive-articles-heading">
+                <h3 class="tag-result-section-title">文章</h3>
+            </div>
+        <?php endif; ?>
+
         <!-- 无限滚动容器 -->
         <div class="scrollload-container">
             <div class="post-list scrollload-content" x-data="commentReplyManager()">
-                <?php if ($this->have()): ?>
+                <?php if ($hasArchivePosts): ?>
                     <?php while ($this->next()): ?>
                         <?php if (isAlbumOnlyPost($this)): continue; endif; ?>
                         <article class="post-item">
@@ -172,7 +186,7 @@ $this->need('header.php');
                             </div>
                         </article>
                     <?php endwhile; ?>
-                <?php else: ?>
+                <?php elseif (!$tagAlbums): ?>
                     <div class="archive-empty">
                         <div class="archive-empty-icon">🔍</div>
                         <h3><?php _e('没有找到内容'); ?></h3>

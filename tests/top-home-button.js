@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
 const headSource = fs.readFileSync('components/head.php', 'utf8');
-const scriptSource = fs.readFileSync('assets/js/icefox.js', 'utf8');
 const stylesheet = fs.readFileSync('assets/css/icefox.css', 'utf8');
 
 assert.match(
@@ -10,28 +9,27 @@ assert.match(
     /<div class="top-container-left">\s*<a class="tc-home" data-icon="home" href="<\?php \$this->options->siteUrl\(\); \?>" aria-label="返回首页">/,
     'the home link must be the leftmost top navigation button and use the configured site URL'
 );
+
+const homePosition = headSource.indexOf('class="tc-home"');
+const albumPosition = headSource.indexOf('class="tc-album"');
+const linksPosition = headSource.indexOf('class="tc-links"');
+assert.ok(
+    homePosition >= 0 && homePosition < albumPosition && albumPosition < linksPosition,
+    'the left navigation controls must be ordered home, album, then friend links'
+);
+
 assert.match(
     headSource,
-    /data-icon="home"><\?php \$this->need\("components\/svgs\/home\.php"\); \?><\/div>/,
-    'the filled home icon must be preloaded for the hero state'
-);
-assert.match(
-    headSource,
-    /data-icon="home-outline"><\?php \$this->need\("components\/svgs\/home-outline\.php"\); \?><\/div>/,
-    'the outline home icon must be preloaded for the scrolled state'
-);
-assert.match(
-    scriptSource,
-    /'\.tc-home, \.tc-user, \.tc-music, \.tc-album, \.tc-edit, \.tc-setting'/,
-    'the home icon must participate in the existing scroll-state icon swap'
+    /class="tc-home"[\s\S]*?<\?php \$this->need\("components\/svgs\/home-outline\.php"\); \?>/,
+    'the home control must use the shared outline icon style'
 );
 assert.match(
     stylesheet,
-    /\.top-container \.tc-home,\s*\.top-container \.tc-music,/,
+    /\.top-container \.tc-home,\s*\.top-container \.tc-links,\s*\.top-container \.tc-music,/,
     'the home link must share the existing 40px top navigation button layout'
 );
 
-for (const icon of ['home.php', 'home-outline.php']) {
+for (const icon of ['home-outline.php']) {
     const iconPath = `components/svgs/${icon}`;
     assert.ok(fs.existsSync(iconPath), `${iconPath} must exist`);
     const iconSource = fs.readFileSync(iconPath, 'utf8');

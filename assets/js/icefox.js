@@ -1,3 +1,100 @@
+let icefoxFeedRestoreActive = false;
+let icefoxFeedScrollSaveTimer = null;
+
+function finishIcefoxFeedRestoration() {
+    icefoxFeedRestoreActive = false;
+    document.documentElement.classList.remove('icefox-feed-restoring');
+}
+
+function getIcefoxFeedHistoryKey() {
+    return window.location.pathname + window.location.search;
+}
+
+function getIcefoxFeedHistoryState() {
+    const state = window.history.state;
+    const feedState = state && state.icefoxFeed;
+
+    if (!feedState || feedState.key !== getIcefoxFeedHistoryKey()) {
+        return null;
+    }
+
+    const scrollY = Number(feedState.scrollY);
+    if (!Number.isFinite(scrollY) || scrollY < 0) {
+        return null;
+    }
+
+    return {
+        scrollY,
+        page: Math.max(1, parseInt(feedState.page, 10) || 1)
+    };
+}
+
+function saveIcefoxFeedHistoryState(page) {
+    if (icefoxFeedRestoreActive) {
+        return;
+    }
+
+    const currentState = window.history.state && typeof window.history.state === 'object'
+        ? window.history.state
+        : {};
+
+    try {
+        window.history.replaceState({
+            ...currentState,
+            icefoxFeed: {
+                key: getIcefoxFeedHistoryKey(),
+                scrollY: Math.max(0, window.pageYOffset || window.scrollY || 0),
+                page: Math.max(1, parseInt(page, 10) || 1)
+            }
+        }, document.title, window.location.href);
+    } catch (error) {
+        // 历史记录不可写时不影响正常浏览。
+    }
+}
+
+function scheduleIcefoxFeedHistorySave(page) {
+    if (icefoxFeedRestoreActive) {
+        return;
+    }
+
+    window.clearTimeout(icefoxFeedScrollSaveTimer);
+    icefoxFeedScrollSaveTimer = window.setTimeout(function () {
+        saveIcefoxFeedHistoryState(page);
+    }, 120);
+}
+
+function bindIcefoxFeedHistorySave(getCurrentPage) {
+    $(window).off('scroll.icefoxFeedHistory').on('scroll.icefoxFeedHistory', function () {
+        scheduleIcefoxFeedHistorySave(getCurrentPage());
+    });
+
+    $(window).off('pagehide.icefoxFeedHistory').on('pagehide.icefoxFeedHistory', function () {
+        saveIcefoxFeedHistoryState(getCurrentPage());
+    });
+
+    $(document).off('click.icefoxFeedHistory', '.post-title a').on('click.icefoxFeedHistory', '.post-title a', function () {
+        saveIcefoxFeedHistoryState(getCurrentPage());
+    });
+}
+
+window.addEventListener('pageshow', function (event) {
+    if (!event.persisted) {
+        return;
+    }
+
+    const feedState = getIcefoxFeedHistoryState();
+    if (!feedState) {
+        return;
+    }
+
+    icefoxFeedRestoreActive = true;
+    document.documentElement.classList.add('icefox-feed-restoring');
+    window.requestAnimationFrame(function () {
+        window.scrollTo(0, feedState.scrollY);
+        finishIcefoxFeedRestoration();
+    });
+});
+
 $(function () {
     printCopyright();
     // 初始化Fancybox
@@ -38,21 +135,6 @@ $(function () {
     const scrollThreshold = 264; // 滚动阈值
     let lastScrollState = false; // 记录上一次的滚动状态
 
-    // 切换图标函数 - 使用预加载的SVG内容
-    function toggleIcons(isScrolled) {
-        $('.tc-home, .tc-user, .tc-music, .tc-album, .tc-edit, .tc-setting').each(function () {
-            const $iconContainer = $(this);
-            const iconType = $iconContainer.data('icon');
-            const newIconType = isScrolled ? iconType + '-outline' : iconType;
-
-            // 从预加载的图标中获取内容
-            const $preloadedIcon = $(`.preloaded-icons [data-icon="${newIconType}"]`);
-            if ($preloadedIcon.length) {
-                $iconContainer.html($preloadedIcon.html());
-            }
-        });
-    }
-
     // 监听滚动事件
     $(window).scroll(function () {
         const scrollTop = $(this).scrollTop();
@@ -61,13 +143,11 @@ $(function () {
         // 只有当滚动状态发生变化时才执行操作
         if (isScrolled !== lastScrollState) {
             if (isScrolled) {
-                // 向下滚动超过阈值，添加背景色并切换图标
+                // 向下滚动超过阈值，添加背景色
                 $topContainer.addClass('scrolled');
-                toggleIcons(true);
             } else {
-                // 向上滚动小于阈值，移除背景色并恢复图标
+                // 向上滚动小于阈值，移除背景色
                 $topContainer.removeClass('scrolled');
-                toggleIcons(false);
             }
 
             // 更新上一次的滚动状态
@@ -110,6 +190,7 @@ $(function () {
 function initInfiniteScroll() {
     // 检查是否有无限滚动容器
     if (!$('.scrollload-container').length) {
+        finishIcefoxFeedRestoration();
         return;
     }
 
@@ -119,6 +200,7 @@ function initInfiniteScroll() {
     const $totalPagesEl = $('.total-pages');
 
     if (!$pagination.length || !$currentPageEl.length || !$totalPagesEl.length) {
+        finishIcefoxFeedRestoration();
         return;
     }
 
@@ -162,9 +244,23 @@ function initInfiniteScroll() {
     }
 
     const totalPages = parseInt($totalPagesEl.data('total'));
+    const savedFeedState = getIcefoxFeedHistoryState();
+
+    // 信息流位置由主题恢复，避免浏览器的自动恢复与动态分页加载竞争。
+    if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+    }
+
+    const getCurrentPage = function () {
+        return currentPage;
+    };
+    bindIcefoxFeedHistorySave(getCurrentPage);
 
     // 如果已经在最后一页，不需要初始化无限滚动
     if (currentPage >= totalPages) {
+        if (savedFeedState) {
+            restoreIcefoxFeedPosition(savedFeedState.scrollY);
+        }
         return;
     }
 
@@ -175,6 +271,7 @@ function initInfiniteScroll() {
         container: document.querySelector('.scrollload-container'),
         content: document.querySelector('.scrollload-content'),
         threshold: 100, // 提前100px开始加载
+        isInitLock: Boolean(savedFeedState),
         loadingHtml: `
             <div class="scrollload-loading">
                 <div class="loading-spinner"></div>
@@ -199,16 +296,104 @@ function initInfiniteScroll() {
                 sl.noMoreData();
                 return;
             }
-            loadNextPage(currentPage, sl, postSelector, isArchivePage, isAuthorPage, totalPages);
+            loadNextPage(currentPage, sl, postSelector, isArchivePage, isAuthorPage, totalPages, function (success) {
+                if (success) {
+                    saveIcefoxFeedHistoryState(currentPage);
+                } else {
+                    currentPage--;
+                }
+            });
         }
     });
+
+    if (savedFeedState) {
+        restoreIcefoxFeedPosition(savedFeedState.scrollY, function (onComplete) {
+            if (currentPage >= totalPages) {
+                onComplete(true);
+                return;
+            }
+
+            currentPage++;
+            loadNextPage(currentPage, scrollload, postSelector, isArchivePage, isAuthorPage, totalPages, function (success) {
+                if (!success) {
+                    currentPage--;
+                }
+                onComplete(success);
+            }, true);
+        }, function (success) {
+            scrollload.unLock();
+            if (success !== false) {
+                saveIcefoxFeedHistoryState(currentPage);
+            }
+        });
+    }
+}
+
+function restoreIcefoxFeedPosition(scrollY, loadMore, onComplete) {
+    if (!Number.isFinite(scrollY) || scrollY < 1) {
+        finishIcefoxFeedRestoration();
+        if (typeof onComplete === 'function') {
+            onComplete();
+        }
+        return;
+    }
+
+    icefoxFeedRestoreActive = true;
+    document.documentElement.classList.add('icefox-feed-restoring');
+    let loadingMore = false;
+    let attempts = 0;
+    const maxAttempts = 120;
+
+    const restore = function () {
+        const maxScrollY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        window.scrollTo(0, Math.min(scrollY, maxScrollY));
+
+        if (maxScrollY >= scrollY - 2 || attempts >= maxAttempts) {
+            const restored = maxScrollY >= scrollY - 2;
+            finishIcefoxFeedRestoration();
+            if (typeof onComplete === 'function') {
+                onComplete(restored);
+            }
+            return;
+        }
+
+        if (typeof loadMore !== 'function') {
+            attempts++;
+            window.setTimeout(restore, 50);
+            return;
+        }
+
+        if (loadingMore) {
+            window.setTimeout(restore, 50);
+            return;
+        }
+
+        attempts++;
+        loadingMore = true;
+        loadMore(function (success) {
+            loadingMore = false;
+            if (success === false) {
+                finishIcefoxFeedRestoration();
+                if (typeof onComplete === 'function') {
+                    onComplete(false);
+                }
+                return;
+            }
+            window.requestAnimationFrame(restore);
+        });
+    };
+
+    window.requestAnimationFrame(restore);
 }
 
 // 加载下一页内容
-function loadNextPage(page, scrollloadInstance, postSelector, isArchivePage, isAuthorPage, totalPages) {
+function loadNextPage(page, scrollloadInstance, postSelector, isArchivePage, isAuthorPage, totalPages, onComplete, suppressUnlock) {
     // 双重检查：确保不超出总页数
     if (page > totalPages) {
         scrollloadInstance.noMoreData();
+        if (typeof onComplete === 'function') {
+            onComplete(false);
+        }
         return;
     }
     // 构建下一页URL - 区分首页和归档页的分页格式
@@ -278,6 +463,9 @@ function loadNextPage(page, scrollloadInstance, postSelector, isArchivePage, isA
                 if ($newPosts.length === 0) {
                     // 没有更多内容
                     scrollloadInstance.noMoreData();
+                    if (typeof onComplete === 'function') {
+                        onComplete(false);
+                    }
                     return;
                 }
                 
@@ -319,14 +507,26 @@ function loadNextPage(page, scrollloadInstance, postSelector, isArchivePage, isA
                     const newTotalPages = parseInt($newPagination.data('total'));
                     if (page >= newTotalPages) {
                         scrollloadInstance.noMoreData();
+                        if (typeof onComplete === 'function') {
+                            onComplete(true);
+                        }
                         return;
                     }
                 }
 
+                if (typeof onComplete === 'function') {
+                    onComplete(true);
+                }
+
                 // 继续允许加载
-                scrollloadInstance.unLock();
+                if (!suppressUnlock) {
+                    scrollloadInstance.unLock();
+                }
 
             } catch (error) {
+                if (typeof onComplete === 'function') {
+                    onComplete(false);
+                }
                 scrollloadInstance.throwException();
             }
         },
@@ -336,6 +536,9 @@ function loadNextPage(page, scrollloadInstance, postSelector, isArchivePage, isA
                 scrollloadInstance.noMoreData();
             } else {
                 scrollloadInstance.throwException();
+            }
+            if (typeof onComplete === 'function') {
+                onComplete(false);
             }
         }
     });

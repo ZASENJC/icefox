@@ -965,6 +965,7 @@ class Action extends Widget implements ActionInterface {
             $description = $requestedDescription === null
                 ? trim((string) ($existing['description'] ?? ''))
                 : trim((string) $requestedDescription);
+            $tags = Plugin::normalizeAlbumTags($request->get('tags', ''));
 
             $uploadedFiles = $this->consumeStagedAlbumUploads($stagedUploads);
             $uploadedFiles = array_merge($uploadedFiles, $this->handleMediaUpload($storageTarget, self::ALBUM_PHOTO_LIMIT, false));
@@ -1009,7 +1010,7 @@ class Action extends Widget implements ActionInterface {
                 'name' => $name,
                 'description' => $description,
                 'cover' => $cover,
-                'tags' => trim((string) $request->get('tags', '')),
+                'tags' => implode(',', $tags),
                 'address' => trim((string) $request->get('address', '')),
                 'visibility' => $visibility,
                 'photos' => json_encode($photos, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
@@ -1031,6 +1032,7 @@ class Action extends Widget implements ActionInterface {
                 throw new \RuntimeException('相册记录写入失败');
             }
             $databaseWritten = true;
+            Plugin::syncAlbumTags($savedId, $tags);
 
             $saved = $this->findAlbum((string) $savedId);
             if (!$saved) {
@@ -1325,6 +1327,7 @@ class Action extends Widget implements ActionInterface {
                     ->rows($rows)
                     ->where('id = ?', (int) $existing['id'])
             );
+            Plugin::syncAlbumTags((int) $existing['id'], $existing['tags'] ?? '');
         } catch (\Exception $rollbackError) {
             error_log('Icefox album rollback failed for album ID ' . (int) $savedId);
         }
@@ -1490,7 +1493,8 @@ class Action extends Widget implements ActionInterface {
 
     private function formatAlbum($album) {
         $photos = $this->decodeAlbumPhotos($album['photos'] ?? '[]');
-        $tags = array_values(array_filter(array_map('trim', preg_split('/[,，]/u', (string) ($album['tags'] ?? '')))));
+        $tagLinks = Plugin::getAlbumTagLinks((int) $album['id'], $album['tags'] ?? '');
+        $tags = array_column($tagLinks, 'name');
         return [
             'id' => (int) $album['id'],
             'slug' => (string) $album['slug'],
@@ -1498,6 +1502,7 @@ class Action extends Widget implements ActionInterface {
             'description' => (string) ($album['description'] ?? ''),
             'cover' => (string) ($album['cover'] ?: ($photos[0]['src'] ?? '')),
             'tags' => $tags,
+            'tagLinks' => $tagLinks,
             'address' => (string) ($album['address'] ?? ''),
             'visibility' => $album['visibility'] === 'private' ? 'private' : 'public',
             'photos' => $photos,

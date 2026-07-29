@@ -25,7 +25,7 @@
 | 点赞 | 按钮、点赞人列表和状态更新 | `getLikes`、`like`、匿名用户标识和点赞数据 |
 | 评论 | 表单、回复树展示 | `addComment` 的校验和写入 |
 | 前台发布 | 编辑器、图片预览和选项 | `createPost`、媒体上传和文章写入 |
-| 独立相册 | 相册列表、三列网格、灯箱和编辑弹窗 | `getAlbums`、`getAlbum`、`stageAlbumUpload`、`saveAlbum` |
+| 独立相册 | 相册列表、标签归档中的相册区块、三列网格、灯箱和编辑弹窗 | `getAlbums`、`getAlbum`、`stageAlbumUpload`、`saveAlbum`、标准标签关系和按标签查询 |
 | 对象存储 | 选择默认上传目标 | `Icefox` 调用 `IcefoxStorage` 上传、回滚和保存对象元数据 |
 
 主题中的所有插件 URL 都必须通过 `window.ICEFOX_PLUGIN` 生成，不要在组件里手写 `?do=...`。
@@ -39,6 +39,7 @@
 - 创建和升级 `icefox_*` 数据表
 - 图片和视频上传、文件类型检查与存储
 - 点赞、相册和“朋友圈”同步的持久化
+- 维护 `icefox_album_tags`，并通过插件公开方法为主题提供标签归档相册数据
 - 从动态正文提取、去重并同步相册图片
 
 友情链接是这里的例外：它使用 `links-page.php` 作为独立页面和同源读写入口，数据以 JSON 存在该页面的 Typecho `friendLinks` 自定义字段中。游客只读，登录用户写入时必须通过 Typecho CSRF token 校验。主题不再读取或创建插件的 `icefox_links` 表。
@@ -85,6 +86,8 @@ TYPECHO_CONFIG=/absolute/path/to/typecho/config.inc.php php scripts/migrate-lega
 - `getAlbums` 和 `getAlbum` 返回数值型 `sortOrder`
 - 相册列表依次按 `is_moments` 降序、`is_pinned` 降序、`sort_order` 升序排列；相同序号保留确定的原有顺序
 - “朋友圈”相册忽略手动排序值，始终置于列表第一位
+
+相册标签复用 Typecho 标准 `metas` 标签记录；相册到标签的关系由插件表 `icefox_album_tags` 保存，主题不得直接查询插件表。插件激活时会迁移旧相册的逗号分隔标签；仅替换文件而未重新激活插件时，需要执行 `scripts/migrate-album-tags.php`。
 
 ## 插件契约测试
 

@@ -29,7 +29,7 @@ class Action extends Widget implements ActionInterface {
             return;
         }
         if ($this->request->isPost()) {
-            $this->security->protect();
+            Widget::widget('Widget_Security')->protect();
         }
 
         // 公开读取、点赞和评论操作不需要管理员权限

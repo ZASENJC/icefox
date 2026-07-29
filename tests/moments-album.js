@@ -64,6 +64,7 @@ async function run() {
     assert.match(source, /class="album-card-cover-grid"[^>]*x-show="album\.isMoments && album\.coverPhotos\.length"/);
     assert.match(source, /x-for="\(photo, index\) in album\.coverPhotos"/);
     assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+    assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?gap:\s*0;/, 'moments cover grid cells must be seamless');
     assert.match(styles, /\.album-card-cover-grid img\s*\{[\s\S]*?filter:\s*blur\(/);
 
     const defaultAlbums = await loadAlbums(true, []);

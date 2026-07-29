@@ -16,7 +16,7 @@ require_pattern() {
 }
 
 require_pattern 'security\(\)->getIndex' header.php 'frontend plugin requests must use a Typecho CSRF token URL'
-require_pattern 'security->protect\(\)' "$plugin_action" 'state-changing companion actions must enforce Typecho CSRF protection'
+require_pattern "Widget::widget\('Widget_Security'\)->protect\(\)" "$plugin_action" 'state-changing companion actions must enforce Typecho CSRF protection through the initialized security widget'
 require_pattern 'postActions' "$plugin_action" 'state-changing companion actions must be explicitly classified as POST-only'
 require_pattern 'in_array\(\$do, \$postActions, true\).*isPost' "$plugin_action" 'GET requests must not reach state-changing companion actions'
 require_pattern "security\(\)->getIndex\('/action/icefox\?do=deleteFriendLink'" "$plugin_main" 'plugin admin actions must use a tokenized, rewrite-safe URL'

@@ -195,7 +195,13 @@ class Plugin implements PluginInterface
             KEY `idx_album_order` (`is_moments`, `is_pinned`, `sort_order`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
         $db->query($sql);
-        self::migrateAlbumTable($db, $prefix);
+        self::ensureAlbumTableSchema();
+    }
+
+    public static function ensureAlbumTableSchema()
+    {
+        $db = Db::get();
+        self::migrateAlbumTable($db, $db->getPrefix());
     }
 
     private static function migrateAlbumTable($db, $prefix)

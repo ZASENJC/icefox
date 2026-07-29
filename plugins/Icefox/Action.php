@@ -943,6 +943,7 @@ class Action extends Widget implements ActionInterface {
         }
 
         try {
+            Plugin::ensureAlbumTableSchema();
             $remotePhotos = $this->parseAlbumRemotePhotos($request->get('remotePhotos', '[]'), $name);
             $stagedUploads = $request->get('stagedUploads', '[]');
             $existing = $albumId !== '' ? $this->findAlbum($albumId) : null;

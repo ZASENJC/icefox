@@ -32,6 +32,8 @@ test -f assets/js/friend-links.js || {
 
 require_pattern "include_once 'core/friend-links.php'" functions.php 'the friend-link theme module must load with the theme'
 require_pattern 'friendLinksPageUrl' functions.php 'the independent friend-links page URL must be configurable'
+require_pattern 'template = \?' core/friend-links.php 'friend-link URL fallback must locate the published page template'
+require_pattern 'Typecho_Router::url' core/friend-links.php 'friend-link URL fallback must use Typecho permalink rules'
 require_pattern "'friendLinksUrl'" header.php 'the browser must receive the configured friend-links page URL'
 require_pattern 'assets/js/friend-links\.js' header.php 'the shared friend-link client must load before Alpine initializes components'
 require_pattern 'icefoxHandleFriendLinksRequest' links-page.php 'the independent page must own its read and write requests'

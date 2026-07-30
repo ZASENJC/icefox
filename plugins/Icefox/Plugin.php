@@ -310,7 +310,6 @@ class Plugin implements PluginInterface
         $db = Db::get();
         $albums = $db->fetchAll(
             $db->select('id', 'tags')->from('table.icefox_albums')
-                ->where('tags IS NOT NULL')
                 ->where('tags <> ?', '')
         );
         $migratedAlbums = 0;

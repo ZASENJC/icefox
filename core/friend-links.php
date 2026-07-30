@@ -9,8 +9,38 @@ const ICEFOX_FRIEND_LINKS_MAX_BYTES = 60000;
 function icefoxFriendLinksPageUrl($options)
 {
     $configuredUrl = trim((string) $options->friendLinksPageUrl);
-    return $configuredUrl !== ''
-        ? $configuredUrl
+    if ($configuredUrl !== '') {
+        return $configuredUrl;
+    }
+
+    static $discoveredUrl = null;
+    if ($discoveredUrl !== null) {
+        return $discoveredUrl !== ''
+            ? $discoveredUrl
+            : Typecho_Common::url('links', $options->index);
+    }
+
+    $discoveredUrl = '';
+    $page = Typecho_Db::get()->fetchRow(
+        Typecho_Db::get()->select('cid', 'slug')
+            ->from('table.contents')
+            ->where('type = ?', 'page')
+            ->where('status = ?', 'publish')
+            ->where('template = ?', 'links-page.php')
+            ->order('cid', Typecho_Db::SORT_ASC)
+            ->limit(1)
+    );
+
+    if ($page && class_exists('Typecho_Router') && Typecho_Router::get('page')) {
+        $discoveredUrl = Typecho_Router::url(
+            'page',
+            ['slug' => urlencode((string) $page['slug'])],
+            $options->index
+        );
+    }
+
+    return $discoveredUrl !== ''
+        ? $discoveredUrl
         : Typecho_Common::url('links', $options->index);
 }
 

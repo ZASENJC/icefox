@@ -61,11 +61,46 @@ async function run() {
     });
     assert.strictEqual(normalizedMoments.coverPhotos.length, 9, 'only the moments album must prepare a nine-cell cover');
     assert.deepStrictEqual(normalizedRegular.coverPhotos, [], 'regular album cover behavior must remain unchanged');
+
+    const headerClasses = new Set();
+    const albumHeader = {
+        style: { backgroundImage: '' },
+        classList: {
+            toggle(className, enabled) {
+                if (enabled) headerClasses.add(className);
+                else headerClasses.delete(className);
+            }
+        }
+    };
+    const momentsHeaderTitle = { hidden: true };
+    global.document.querySelector = selector => {
+        if (selector === '[data-album-header]') return albumHeader;
+        if (selector === '[data-moments-header-title]') return momentsHeaderTitle;
+        return null;
+    };
+
+    manager.updateHeader(normalizedMoments, () => 0);
+    assert.ok(headerClasses.has('is-moments-album'), 'moments detail must enable its dedicated header treatment');
+    assert.strictEqual(momentsHeaderTitle.hidden, false, 'moments detail must reveal the centered title');
+    assert.ok(
+        coverSource.some(photo => albumHeader.style.backgroundImage.includes(photo.src)),
+        'moments detail header must use a random photo from the moments album'
+    );
+
+    manager.updateHeader(normalizedRegular, () => 0);
+    assert.ok(!headerClasses.has('is-moments-album'), 'regular album detail must not use the moments header treatment');
+    assert.strictEqual(momentsHeaderTitle.hidden, true, 'regular album detail must keep the moments title hidden');
+    assert.ok(albumHeader.style.backgroundImage.includes(normalizedRegular.cover), 'regular album detail must keep its normal cover');
+
     assert.match(source, /class="album-card-cover-grid"[^>]*x-show="album\.isMoments && album\.coverPhotos\.length"/);
     assert.match(source, /x-for="\(photo, index\) in album\.coverPhotos"/);
+    assert.match(source, /data-moments-header-title[^>]*hidden[^>]*>朋友圈</);
     assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
     assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?gap:\s*0;/, 'moments cover grid cells must be seamless');
     assert.match(styles, /\.album-card-cover-grid img\s*\{[\s\S]*?filter:\s*blur\(/);
+    assert.match(styles, /\.album-header\.is-moments-album::before\s*\{[\s\S]*?filter:\s*blur\(/, 'moments header photo must be blurred');
+    assert.match(styles, /\.album-header\.is-moments-album::after\s*\{[\s\S]*?background:\s*rgb\(0 0 0 \/ [^)]+\)/, 'moments header photo must be darkened');
+    assert.match(styles, /\.album-header-title\s*\{[\s\S]*?justify-content:\s*center;[\s\S]*?font-weight:\s*700;/, 'moments header title must be centered and bold');
 
     const defaultAlbums = await loadAlbums(true, []);
     assert.strictEqual(defaultAlbums.length, 1, 'enabled moments album must be shown when the plugin list is empty');

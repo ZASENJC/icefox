@@ -95,6 +95,7 @@ async function run() {
 
     assert.match(source, /class="album-card-cover-grid"[^>]*x-show="album\.isMoments && album\.coverPhotos\.length"/);
     assert.match(source, /x-for="\(photo, index\) in album\.coverPhotos"/);
+    assert.match(source, /class="album-page-title-row"[^>]*x-show="!isDetail \|\| \(album && !album\.isMoments\)"/, 'moments detail must hide the duplicate content title');
     assert.match(headSource, /class="album-header-background"[^>]*aria-hidden="true"/);
     assert.match(headSource, /data-moments-header-title[^>]*hidden[^>]*>朋友圈</);
     assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);

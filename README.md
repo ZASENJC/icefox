@@ -1,6 +1,6 @@
 # Icefox - Typecho 博客主题
 
-![Version](https://img.shields.io/badge/version-3.1.1-blue)
+![Version](https://img.shields.io/badge/version-3.1.2-blue)
 ![Typecho](https://img.shields.io/badge/typecho-%3E%3D1.2.0-orange)
 ![PHP](https://img.shields.io/badge/php-%3E%3D7.0.0-purple)
 
@@ -63,7 +63,7 @@
 
 2. **安装配套插件**（必需）
 
-   源码仓库在 `plugins/Icefox/` 中包含配套插件；从 GitHub Release 安装时，请下载同版本的 `Icefox-Plugin-3.1.1.zip`。解压或复制到 Typecho 插件目录并启用：
+   源码仓库在 `plugins/Icefox/` 中包含配套插件；从 GitHub Release 安装时，请下载同版本的 `Icefox-Plugin-3.1.2.zip`。解压或复制到 Typecho 插件目录并启用：
    ```bash
    cp -R plugins/Icefox /path/to/typecho/usr/plugins/Icefox
    ```
@@ -79,7 +79,7 @@
 
 3. **安装对象存储插件**（使用 R2/S3 时必需）
 
-   从 GitHub Release 安装时，请下载同版本的 `IcefoxStorage-3.1.1.zip`。
+   从 GitHub Release 安装时，请下载同版本的 `IcefoxStorage-3.1.2.zip`。
 
    ```bash
    cp -R plugins/IcefoxStorage /path/to/typecho/usr/plugins/IcefoxStorage
@@ -370,6 +370,12 @@ window.ICEFOX_CONFIG.phpPostMaxBytes   // 536870912，即 512MB
 - [Alpine.js](https://alpinejs.dev/) - 轻量级响应式框架
 
 ## 📝 更新日志
+
+### v3.1.2 (2026)
+- 友情链接地址留空时自动发现已发布的友情链接模板页面，并遵循 Typecho 实际永久链接规则
+- 优化朋友圈相册详情头部，随机使用相册照片作为背景，保持标题与顶部控件在深色遮罩上清晰可见
+- 调整信息流和文章详情的点赞/评论操作区，长评论超过四行时支持展开和收起
+- 为本次变更的主题样式和脚本增加版本缓存键，覆盖升级后无需手动清理旧静态资源缓存
 
 ### v3.1.1 (2026)
 - 修复 Typecho 1.2.x 查询构造器导致 Icefox 插件重新启用时报 `Database Query Error` 的相册标签迁移问题

@@ -17,7 +17,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * icefox插件是icefox主题的适配插件，需搭配icefox主题使用
  * @package Icefox
  * @author 小胖脸
- * @version 3.1.1
+ * @version 3.1.2
  * @link https://xiaopanglian.com
  */
 

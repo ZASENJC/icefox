@@ -560,6 +560,11 @@ main {
     cursor: pointer;
 }
 
+.post-list .post-time-comment,
+.post-detail-article .post-time-comment {
+    border-radius: 4px;
+}
+
 .post-time-comment:hover {
     background-color: var(--primary-background-hover);
 }
@@ -593,6 +598,19 @@ main {
     align-items: center;
 }
 
+.post-list .post-time-comment-modal,
+.post-detail-article .post-time-comment-modal {
+    left: -154px;
+    width: 144px;
+    height: 32px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    padding: 4px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+}
+
 .ptcm-good {
     border-right: 1px solid var(--text-color);
 }
@@ -606,6 +624,18 @@ main {
     cursor: pointer;
     height: 20px;
     gap: 5px;
+}
+
+.post-list .ptcm-good,
+.post-list .ptcm-comment,
+.post-detail-article .ptcm-good,
+.post-detail-article .ptcm-comment {
+    width: 100%;
+    height: auto;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 0;
+    gap: 3px;
 }
 
 
@@ -1163,6 +1193,18 @@ main {
     padding: 10px;
 }
 
+.post-list .post-comment-container,
+.post-detail-article .post-comment-container {
+    border-radius: 6px;
+}
+
+.post-list .post-comment-container:has(.like-users-text:not(:empty)):has(.pcc-comment-item) .pcc-like-list,
+.post-detail-article .post-comment-container:has(.like-users-text:not(:empty)):has(.pcc-comment-item) .pcc-like-list {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+}
+
 /* 点赞列表 */
 .pcc-like-list {
     font-size: 14px;
@@ -1183,6 +1225,21 @@ main {
 }
 
 /* 评论列表 */
+.post-list .pcc-comment-item + .pcc-comment-item,
+.post-detail-article .pcc-comment-item + .pcc-comment-item {
+    margin-top: 6px;
+}
+
+.post-list .pcc-comment-item,
+.post-detail-article .pcc-comment-item {
+    line-height: 1.35;
+}
+
+.post-list .author-badge,
+.post-detail-article .author-badge {
+    display: none;
+}
+
 .pcc-comment-list > .pcc-comment-item a {
     font-size: 14px;
     color: var(--link);
@@ -1194,11 +1251,37 @@ main {
 }
 
 .pcc-comment-content {
+    display: inline;
     cursor: pointer;
     transition: color 0.2s ease;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.pcc-comment-text {
+    display: inline;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+}
+
+.post-list .pcc-comment-expand,
+.post-detail-article .pcc-comment-expand {
+    margin-left: 4px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #007bff;
+    cursor: pointer;
+    font: inherit;
+    line-height: inherit;
+    white-space: nowrap;
 }
 
 .pcc-comment-content:hover {
+    color: #007bff;
+}
+
+.pcc-comment-content:hover .pcc-comment-text {
     color: #007bff;
 }
 

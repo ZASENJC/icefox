@@ -127,6 +127,9 @@ $(function () {
     // 初始化点赞功能
     initLikes();
 
+    // 初始化评论长度限制
+    initCommentLengthLimits();
+
     // 初始化无限滚动功能
     initInfiniteScroll();
 
@@ -479,6 +482,8 @@ function loadNextPage(page, scrollloadInstance, postSelector, isArchivePage, isA
                         window.Alpine.initTree($newItem[0]);
                     }
 
+                    initCommentLengthLimits($newItem);
+
                     // 初始化新文章的点赞数据
                     const $likeContainer = $newItem.find('.pcc-like-list');
                     if ($likeContainer.length) {
@@ -596,6 +601,132 @@ function initLikes() {
     });
 }
 
+function toggleCommentExpansion(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const expand = event.currentTarget;
+    const content = expand.closest('.pcc-comment-content');
+    const text = content ? content.querySelector('.pcc-comment-text') : null;
+
+    if (!content || !text) {
+        return;
+    }
+
+    const isExpanded = content.dataset.commentExpanded === 'true';
+
+    if (isExpanded) {
+        text.textContent = text.dataset.collapsedText;
+        expand.textContent = '展开';
+        expand.setAttribute('aria-expanded', 'false');
+        content.dataset.commentExpanded = 'false';
+    } else {
+        text.textContent = text.dataset.fullText;
+        expand.textContent = '收起';
+        expand.setAttribute('aria-expanded', 'true');
+        content.dataset.commentExpanded = 'true';
+    }
+}
+
+function initCommentLengthLimits(root) {
+    const $root = root ? $(root) : $(document);
+    const $contents = root
+        ? ($root.is('.pcc-comment-content') ? $root : $root.find('.pcc-comment-content'))
+        : $('.post-list .pcc-comment-content, .post-detail-article .pcc-comment-content');
+
+    $contents.each(function() {
+        const content = this;
+        const item = content.closest('.pcc-comment-item');
+        let text = content.querySelector('.pcc-comment-text');
+        let expand = content.querySelector('.pcc-comment-expand');
+
+        if (!item || !text) {
+            return;
+        }
+
+        if (!expand) {
+            expand = document.createElement('button');
+            expand.type = 'button';
+            expand.className = 'pcc-comment-expand';
+            expand.textContent = '展开';
+            expand.setAttribute('aria-expanded', 'false');
+            expand.hidden = true;
+            content.appendChild(expand);
+        }
+
+        if (typeof text.dataset.fullText === 'undefined') {
+            text.dataset.fullText = text.textContent;
+        }
+
+        if (!expand.dataset.bound) {
+            expand.dataset.bound = 'true';
+            expand.addEventListener('click', toggleCommentExpansion);
+        }
+
+        const fullText = text.dataset.fullText;
+        const wasExpanded = content.dataset.commentExpanded === 'true';
+        text.textContent = fullText;
+        expand.hidden = true;
+        expand.textContent = '展开';
+        expand.setAttribute('aria-expanded', 'false');
+
+        const lineHeight = parseFloat(window.getComputedStyle(item).lineHeight)
+            || parseFloat(window.getComputedStyle(item).fontSize) * 1.35;
+        const maxHeight = lineHeight * 4 + 1;
+
+        if (content.getBoundingClientRect().height <= maxHeight) {
+            delete text.dataset.collapsedText;
+            content.dataset.commentExpanded = 'false';
+            return;
+        }
+
+        let low = 0;
+        const fullTextUnits = Array.from(fullText);
+        let high = fullTextUnits.length;
+        let best = '';
+        expand.hidden = false;
+
+        while (low <= high) {
+            const middle = Math.floor((low + high) / 2);
+            const candidate = fullTextUnits.slice(0, middle).join('').replace(/\s+$/, '');
+            text.textContent = candidate;
+
+            if (content.getBoundingClientRect().height <= maxHeight) {
+                best = candidate;
+                low = middle + 1;
+            } else {
+                high = middle - 1;
+            }
+        }
+
+        text.dataset.collapsedText = best;
+        expand.hidden = false;
+
+        if (wasExpanded) {
+            text.textContent = fullText;
+            expand.textContent = '收起';
+            expand.setAttribute('aria-expanded', 'true');
+            content.dataset.commentExpanded = 'true';
+        } else {
+            text.textContent = best;
+            content.dataset.commentExpanded = 'false';
+        }
+    });
+}
+
+window.initCommentLengthLimits = initCommentLengthLimits;
+
+let commentLengthResizeTimer = null;
+
+function scheduleCommentLengthRefresh() {
+    window.clearTimeout(commentLengthResizeTimer);
+    commentLengthResizeTimer = window.setTimeout(function() {
+        initCommentLengthLimits();
+    }, 100);
+}
+
+$(window).on('resize.icefoxCommentLength', scheduleCommentLengthRefresh);
+
 // 加载点赞数据
 function loadLikeData(cid, $container) {
     const anonymousId = getAnonymousId();
@@ -678,6 +809,10 @@ function updateLikeUI($container, likes, isLiked, likeUsers) {
 
     // 获取父容器 post-comment-container
     const $commentContainer = $container.closest('.post-comment-container');
+    const $menuBtn = $('.like-menu-btn[data-cid="' + cid + '"]');
+    const $menuText = $menuBtn.find('.like-menu-text');
+    const $menuIcon = $menuBtn.find('.like-menu-icon');
+    const useCompactMenuText = $menuBtn.closest('.post-list, .post-detail-article').length > 0;
 
     // 确保 likes 是数字类型
     likes = parseInt(likes) || 0;
@@ -695,10 +830,7 @@ function updateLikeUI($container, likes, isLiked, likeUsers) {
         }
 
         // 仍需更新菜单按钮状态
-        const $menuBtn = $('.like-menu-btn[data-cid="' + cid + '"]');
-        const $menuText = $menuBtn.find('.like-menu-text');
-        const $menuIcon = $menuBtn.find('.like-menu-icon');
-        $menuText.text('点赞');
+        $menuText.text(useCompactMenuText ? '赞' : '点赞');
         $menuIcon.attr('fill', 'none');
         $menuIcon.css('color', '');
         return;
@@ -726,18 +858,14 @@ function updateLikeUI($container, likes, isLiked, likeUsers) {
     $usersText.text(likesText);
 
     // 更新菜单中的点赞按钮文本和图标
-    const $menuBtn = $('.like-menu-btn[data-cid="' + cid + '"]');
-    const $menuText = $menuBtn.find('.like-menu-text');
-    const $menuIcon = $menuBtn.find('.like-menu-icon');
-
     if (isLiked) {
-        // 已点赞 - 显示"取消点赞"和红色图标
-        $menuText.text('取消点赞');
+        // 已点赞 - 显示取消文案和红色图标
+        $menuText.text(useCompactMenuText ? '取消' : '取消点赞');
         $menuIcon.attr('fill', 'currentColor');
         $menuIcon.css('color', '#ff6b6b');
     } else {
-        // 未点赞 - 显示"点赞"和空心图标
-        $menuText.text('点赞');
+        // 未点赞 - 显示点赞文案和空心图标
+        $menuText.text(useCompactMenuText ? '赞' : '点赞');
         $menuIcon.attr('fill', 'none');
         $menuIcon.css('color', '');
     }

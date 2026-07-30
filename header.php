@@ -24,7 +24,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     <!-- 主题样式 -->
     <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/bulma.min.css'); ?>">
     <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/fancybox.css'); ?>">
-    <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/icefox.css'); ?>">
+    <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/icefox.css?v=3.1.2'); ?>">
 
     <!-- AlpineJS x-cloak 样式 -->
     <style>
@@ -669,7 +669,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
                         ${authorBadge}
                         <span>:</span>
                         <span class="cursor-help pcc-comment-content"
-                              @click="showReplyForm($event, '${postId}', '${commentData.coid}', '${this.escapeHtml(commentData.author)}')">${this.escapeHtml(commentData.text)}</span>
+                              @click="showReplyForm($event, '${postId}', '${commentData.coid}', '${this.escapeHtml(commentData.author)}')"><span class="pcc-comment-text">${this.escapeHtml(commentData.text)}</span></span>
                     `;
                 } else {
                     // 回复评论 - 需要获取被回复评论的作者
@@ -699,7 +699,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
                         ${parentAuthorBadge}
                         <span>:</span>
                         <span class="cursor-help pcc-comment-content"
-                              @click="showReplyForm($event, '${postId}', '${commentData.coid}', '${this.escapeHtml(commentData.author)}')">${this.escapeHtml(commentData.text)}</span>
+                              @click="showReplyForm($event, '${postId}', '${commentData.coid}', '${this.escapeHtml(commentData.author)}')"><span class="pcc-comment-text">${this.escapeHtml(commentData.text)}</span></span>
                     `;
                 }
 
@@ -725,6 +725,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
                         // 如果找不到父评论，插入到列表末尾
                         targetCommentList.appendChild(commentItem);
                     }
+                }
+
+                if (window.initCommentLengthLimits) {
+                    window.initCommentLengthLimits(commentItem);
                 }
 
                 // 初始化新元素的 Alpine.js
@@ -783,15 +787,15 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     </style>
     <?php endif; ?>
 
-    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox-plugin.js?v=3.1.1'); ?>"></script>
-    <script defer src="<?php $this->options->themeUrl('/assets/js/friend-links.js?v=3.1.1'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox-plugin.js?v=3.1.2'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/friend-links.js?v=3.1.2'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/jquery.min.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/alpinejs.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/scrollload.min.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/music-player.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/top-icon-contrast.js'); ?>"></script>
-    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox.js'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox.js?v=3.1.2'); ?>"></script>
 
     <?php if ($this->options->customJs): ?>
     <?php $customJs = (string) $this->options->customJs; ?>

@@ -2,7 +2,7 @@
 
 set -eu
 
-version="${1:-3.1.1}"
+version="${1:-3.1.2}"
 if ! printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
     echo "Version must use the form X.Y.Z" >&2
     exit 2

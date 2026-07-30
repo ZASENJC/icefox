@@ -6,7 +6,7 @@ Icefox is a mobile-first, WeChat Moments-style theme for Typecho. It is not a
 standalone application and cannot run without a Typecho installation and the
 companion Icefox plugin.
 
-- Theme version in code: `3.1.1`
+- Theme version in code: `3.1.2`
 - Expected Typecho version: `>= 1.2.0`
 - Expected PHP version: `>= 7.0`
 - Default branch: `main`
@@ -17,6 +17,15 @@ Install the theme files as `usr/themes/icefox/` inside a Typecho installation.
 Install `plugins/Icefox/` as `usr/plugins/Icefox/`; it registers the
 `/action/icefox` action route. Install `plugins/IcefoxStorage/` as
 `usr/plugins/IcefoxStorage/` when R2/S3 image storage is enabled.
+
+## Upgrade Compatibility
+
+All future theme and companion-plugin releases must support in-place upgrades
+by directly replacing the existing files. Any required database, schema, or
+configuration migration must run automatically and idempotently after the files
+are replaced while preserving existing user data and settings. Do not require
+users to uninstall and reinstall components, clear data, or run a manual
+migration as part of the normal upgrade path.
 
 ## Runtime Architecture
 

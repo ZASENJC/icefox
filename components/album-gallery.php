@@ -289,7 +289,7 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
 <div class="album-page-content" x-data="albumGalleryManager(<?php echo htmlspecialchars(json_encode($albumKey, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8'); ?>, <?php echo $showMomentsAlbum ? 'true' : 'false'; ?>)" x-init="init()" @album-primary-action.window="openPrimaryAction()" @album-updated.window="load()">
     <div class="album-page-heading">
         <div>
-            <div class="album-page-title-row">
+            <div class="album-page-title-row" x-show="!isDetail || (album && !album.isMoments)">
                 <h1 class="album-page-title" x-text="albumTitle"></h1>
                 <span class="album-detail-title-address" x-show="isDetail && album && album.address">
                     <span aria-hidden="true">·</span>

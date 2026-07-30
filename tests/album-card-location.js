@@ -32,7 +32,7 @@ assert.match(
 );
 assert.match(
     gallerySource,
-    /<div class="album-page-title-row">[\s\S]*?<h1 class="album-page-title" x-text="albumTitle"><\/h1>[\s\S]*?<span class="album-detail-title-address"[^>]*x-show="isDetail && album && album\.address"[^>]*>[\s\S]*?<span aria-hidden="true">·<\/span>[\s\S]*?<span x-text="album && album\.address"><\/span>[\s\S]*?<\/span>[\s\S]*?<p class="album-page-subtitle"/,
+    /<div class="album-page-title-row"[^>]*>[\s\S]*?<h1 class="album-page-title" x-text="albumTitle"><\/h1>[\s\S]*?<span class="album-detail-title-address"[^>]*x-show="isDetail && album && album\.address"[^>]*>[\s\S]*?<span aria-hidden="true">·<\/span>[\s\S]*?<span x-text="album && album\.address"><\/span>[\s\S]*?<\/span>[\s\S]*?<p class="album-page-subtitle"/,
     'album details must render a dot and the address after the title and before the description'
 );
 assert.match(

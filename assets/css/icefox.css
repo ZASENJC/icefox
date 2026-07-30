@@ -242,19 +242,28 @@ main {
     background-repeat: no-repeat;
 }
 
-.album-header.is-moments-album {
+.album-header-background {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    display: none;
     overflow: hidden;
+    background-image: inherit;
+    pointer-events: none;
 }
 
-.album-header.is-moments-album::before,
-.album-header.is-moments-album::after {
+.album-header.is-moments-album .album-header-background {
+    display: block;
+}
+
+.album-header.is-moments-album .album-header-background::before,
+.album-header.is-moments-album .album-header-background::after {
     position: absolute;
     content: "";
     pointer-events: none;
 }
 
-.album-header.is-moments-album::before {
-    z-index: 0;
+.album-header.is-moments-album .album-header-background::before {
     inset: -12px;
     background-image: inherit;
     background-position: center;
@@ -263,15 +272,14 @@ main {
     filter: blur(8px);
 }
 
-.album-header.is-moments-album::after {
-    z-index: 1;
+.album-header.is-moments-album .album-header-background::after {
     inset: 0;
     background: rgb(0 0 0 / 45%);
 }
 
 .album-header-title {
     position: absolute;
-    z-index: 2;
+    z-index: 1;
     inset: 0;
     display: flex;
     align-items: center;

@@ -68,6 +68,7 @@ $headerImage = $isAlbumPage && $albumTopImage !== '' ? $albumTopImage : trim((st
     <?php endif; ?>
 
     <?php if ($isAlbumPage): ?>
+        <div class="album-header-background" aria-hidden="true"></div>
         <div class="album-header-title" data-moments-header-title hidden>朋友圈</div>
     <?php endif; ?>
 

@@ -95,12 +95,15 @@ async function run() {
 
     assert.match(source, /class="album-card-cover-grid"[^>]*x-show="album\.isMoments && album\.coverPhotos\.length"/);
     assert.match(source, /x-for="\(photo, index\) in album\.coverPhotos"/);
+    assert.match(headSource, /class="album-header-background"[^>]*aria-hidden="true"/);
     assert.match(headSource, /data-moments-header-title[^>]*hidden[^>]*>朋友圈</);
     assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
     assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?gap:\s*0;/, 'moments cover grid cells must be seamless');
     assert.match(styles, /\.album-card-cover-grid img\s*\{[\s\S]*?filter:\s*blur\(/);
-    assert.match(styles, /\.album-header\.is-moments-album::before\s*\{[\s\S]*?filter:\s*blur\(/, 'moments header photo must be blurred');
-    assert.match(styles, /\.album-header\.is-moments-album::after\s*\{[\s\S]*?background:\s*rgb\(0 0 0 \/ [^)]+\)/, 'moments header photo must be darkened');
+    assert.doesNotMatch(styles, /\.album-header\.is-moments-album\s*\{[^}]*overflow:\s*hidden;/, 'moments header must not clip the site title and logo');
+    assert.match(styles, /\.album-header-background\s*\{[\s\S]*?overflow:\s*hidden;/, 'the dedicated background layer must contain blurred edges');
+    assert.match(styles, /\.album-header\.is-moments-album\s+\.album-header-background::before\s*\{[\s\S]*?filter:\s*blur\(/, 'moments header photo must be blurred');
+    assert.match(styles, /\.album-header\.is-moments-album\s+\.album-header-background::after\s*\{[\s\S]*?background:\s*rgb\(0 0 0 \/ [^)]+\)/, 'moments header photo must be darkened');
     assert.match(styles, /\.album-header-title\s*\{[\s\S]*?justify-content:\s*center;[\s\S]*?font-weight:\s*700;/, 'moments header title must be centered and bold');
 
     const defaultAlbums = await loadAlbums(true, []);

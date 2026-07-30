@@ -100,6 +100,7 @@ async function run() {
     assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
     assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?gap:\s*0;/, 'moments cover grid cells must be seamless');
     assert.match(styles, /\.album-card-cover-grid img\s*\{[\s\S]*?filter:\s*blur\(/);
+    assert.match(styles, /\.album-card-cover-grid::after\s*\{[\s\S]*?background:\s*rgb\(0 0 0 \/ 45%\)/, 'moments album cover must use the same dark overlay as its detail header');
     assert.doesNotMatch(styles, /\.album-header\.is-moments-album\s*\{[^}]*overflow:\s*hidden;/, 'moments header must not clip the site title and logo');
     assert.match(styles, /\.album-header-background\s*\{[\s\S]*?overflow:\s*hidden;/, 'the dedicated background layer must contain blurred edges');
     assert.match(styles, /\.album-header\.is-moments-album\s+\.album-header-background::before\s*\{[\s\S]*?filter:\s*blur\(/, 'moments header photo must be blurred');

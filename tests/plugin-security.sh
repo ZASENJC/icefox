@@ -2,8 +2,8 @@
 
 set -eu
 
-plugin_main=plugins/Icefox/Plugin.php
-plugin_action=plugins/Icefox/Action.php
+plugin_main=plugins/IcefoxPlugin/Plugin.php
+plugin_action=plugins/IcefoxPlugin/Action.php
 friend_links_module=core/friend-links.php
 
 require_pattern() {

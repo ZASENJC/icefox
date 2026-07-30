@@ -1,8 +1,8 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
-const pluginSource = fs.readFileSync('plugins/Icefox/Plugin.php', 'utf8');
-const actionSource = fs.readFileSync('plugins/Icefox/Action.php', 'utf8');
+const pluginSource = fs.readFileSync('plugins/IcefoxPlugin/Plugin.php', 'utf8');
+const actionSource = fs.readFileSync('plugins/IcefoxPlugin/Action.php', 'utf8');
 
 const legacyTagMigration = pluginSource.match(
     /public static function migrateLegacyAlbumTags\(\)\s*\{([\s\S]*?)\n\s*\}\n\s*public static function getAlbumTagLinks/

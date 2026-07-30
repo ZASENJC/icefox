@@ -77,7 +77,7 @@ assert.equal(
     'album normalization must preserve the description'
 );
 
-const pluginSource = fs.readFileSync('plugins/Icefox/Plugin.php', 'utf8');
+const pluginSource = fs.readFileSync('plugins/IcefoxPlugin/Plugin.php', 'utf8');
 assert.match(pluginSource, /`description` text/, 'album schema must define a description column');
 assert.match(
     pluginSource,
@@ -85,7 +85,7 @@ assert.match(
     'existing album tables must migrate the description column'
 );
 
-const actionSource = fs.readFileSync('plugins/Icefox/Action.php', 'utf8');
+const actionSource = fs.readFileSync('plugins/IcefoxPlugin/Action.php', 'utf8');
 assert.match(actionSource, /request->get\('description'/, 'saveAlbum must read the description');
 assert.match(actionSource, /mb_strlen[\s\S]*?> 1000/, 'saveAlbum must enforce the description length limit');
 assert.match(

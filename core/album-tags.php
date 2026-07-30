@@ -3,6 +3,25 @@
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 /**
+ * Resolve the renamed companion plugin while older installations transition.
+ */
+function icefoxGetCompanionPluginClass()
+{
+    $pluginClasses = array(
+        '\\TypechoPlugin\\IcefoxPlugin\\Plugin',
+        '\\TypechoPlugin\\Icefox\\Plugin'
+    );
+
+    foreach ($pluginClasses as $pluginClass) {
+        if (class_exists($pluginClass)) {
+            return $pluginClass;
+        }
+    }
+
+    return null;
+}
+
+/**
  * Return the number of albums visible to the current visitor for one standard tag.
  */
 function icefoxGetVisibleTagAlbumCount($mid)
@@ -12,8 +31,8 @@ function icefoxGetVisibleTagAlbumCount($mid)
         return 0;
     }
 
-    $pluginClass = '\\TypechoPlugin\\Icefox\\Plugin';
-    if (!class_exists($pluginClass) || !is_callable([$pluginClass, 'getVisibleTagAlbumCount'])) {
+    $pluginClass = icefoxGetCompanionPluginClass();
+    if (!$pluginClass || !is_callable([$pluginClass, 'getVisibleTagAlbumCount'])) {
         return 0;
     }
 
@@ -42,8 +61,8 @@ function icefoxGetTagArchiveAlbums($archive)
         return array();
     }
 
-    $pluginClass = '\\TypechoPlugin\\Icefox\\Plugin';
-    if (!class_exists($pluginClass) || !is_callable([$pluginClass, 'getTagArchiveAlbums'])) {
+    $pluginClass = icefoxGetCompanionPluginClass();
+    if (!$pluginClass || !is_callable([$pluginClass, 'getTagArchiveAlbums'])) {
         return array();
     }
 

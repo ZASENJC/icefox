@@ -5,7 +5,7 @@
  *
  * Usage:
  * TYPECHO_CONFIG=/absolute/path/to/config.inc.php \
- * ICEFOX_PLUGIN_MAIN=/absolute/path/to/usr/plugins/Icefox/Plugin.php \
+ * ICEFOX_PLUGIN_MAIN=/absolute/path/to/usr/plugins/IcefoxPlugin/Plugin.php \
  * php scripts/migrate-album-tags.php
  */
 

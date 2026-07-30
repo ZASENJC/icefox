@@ -1,6 +1,6 @@
 # Icefox - Typecho 博客主题
 
-![Version](https://img.shields.io/badge/version-3.1.2-blue)
+![Version](https://img.shields.io/badge/version-3.1.3-blue)
 ![Typecho](https://img.shields.io/badge/typecho-%3E%3D1.2.0-orange)
 ![PHP](https://img.shields.io/badge/php-%3E%3D7.0.0-purple)
 
@@ -63,10 +63,12 @@
 
 2. **安装配套插件**（必需）
 
-   源码仓库在 `plugins/Icefox/` 中包含配套插件；从 GitHub Release 安装时，请下载同版本的 `Icefox-Plugin-3.1.2.zip`。解压或复制到 Typecho 插件目录并启用：
+   源码仓库在 `plugins/IcefoxPlugin/` 中包含配套插件；从 GitHub Release 安装时，请下载同版本的 `Icefox-Plugin-<版本号>.zip`。解压或复制到 Typecho 插件目录并启用：
    ```bash
-   cp -R plugins/Icefox /path/to/typecho/usr/plugins/Icefox
+   cp -R plugins/IcefoxPlugin /path/to/typecho/usr/plugins/IcefoxPlugin
    ```
+
+   `IcefoxPlugin` 目录名从 3.1.3 开始使用。现有站点升级时，请把新版本的 `IcefoxPlugin` 目录上传到 `usr/plugins/`，再到 Typecho 后台启用它。首次启用会迁移旧插件配置、移除旧 `Icefox` 插件的启用记录并更新路由，原有点赞、相册、附件和主题数据保持不变。确认功能正常后即可删除旧的 `usr/plugins/Icefox/` 目录。
 
    插件负责：
    - 创建和升级点赞、相册等插件数据
@@ -79,7 +81,7 @@
 
 3. **安装对象存储插件**（使用 R2/S3 时必需）
 
-   从 GitHub Release 安装时，请下载同版本的 `IcefoxStorage-3.1.2.zip`。
+   从 GitHub Release 安装时，请下载同版本的 `IcefoxStorage-3.1.3.zip`。
 
    ```bash
    cp -R plugins/IcefoxStorage /path/to/typecho/usr/plugins/IcefoxStorage
@@ -118,7 +120,7 @@ icefox/
 │   └── svgs/            # SVG 图标
 ├── core/                # 核心工具函数
 ├── plugins/
-│   ├── Icefox/          # 配套数据与上传插件
+│   ├── IcefoxPlugin/    # 配套数据与上传插件
 │   └── IcefoxStorage/   # 独立 R2/S3 对象存储插件
 ├── index.php            # 首页模板
 ├── header.php           # 头部模板
@@ -162,14 +164,14 @@ icefox/
 - Typecho 数据库备份
 - R2/S3 存储桶同步或快照
 - 自定义域名配置
-- `Icefox` 与 `IcefoxStorage` 插件代码
+- `IcefoxPlugin` 与 `IcefoxStorage` 插件代码
 - 独立安全保存的上传凭证
 
 ### 相册页面
 
 1. 在 Typecho 后台新建一个独立页面，选择 `album-page.php` 模板。
 2. 相册入口由配套插件固定注册为 `/albums`，相册详情使用 `/albums/{相册名称拼音}`，无需在主题设置中填写页面地址。主题设置中的“相册页顶部图片”可自定义页面头图；“显示‘朋友圈’相册”默认开启，关闭后只隐藏该相册，不删除已同步图片。
-3. 配套 `icefox` 插件需要提供相册数据和写入动作：`getAlbums`（GET）、`getAlbum`（GET，参数 `album`）和 `saveAlbum`（POST multipart）。主题会为缺失的“朋友圈”相册补充 `moments` 入口；插件需支持 `getAlbum&album=moments`，并返回同步到该相册的图片。
+3. 配套 `IcefoxPlugin` 插件需要提供相册数据和写入动作：`getAlbums`（GET）、`getAlbum`（GET，参数 `album`）和 `saveAlbum`（POST multipart）。主题会为缺失的“朋友圈”相册补充 `moments` 入口；插件需支持 `getAlbum&album=moments`，并返回同步到该相册的图片。
 4. 插件返回的相册对象可使用 `id`/`slug`、`name`、`description`、`cover`、`tags`、`address`、`visibility`、`isPinned`、`sortOrder` 和 `photos` 字段；“朋友圈”始终排在最前，其他相册先显示置顶项，再按 `sortOrder` 从小到大稳定排序。未设置 `cover` 时主题使用 `photos` 的第一张图片作为封面。
 5. 文章编辑页中的“相册内容”字段开启后，主题会从博客首页、归档和搜索结果中过滤该图文；`albumId` 可用于把图文关联到插件相册。
 6. 前端发布动态时可开启“同步到「朋友圈」相册”；主题会向 `createPost` 发送 `syncToAlbum=1`，配套插件负责把正文中的 Markdown/HTML 图片和本次上传的图片去重后追加到具有稳定身份标识的“朋友圈”相册，动态本身仍保留在信息流中。
@@ -346,7 +348,7 @@ window.ICEFOX_CONFIG.phpPostMaxBytes   // 536870912，即 512MB
 ## 🐛 常见问题
 
 ### 点赞/评论功能不工作
-请确保已安装并启用 `icefox` 插件
+请确保已安装并启用 `IcefoxPlugin` 插件
 
 ### 无限滚动不生效
 检查 `assets/js/icefox.js` 是否正确加载
@@ -370,6 +372,11 @@ window.ICEFOX_CONFIG.phpPostMaxBytes   // 536870912，即 512MB
 - [Alpine.js](https://alpinejs.dev/) - 轻量级响应式框架
 
 ## 📝 更新日志
+
+### v3.1.3 (2026)
+- 将必需的伴生插件目录由 `Icefox` 更名为 `IcefoxPlugin`，避免与 `usr/themes/icefox/` 主题目录混淆
+- 新目录首次启用时自动迁移旧插件配置、清理旧 `Icefox` 启用记录并更新插件路由，保留现有插件数据
+- 朋友圈相册调整为只读，只能由动态同步图片，并继续通过主题设置控制是否显示
 
 ### v3.1.2 (2026)
 - 友情链接地址留空时自动发现已发布的友情链接模板页面，并遵循 Typecho 实际永久链接规则

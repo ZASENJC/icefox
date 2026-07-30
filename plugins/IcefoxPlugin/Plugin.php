@@ -1,6 +1,6 @@
 <?php
 
-namespace TypechoPlugin\Icefox;
+namespace TypechoPlugin\IcefoxPlugin;
 
 use Typecho\Common;
 use Typecho\Plugin\Exception;
@@ -15,14 +15,17 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 /**
  * icefox插件是icefox主题的适配插件，需搭配icefox主题使用
- * @package Icefox
+ * @package IcefoxPlugin
  * @author 小胖脸
- * @version 3.1.2
+ * @version 3.1.3
  * @link https://xiaopanglian.com
  */
 
 class Plugin implements PluginInterface
 {
+    const PLUGIN_NAME = 'IcefoxPlugin';
+    const LEGACY_PLUGIN_NAME = 'Icefox';
+
     private static $albumTagSchemaReady = false;
 
     /**
@@ -42,8 +45,20 @@ class Plugin implements PluginInterface
         }
         self::checkAndCreateTable();
 
+        self::migrateLegacyConfig();
+
         // 初始化插件配置，防止进入设置页时缺少配置记录导致报错
-        \Utils\Helper::configPlugin('Icefox', ['icefox_init' => '1']);
+        \Utils\Helper::configPlugin(self::PLUGIN_NAME, ['icefox_init' => '1']);
+
+        // The directory rename creates a new Typecho plugin key. Retire the
+        // legacy key when the replacement plugin is enabled for the first time.
+        if (\Typecho\Plugin::exists(self::LEGACY_PLUGIN_NAME)) {
+            \Typecho\Plugin::deactivate(self::LEGACY_PLUGIN_NAME);
+        }
+
+        // Remove routes from the previous plugin name before inserting them at
+        // their configured positions; later duplicate keys can otherwise win.
+        self::deactivate();
 
         // 注册接口路由
         \Helper::addRoute('icefox_route', '/action/icefox', Action::class, 'action');
@@ -91,7 +106,29 @@ class Plugin implements PluginInterface
      */
     public static function configHandle(array $settings, bool $isInit)
     {
-        \Utils\Helper::configPlugin('Icefox', $settings);
+        \Utils\Helper::configPlugin(self::PLUGIN_NAME, $settings);
+    }
+
+    private static function migrateLegacyConfig()
+    {
+        $options = \Widget\Options::alloc();
+
+        try {
+            $options->plugin(self::PLUGIN_NAME);
+            return;
+        } catch (Exception $e) {
+            // The new plugin has not stored its own configuration yet.
+        }
+
+        try {
+            $legacySettings = $options->plugin(self::LEGACY_PLUGIN_NAME)->toArray();
+        } catch (Exception $e) {
+            return;
+        }
+
+        if (!empty($legacySettings)) {
+            \Utils\Helper::configPlugin(self::PLUGIN_NAME, $legacySettings);
+        }
     }
 
     /**

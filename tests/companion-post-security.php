@@ -116,9 +116,9 @@ namespace {
     }
 
     define('__TYPECHO_ROOT_DIR__', dirname(__DIR__));
-    require_once __DIR__ . '/../plugins/Icefox/Action.php';
+    require_once __DIR__ . '/../plugins/IcefoxPlugin/Action.php';
 
-    $reflection = new ReflectionClass('TypechoPlugin\\Icefox\\Action');
+    $reflection = new ReflectionClass('TypechoPlugin\\IcefoxPlugin\\Action');
     $action = $reflection->newInstanceWithoutConstructor();
     $action->request = new TestRequest();
     $action->response = new TestResponse();

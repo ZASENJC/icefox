@@ -5,7 +5,7 @@ set -eu
 storage_main=plugins/IcefoxStorage/Plugin.php
 storage_client=plugins/IcefoxStorage/S3Client.php
 storage_service=plugins/IcefoxStorage/StorageService.php
-companion_action=plugins/Icefox/Action.php
+companion_action=plugins/IcefoxPlugin/Action.php
 theme_functions=functions.php
 
 for file in "$storage_main" "$storage_client" "$storage_service" "$companion_action"; do

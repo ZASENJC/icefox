@@ -271,6 +271,8 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
         },
 
         openEditor(album, uploadOnly = false) {
+            if (album && this.isMomentsAlbum(album)) return;
+
             const detail = {
                 album: album || null,
                 uploadOnly
@@ -350,7 +352,7 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                     </div>
                 </a>
                 <?php if ($canEditAlbums): ?>
-                    <button type="button" class="album-card-edit" aria-label="编辑相册" @click="openEditor(album)">
+                    <button type="button" class="album-card-edit" aria-label="编辑相册" x-cloak x-show="!album.isMoments" @click="openEditor(album)">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.687a1.875 1.875 0 1 1 2.652 2.652L9.832 16.821a4.5 4.5 0 0 1-1.897 1.13l-3.2.96.96-3.2a4.5 4.5 0 0 1 1.13-1.897L16.862 4.487Z" />
                         </svg>

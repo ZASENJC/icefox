@@ -2,7 +2,7 @@
 set -euo pipefail
 
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-action_file="$root_dir/plugins/Icefox/Action.php"
+action_file="$root_dir/plugins/IcefoxPlugin/Action.php"
 storage_plugin="$root_dir/plugins/IcefoxStorage/Plugin.php"
 album_editor="$root_dir/components/modals/album-editor.php"
 

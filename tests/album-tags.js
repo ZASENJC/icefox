@@ -1,8 +1,8 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
-const pluginSource = fs.readFileSync('plugins/Icefox/Plugin.php', 'utf8');
-const actionSource = fs.readFileSync('plugins/Icefox/Action.php', 'utf8');
+const pluginSource = fs.readFileSync('plugins/IcefoxPlugin/Plugin.php', 'utf8');
+const actionSource = fs.readFileSync('plugins/IcefoxPlugin/Action.php', 'utf8');
 const gallerySource = fs.readFileSync('components/album-gallery.php', 'utf8');
 const archiveSource = fs.readFileSync('archive.php', 'utf8');
 const functionsSource = fs.readFileSync('functions.php', 'utf8');
@@ -105,8 +105,8 @@ assert.ok(
 const albumTagHelper = fs.readFileSync('core/album-tags.php', 'utf8');
 assert.match(
     albumTagHelper,
-    /\\\\TypechoPlugin\\\\Icefox\\\\Plugin[\s\S]*?getTagArchiveAlbums/,
-    'the theme tag helper must delegate album reads to the companion plugin'
+    /\\\\TypechoPlugin\\\\IcefoxPlugin\\\\Plugin[\s\S]*?\\\\TypechoPlugin\\\\Icefox\\\\Plugin[\s\S]*?getTagArchiveAlbums/,
+    'the theme tag helper must prefer IcefoxPlugin while older installations transition'
 );
 assert.doesNotMatch(
     albumTagHelper,

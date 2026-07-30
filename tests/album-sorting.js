@@ -96,6 +96,7 @@ assert.equal(editor.isMomentsAlbum, false, 'regular albums must expose the sort 
 editor.openModal({ detail: { album: { id: 'moments', name: '朋友圈', sortOrder: 99 } } });
 assert.equal(editor.isMomentsAlbum, true, 'the moments album must be recognized by stable identity');
 assert.equal(editor.sortOrder, 0, 'the moments album must not retain a manual sort order');
+assert.equal(editor.albumEditorShow, false, 'the moments album must not open the editor');
 
 editor.openModal({ detail: { album: null, suggestedSortOrder: 31 } });
 assert.equal(editor.sortOrder, 31, 'new albums must use the suggested next sort order');
@@ -155,11 +156,11 @@ async function run() {
         [['sortOrder', '18']],
         'regular album edits must submit their sort order'
     );
-    assert.deepEqual(
-        await submittedSortEntries({ id: 'moments', name: '朋友圈', sortOrder: 18 }),
-        [],
-        'moments album edits must not submit a manual sort order'
-    );
+
+    const momentsManager = createEditorManager();
+    momentsManager.openModal({ detail: { album: { id: 'moments', name: '朋友圈', sortOrder: 18 } } });
+    assert.equal(momentsManager.albumEditorShow, false, 'moments album edits must not open the editor');
+
     assert.deepEqual(
         await submittedSortEntries({ id: '7', name: '旅行', sortOrder: 18 }, true),
         [],

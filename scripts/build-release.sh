@@ -2,7 +2,7 @@
 
 set -eu
 
-version="${1:-3.1.2}"
+version="${1:-3.1.3}"
 if ! printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
     echo "Version must use the form X.Y.Z" >&2
     exit 2
@@ -13,7 +13,7 @@ repo_dir=$(dirname "$script_dir")
 output_dir="$repo_dir/release/$version"
 stage_dir=$(mktemp -d "${TMPDIR:-/tmp}/icefox-release.XXXXXX")
 theme_stage="$stage_dir/theme/icefox"
-companion_stage="$stage_dir/companion/Icefox"
+companion_stage="$stage_dir/companion/IcefoxPlugin"
 storage_stage="$stage_dir/storage/IcefoxStorage"
 
 cleanup() {
@@ -34,7 +34,7 @@ require_version functions.php
 require_version page.php
 require_version post.php
 require_version assets/js/music-player.js
-require_version plugins/Icefox/Plugin.php
+require_version plugins/IcefoxPlugin/Plugin.php
 require_version plugins/IcefoxStorage/Plugin.php
 
 if [ -d "$output_dir" ]; then
@@ -58,7 +58,7 @@ done
 mkdir -p "$theme_stage/scripts"
 cp "$repo_dir"/scripts/migrate-*.php "$theme_stage/scripts/"
 
-cp -R "$repo_dir/plugins/Icefox/." "$companion_stage/"
+cp -R "$repo_dir/plugins/IcefoxPlugin/." "$companion_stage/"
 cp -R "$repo_dir/plugins/IcefoxStorage/." "$storage_stage/"
 
 find "$stage_dir" -name '.DS_Store' -delete
@@ -69,7 +69,7 @@ find "$stage_dir" -name '*.log' -delete
     zip -X -q -r "$output_dir/icefox-$version.zip" icefox
 
     cd "$stage_dir/companion"
-    zip -X -q -r "$output_dir/Icefox-Plugin-$version.zip" Icefox
+    zip -X -q -r "$output_dir/Icefox-Plugin-$version.zip" IcefoxPlugin
 
     cd "$stage_dir/storage"
     zip -X -q -r "$output_dir/IcefoxStorage-$version.zip" IcefoxStorage

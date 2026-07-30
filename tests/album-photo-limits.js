@@ -61,6 +61,12 @@ assert.match(
 );
 
 const galleryModule = loadManager('components/album-gallery.php', 'albumGalleryManager');
+assert.match(
+    galleryModule.source,
+    /class="album-card-edit"[^>]*x-show="!album\.isMoments"/,
+    'the moments album card must hide its edit action'
+);
+
 let editorOpenCount = 0;
 global.window = {
     dispatchEvent() {
@@ -78,6 +84,8 @@ momentsGallery.album = momentsGallery.normalizeAlbum({
 });
 momentsGallery.openPrimaryAction();
 assert.equal(editorOpenCount, 0, 'the moments detail action must not open the manual uploader');
+momentsGallery.openEditor(momentsGallery.album);
+assert.equal(editorOpenCount, 0, 'the moments album card must not open the editor');
 
 const regularGallery = galleryModule.create('trip', true);
 regularGallery.album = regularGallery.normalizeAlbum({ id: 'trip', name: '旅行', photos: [] });
@@ -112,14 +120,15 @@ momentsEditor.openModal({
         uploadOnly: true
     }
 });
+assert.equal(momentsEditor.albumEditorShow, false, 'the moments album editor must remain closed');
 momentsEditor.mediaFiles = [{ file: { name: 'manual.jpg', size: 1 } }];
 momentsEditor.$dispatch = () => {};
 
 async function run() {
     await momentsEditor.submitAlbum();
-    assert.equal(submitted, false, 'manual moments uploads must not reach the API');
-    assert.match(alertMessage, /朋友圈相册.*动态同步/, 'the rejection must direct photos through moments sync');
-    console.log('Album photo limit and moments upload UI contracts passed');
+    assert.equal(submitted, false, 'moments album changes must not reach the API');
+    assert.match(alertMessage, /朋友圈相册不可编辑.*外观设置/, 'the rejection must direct visibility changes to appearance settings');
+    console.log('Album photo limit and moments read-only UI contracts passed');
 }
 
 run().catch(error => {

@@ -1,6 +1,6 @@
 <?php
 
-namespace TypechoPlugin\Icefox;
+namespace TypechoPlugin\IcefoxPlugin;
 
 use Typecho\Widget;
 use Typecho\Db;
@@ -950,15 +950,13 @@ class Action extends Widget implements ActionInterface {
             if ($albumId !== '' && !$existing) {
                 throw new \InvalidArgumentException('要编辑的相册不存在');
             }
-            $isMoments = $existing && (int) $existing['is_moments'] === 1;
+            if ($existing && (int) $existing['is_moments'] === 1) {
+                throw new \InvalidArgumentException('朋友圈相册不可编辑，只能在外观设置中控制是否显示');
+            }
             $existingPhotos = $existing ? $this->deduplicateAlbumPhotos($this->decodeAlbumPhotos($existing['photos'])) : [];
             $photosWithRemote = $this->deduplicateAlbumPhotos(array_merge($existingPhotos, $remotePhotos));
             $requestUploadCount = $this->albumRequestUploadCount($stagedUploads);
-            if ($isMoments && $this->albumRequestHasManualPhotos($remotePhotos, $stagedUploads)) {
-                throw new \InvalidArgumentException('朋友圈相册只支持从动态同步图片');
-            }
-            if (!$isMoments
-                && count($photosWithRemote) + $requestUploadCount > self::ALBUM_PHOTO_LIMIT
+            if (count($photosWithRemote) + $requestUploadCount > self::ALBUM_PHOTO_LIMIT
                 && (count($photosWithRemote) > count($existingPhotos) || $requestUploadCount > 0)) {
                 throw new \InvalidArgumentException('每个相册最多 ' . self::ALBUM_PHOTO_LIMIT . ' 张图片');
             }
@@ -985,8 +983,7 @@ class Action extends Widget implements ActionInterface {
                 ];
             }
             $photos = $this->deduplicateAlbumPhotos(array_merge($photos, $remotePhotos));
-            if (!$isMoments
-                && count($photos) > self::ALBUM_PHOTO_LIMIT
+            if (count($photos) > self::ALBUM_PHOTO_LIMIT
                 && count($photos) > count($existingPhotos)) {
                 throw new \InvalidArgumentException('每个相册最多 ' . self::ALBUM_PHOTO_LIMIT . ' 张图片');
             }
@@ -994,17 +991,13 @@ class Action extends Widget implements ActionInterface {
                 $cover = $photos[0]['src'];
             }
 
-            $isPinned = $isMoments
-                ? 1
-                : ($request->get('isPinned', null) === null
-                    ? (int) ($existing['is_pinned'] ?? 0)
-                    : ($request->get('isPinned', '0') === '1' ? 1 : 0));
+            $isPinned = $request->get('isPinned', null) === null
+                ? (int) ($existing['is_pinned'] ?? 0)
+                : ($request->get('isPinned', '0') === '1' ? 1 : 0);
             $requestedSortOrder = $request->get('sortOrder', null);
-            $sortOrder = $isMoments
-                ? 0
-                : ($requestedSortOrder === null
-                    ? ($existing ? (int) $existing['sort_order'] : $this->nextAlbumSortOrder())
-                    : max(0, min(2147483647, (int) $requestedSortOrder)));
+            $sortOrder = $requestedSortOrder === null
+                ? ($existing ? (int) $existing['sort_order'] : $this->nextAlbumSortOrder())
+                : max(0, min(2147483647, (int) $requestedSortOrder));
             $now = time();
             $rows = [
                 'name' => $name,
@@ -1222,10 +1215,6 @@ class Action extends Widget implements ActionInterface {
         }
 
         return $uploadedFiles;
-    }
-
-    private function albumRequestHasManualPhotos(array $remotePhotos, $stagedUploads) {
-        return !empty($remotePhotos) || $this->albumRequestUploadCount($stagedUploads) > 0;
     }
 
     private function albumRequestUploadCount($stagedUploads) {

@@ -22,9 +22,9 @@ namespace Widget {
 
 namespace {
     define('__TYPECHO_ROOT_DIR__', dirname(__DIR__));
-    require_once __DIR__ . '/../plugins/Icefox/Action.php';
+    require_once __DIR__ . '/../plugins/IcefoxPlugin/Action.php';
 
-    $reflection = new ReflectionClass('TypechoPlugin\\Icefox\\Action');
+    $reflection = new ReflectionClass('TypechoPlugin\\IcefoxPlugin\\Action');
     if (!$reflection->hasMethod('buildAttachmentMetadata')) {
         fwrite(STDERR, "Action::buildAttachmentMetadata is missing\n");
         exit(1);

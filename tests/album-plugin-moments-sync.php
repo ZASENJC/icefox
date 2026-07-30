@@ -11,7 +11,7 @@ if (!$configPath || !$actionPath || !is_file($configPath) || !is_file($actionPat
 require $configPath;
 require_once $actionPath;
 
-$reflection = new ReflectionClass('TypechoPlugin\\Icefox\\Action');
+$reflection = new ReflectionClass('TypechoPlugin\\IcefoxPlugin\\Action');
 if (!$reflection->hasMethod('extractPostImagePhotos')) {
     fwrite(STDERR, "Action::extractPostImagePhotos is missing\n");
     exit(1);

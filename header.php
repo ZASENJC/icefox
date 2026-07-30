@@ -24,7 +24,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     <!-- 主题样式 -->
     <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/bulma.min.css'); ?>">
     <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/fancybox.css'); ?>">
-    <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/icefox.css?v=3.1.2'); ?>">
+    <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/icefox.css?v=3.1.3'); ?>">
 
     <!-- AlpineJS x-cloak 样式 -->
     <style>
@@ -787,15 +787,15 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     </style>
     <?php endif; ?>
 
-    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox-plugin.js?v=3.1.2'); ?>"></script>
-    <script defer src="<?php $this->options->themeUrl('/assets/js/friend-links.js?v=3.1.2'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox-plugin.js?v=3.1.3'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/friend-links.js?v=3.1.3'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/jquery.min.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/alpinejs.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/scrollload.min.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/music-player.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/top-icon-contrast.js'); ?>"></script>
-    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox.js?v=3.1.2'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox.js?v=3.1.3'); ?>"></script>
 
     <?php if ($this->options->customJs): ?>
     <?php $customJs = (string) $this->options->customJs; ?>

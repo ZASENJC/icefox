@@ -4,9 +4,9 @@
 
 Icefox is a mobile-first, WeChat Moments-style theme for Typecho. It is not a
 standalone application and cannot run without a Typecho installation and the
-companion Icefox plugin.
+companion plugin installed as `IcefoxPlugin`.
 
-- Theme version in code: `3.1.2`
+- Theme version in code: `3.1.3`
 - Expected Typecho version: `>= 1.2.0`
 - Expected PHP version: `>= 7.0`
 - Default branch: `main`
@@ -14,7 +14,7 @@ companion Icefox plugin.
 - Third-party browser libraries are committed under `assets/`.
 
 Install the theme files as `usr/themes/icefox/` inside a Typecho installation.
-Install `plugins/Icefox/` as `usr/plugins/Icefox/`; it registers the
+Install `plugins/IcefoxPlugin/` as `usr/plugins/IcefoxPlugin/`; it registers the
 `/action/icefox` action route. Install `plugins/IcefoxStorage/` as
 `usr/plugins/IcefoxStorage/` when R2/S3 image storage is enabled.
 
@@ -26,6 +26,14 @@ configuration migration must run automatically and idempotently after the files
 are replaced while preserving existing user data and settings. Do not require
 users to uninstall and reinstall components, clear data, or run a manual
 migration as part of the normal upgrade path.
+
+Release 3.1.3 has one directory transition: the companion plugin moves from
+`usr/plugins/Icefox/` to `usr/plugins/IcefoxPlugin/`. Existing sites install the
+new directory beside the old one and enable `IcefoxPlugin` once. Its activation
+removes the legacy `Icefox` activation key and rewrites the routes without
+changing plugin tables or theme data. After verification, the inactive old
+directory can be deleted. Later releases return to direct replacement under
+`usr/plugins/IcefoxPlugin/`.
 
 ## Runtime Architecture
 
@@ -68,7 +76,7 @@ Core responsibilities:
   state, and back-to-top behavior.
 - `assets/js/music-player.js`: per-card audio players and global playback
   coordination.
-- `plugins/Icefox/`: companion persistence, publishing, and album API.
+- `plugins/IcefoxPlugin/`: companion persistence, publishing, and album API.
 - `plugins/IcefoxStorage/`: standalone R2/S3 signing, validation, upload, and
   object lifecycle integration.
 
@@ -222,7 +230,7 @@ tasks:
 - `favicon.ico` is referenced but missing.
 - `assets/fonts/HarmonyOS-Sans.woff2` is referenced but missing.
 - The upstream companion plugin README declares MIT, but its release omits the
-  referenced `LICENSE`; provenance is documented in `plugins/Icefox/UPSTREAM.md`.
+  referenced `LICENSE`; provenance is documented in `plugins/IcefoxPlugin/UPSTREAM.md`.
 - Standard templates rely on browser HTML recovery for final document closing
   tags; `footer.php` currently only renders the back-to-top control.
 

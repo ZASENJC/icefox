@@ -1,6 +1,6 @@
 <?php
 
-namespace TypechoPlugin\Icefox;
+namespace TypechoPlugin\IcefoxPlugin;
 
 use Typecho\Config;
 

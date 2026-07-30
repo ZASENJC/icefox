@@ -87,6 +87,11 @@ function albumEditorManager() {
             this.mediaFiles = [];
             this.remotePhotoUrls = '';
             this.submitStatus = '';
+            if (this.isMomentsAlbum) {
+                this.albumEditorShow = false;
+                document.body.style.overflow = '';
+                return;
+            }
             this.albumEditorShow = true;
             document.body.style.overflow = 'hidden';
         },
@@ -203,6 +208,10 @@ function albumEditorManager() {
 
         async submitAlbum() {
             if (this.isSubmitting) return;
+            if (this.isMomentsAlbum) {
+                alert('朋友圈相册不可编辑，只能在外观设置中控制是否显示');
+                return;
+            }
             const remotePhotos = this.parseRemotePhotoUrls();
             const invalidRemotePhoto = remotePhotos.find(url => !this.isRemotePhotoUrlValid(url));
             if (this.uploadOnly && !this.albumId) {
@@ -215,10 +224,6 @@ function albumEditorManager() {
             }
             if (invalidRemotePhoto) {
                 alert(`图片链接格式不正确：${invalidRemotePhoto}`);
-                return;
-            }
-            if (this.isMomentsAlbum && (this.uploadOnly || this.mediaFiles.length > 0 || remotePhotos.length > 0)) {
-                alert('朋友圈相册只支持从动态同步图片');
                 return;
             }
             if (this.existingPhotoCount + this.mediaFiles.length + remotePhotos.length > this.albumPhotoLimit) {

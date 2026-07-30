@@ -24,7 +24,7 @@ require_once __DIR__ . '/StorageService.php';
  *
  * @package IcefoxStorage
  * @author Icefox contributors
- * @version 3.1.2
+ * @version 3.1.3
  * @link https://github.com/ZASENJC/icefox
  */
 class Plugin implements PluginInterface

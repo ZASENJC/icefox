@@ -67,7 +67,7 @@ if ! rg -q -U '(?s)\.links-modal-header \{.*?position: sticky;.*?border-bottom: 
     exit 1
 fi
 
-if rg -n 'getFriendLinks|deleteFriendLink|icefox_links' assets/js/icefox-plugin.js plugins/Icefox/Action.php plugins/Icefox/Plugin.php; then
+if rg -n 'getFriendLinks|deleteFriendLink|icefox_links' assets/js/icefox-plugin.js plugins/IcefoxPlugin/Action.php plugins/IcefoxPlugin/Plugin.php; then
     echo 'friend-link runtime persistence must no longer depend on the companion plugin' >&2
     exit 1
 fi

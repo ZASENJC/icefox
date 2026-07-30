@@ -48,7 +48,7 @@
 
 `plugins/IcefoxStorage/` 是独立 Typecho 插件，负责 S3 Signature V4、R2/S3 配置、图片真实性与大小校验、上传、删除和公开 URL 生成。Access Key、Secret、Endpoint 和 Bucket 不得进入主题配置或浏览器全局变量。
 
-`plugins/Icefox/` 读取主题提交的 `storage=local/object`，但必须在服务端白名单化。选择 `object` 时，只有图片交给 `IcefoxStorage`；视频继续使用本地存储。对象上传后若文章、附件、相册或朋友圈同步写入失败，伴生插件必须删除本次新对象作为补偿回滚。
+`plugins/IcefoxPlugin/` 读取主题提交的 `storage=local/object`，但必须在服务端白名单化。选择 `object` 时，只有图片交给 `IcefoxStorage`；视频继续使用本地存储。对象上传后若文章、附件、相册或朋友圈同步写入失败，伴生插件必须删除本次新对象作为补偿回滚。
 
 相册选择对象存储时，未超过 PHP 单文件和整次请求上限的图片直接通过 `saveAlbum` 上传。只有超过限制或无法读取有效限制时，浏览器才通过 `stageAlbumUpload` 按 1MB 分片暂存原图，再由 `saveAlbum` 调用 `IcefoxStorage` 上传完整文件。两条路径都不会压缩图片，分片仅作为低上传上限环境的备用逻辑。
 
@@ -72,7 +72,13 @@ TYPECHO_CONFIG=/absolute/path/to/typecho/config.inc.php php scripts/migrate-lega
 
 ## 配套插件升级要求
 
-配套插件源码位于 `plugins/Icefox/`。该版本已经完成以下清理：
+配套插件源码位于 `plugins/IcefoxPlugin/`。3.1.3 同时执行一次目录迁移：
+
+- 将新目录并列上传到 `usr/plugins/IcefoxPlugin/`，然后在 Typecho 后台启用 `IcefoxPlugin`
+- 首次启用会复制旧插件配置、移除旧 `Icefox` 启用记录并重写同名路由，已有插件表和主题数据保持不变
+- 新插件确认正常后可删除未启用的旧 `usr/plugins/Icefox/` 目录；后续版本继续直接覆盖 `usr/plugins/IcefoxPlugin/`
+
+该版本已经完成以下清理：
 
 - 删除 `Widget\\Archive` 的旧 `indexHandle` 置顶排序钩子
 - 删除 `do=top`、`setTop` 和插件文章列表中的旧置顶按钮

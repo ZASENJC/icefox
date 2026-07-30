@@ -4,6 +4,21 @@ const fs = require('node:fs');
 const pluginSource = fs.readFileSync('plugins/Icefox/Plugin.php', 'utf8');
 const actionSource = fs.readFileSync('plugins/Icefox/Action.php', 'utf8');
 
+const legacyTagMigration = pluginSource.match(
+    /public static function migrateLegacyAlbumTags\(\)\s*\{([\s\S]*?)\n\s*\}\n\s*public static function getAlbumTagLinks/
+);
+assert.ok(legacyTagMigration, 'legacy album tag migration must be present');
+assert.doesNotMatch(
+    legacyTagMigration[1],
+    /where\(['"]tags IS NOT NULL['"]\)/,
+    'Typecho 1.2 query builder must not quote NOT as a column in raw IS NOT NULL conditions'
+);
+assert.match(
+    legacyTagMigration[1],
+    /where\(['"]tags <> \?['"],\s*['"]['"]\)/,
+    'legacy album tag migration must exclude NULL and empty tags with a parameterized comparison'
+);
+
 assert.match(
     pluginSource,
     /public static function ensureAlbumTableSchema\s*\(/,

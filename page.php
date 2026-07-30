@@ -6,7 +6,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  *
  * @package icefox
  * @author 小胖脸
- * @version 3.0.0
+ * @version 3.1.0
  * @link https://xiaopanglian.com
  */
 

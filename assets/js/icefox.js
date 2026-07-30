@@ -770,7 +770,7 @@ window.toggleLike = function(event, cid) {
     }
 };
 function printCopyright() {
-    console.log('%cIcefox主题 By xiaopanglian v3.0.3 %chttps://www.xiaopanglian.com', 'color: white;  background-color: #99cc99; padding: 10px;', 'color: white; background-color: #ff6666; padding: 10px;');
+    console.log('%cIcefox主题 By xiaopanglian v3.1.0 %chttps://www.xiaopanglian.com', 'color: white;  background-color: #99cc99; padding: 10px;', 'color: white; background-color: #ff6666; padding: 10px;');
 }
 /**
  * 回到顶部功能

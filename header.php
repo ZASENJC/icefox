@@ -783,8 +783,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     </style>
     <?php endif; ?>
 
-    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox-plugin.js?v=3.0.3-upload2'); ?>"></script>
-    <script defer src="<?php $this->options->themeUrl('/assets/js/friend-links.js?v=3.0.3-links-page'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox-plugin.js?v=3.1.0'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/friend-links.js?v=3.1.0'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/jquery.min.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/alpinejs.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>

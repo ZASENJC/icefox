@@ -1,6 +1,6 @@
 # Icefox - Typecho 博客主题
 
-![Version](https://img.shields.io/badge/version-3.0.3-blue)
+![Version](https://img.shields.io/badge/version-3.1.0-blue)
 ![Typecho](https://img.shields.io/badge/typecho-%3E%3D1.2.0-orange)
 ![PHP](https://img.shields.io/badge/php-%3E%3D7.0.0-purple)
 
@@ -63,7 +63,7 @@
 
 2. **安装配套插件**（必需）
 
-   本仓库在 `plugins/Icefox/` 中包含配套插件源码。复制到 Typecho 插件目录并启用：
+   源码仓库在 `plugins/Icefox/` 中包含配套插件；从 GitHub Release 安装时，请下载同版本的 `Icefox-Plugin-3.1.0.zip`。解压或复制到 Typecho 插件目录并启用：
    ```bash
    cp -R plugins/Icefox /path/to/typecho/usr/plugins/Icefox
    ```
@@ -78,6 +78,8 @@
    旧版文章置顶数据需按分工文档运行一次迁移脚本；新版置顶由主题的 `isTop` 文章字段直接管理和排序。迁移后请使用 Typecho 文章编辑页的“置顶文章”，不要再使用旧插件后台的置顶按钮。
 
 3. **安装对象存储插件**（使用 R2/S3 时必需）
+
+   从 GitHub Release 安装时，请下载同版本的 `IcefoxStorage-3.1.0.zip`。
 
    ```bash
    cp -R plugins/IcefoxStorage /path/to/typecho/usr/plugins/IcefoxStorage
@@ -269,6 +271,13 @@ $posts = $db->fetchAll(
 - [Alpine.js](https://alpinejs.dev/) - 轻量级响应式框架
 
 ## 📝 更新日志
+
+### v3.1.0 (2026)
+- 新增独立相册、相册标签、说明、排序、置顶和朋友圈同步
+- 新增 R2/S3 对象存储插件与大文件分片备用上传
+- 将友情链接迁移为主题独立页面字段，并支持前台管理
+- 新增全局文章置顶、顶部首页入口和信息流返回位置恢复
+- 加强发布、评论、点赞、上传和插件接口的安全与兼容性
 
 ### v3.0.0 (2024)
 - ✨ 全新设计的 UI 界面

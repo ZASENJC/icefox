@@ -2,6 +2,7 @@ const assert = require('assert');
 const fs = require('fs');
 
 const source = fs.readFileSync('components/album-gallery.php', 'utf8');
+const headSource = fs.readFileSync('components/head.php', 'utf8');
 const styles = fs.readFileSync('assets/css/icefox.css', 'utf8');
 const scriptMatch = source.match(/<script>\s*([\s\S]*?)\s*<\/script>/);
 assert.ok(scriptMatch, 'album gallery manager script must be present');
@@ -94,7 +95,7 @@ async function run() {
 
     assert.match(source, /class="album-card-cover-grid"[^>]*x-show="album\.isMoments && album\.coverPhotos\.length"/);
     assert.match(source, /x-for="\(photo, index\) in album\.coverPhotos"/);
-    assert.match(source, /data-moments-header-title[^>]*hidden[^>]*>朋友圈</);
+    assert.match(headSource, /data-moments-header-title[^>]*hidden[^>]*>朋友圈</);
     assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
     assert.match(styles, /\.album-card-cover-grid\s*\{[\s\S]*?gap:\s*0;/, 'moments cover grid cells must be seamless');
     assert.match(styles, /\.album-card-cover-grid img\s*\{[\s\S]*?filter:\s*blur\(/);

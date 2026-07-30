@@ -206,7 +206,7 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
                 const data = this.unwrap(result);
                 if (this.isDetail) {
                     this.album = this.normalizeAlbum(data.album);
-                    this.updateHeader(this.album.cover);
+                    this.updateHeader(this.album);
                 } else {
                     this.albums = this.normalizeAlbumList(data.albums);
                 }
@@ -232,9 +232,30 @@ function albumGalleryManager(initialAlbumKey, showMomentsAlbum) {
             return url.toString();
         },
 
-        updateHeader(cover) {
+        updateHeader(album, random = Math.random) {
             const header = document.querySelector('[data-album-header]');
-            if (!header || !cover) return;
+            if (!header) return;
+
+            const source = album || {};
+            const isMoments = this.isMomentsAlbum(source);
+            const title = document.querySelector('[data-moments-header-title]');
+            const topContainer = document.querySelector('.top-container');
+            const momentsPhotos = isMoments && Array.isArray(source.photos)
+                ? source.photos.filter(photo => photo && photo.src)
+                : [];
+            const randomValue = Number(random());
+            const safeRandomValue = Number.isFinite(randomValue)
+                ? Math.min(0.9999999999999999, Math.max(0, randomValue))
+                : 0;
+            const randomPhoto = momentsPhotos.length
+                ? momentsPhotos[Math.floor(safeRandomValue * momentsPhotos.length)]
+                : null;
+            const cover = randomPhoto ? randomPhoto.src : source.cover;
+
+            header.classList.toggle('is-moments-album', isMoments);
+            if (title) title.hidden = !isMoments;
+            if (topContainer) topContainer.classList.toggle('has-moments-header', isMoments);
+            if (!cover) return;
             header.style.backgroundImage = `url("${String(cover).replace(/"/g, '%22')}")`;
         },
 

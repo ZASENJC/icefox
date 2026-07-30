@@ -67,6 +67,10 @@ $headerImage = $isAlbumPage && $albumTopImage !== '' ? $albumTopImage : trim((st
         <video src="<?php echo htmlspecialchars($this->options->topVideo, ENT_QUOTES, 'UTF-8'); ?>" autoplay muted loop playsinline></video>
     <?php endif; ?>
 
+    <?php if ($isAlbumPage): ?>
+        <div class="album-header-title" data-moments-header-title hidden>朋友圈</div>
+    <?php endif; ?>
+
     <div class="header-info">
         <div class="header-user">
             <a href="<?php $this->options->siteUrl(); ?>" class="header-site-title">

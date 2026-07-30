@@ -1,8 +1,14 @@
-# Icefox 3.1.0
+# Icefox 3.1.1
 
-Icefox 3.1.0 将主题、Icefox 伴生插件和 IcefoxStorage 对象存储插件统一为同一版本号。
+Icefox 3.1.1 修复旧用户升级时 Icefox 伴生插件重新启用失败的问题，并继续将主题、Icefox 伴生插件和 IcefoxStorage 对象存储插件统一为同一版本号。
 
-## 主要更新
+## 修复内容
+
+- 修复 Typecho 1.2.x 查询构造器将 `tags IS NOT NULL` 错误转义为 `` `tags` IS `NOT` NULL ``，导致启用插件时报 `Database Query Error`。
+- 旧版相册表、说明字段、排序字段和相册标签关系表继续使用幂等迁移；已有数据不会被删除或覆盖。
+- 旧用户覆盖主题和插件目录后，停用并重新启用 Icefox 伴生插件即可完成迁移。
+
+## 3.1.0 主要更新
 
 - 新增独立相册首页和详情页，支持标签、说明、地址、可见性、置顶和手动排序。
 - 新增“朋友圈”相册同步、随机马赛克封面和最多 100 张普通相册照片的限制。
@@ -15,9 +21,9 @@ Icefox 3.1.0 将主题、Icefox 伴生插件和 IcefoxStorage 对象存储插件
 
 ## 发行文件
 
-- `icefox-3.1.0.zip`：主题，解压到 `usr/themes/icefox/`。
-- `Icefox-Plugin-3.1.0.zip`：必需的伴生插件，解压到 `usr/plugins/Icefox/`。
-- `IcefoxStorage-3.1.0.zip`：使用 R2/S3 时安装，解压到 `usr/plugins/IcefoxStorage/`。
+- `icefox-3.1.1.zip`：主题，解压到 `usr/themes/icefox/`。
+- `Icefox-Plugin-3.1.1.zip`：必需的伴生插件，解压到 `usr/plugins/Icefox/`。
+- `IcefoxStorage-3.1.1.zip`：使用 R2/S3 时安装，解压到 `usr/plugins/IcefoxStorage/`。
 - `SHA256SUMS`：三个 ZIP 文件的 SHA-256 校验和。
 
 ## 升级说明

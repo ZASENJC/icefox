@@ -1,6 +1,6 @@
 # Icefox - Typecho 博客主题
 
-![Version](https://img.shields.io/badge/version-3.1.0-blue)
+![Version](https://img.shields.io/badge/version-3.1.1-blue)
 ![Typecho](https://img.shields.io/badge/typecho-%3E%3D1.2.0-orange)
 ![PHP](https://img.shields.io/badge/php-%3E%3D7.0.0-purple)
 
@@ -63,7 +63,7 @@
 
 2. **安装配套插件**（必需）
 
-   源码仓库在 `plugins/Icefox/` 中包含配套插件；从 GitHub Release 安装时，请下载同版本的 `Icefox-Plugin-3.1.0.zip`。解压或复制到 Typecho 插件目录并启用：
+   源码仓库在 `plugins/Icefox/` 中包含配套插件；从 GitHub Release 安装时，请下载同版本的 `Icefox-Plugin-3.1.1.zip`。解压或复制到 Typecho 插件目录并启用：
    ```bash
    cp -R plugins/Icefox /path/to/typecho/usr/plugins/Icefox
    ```
@@ -79,7 +79,7 @@
 
 3. **安装对象存储插件**（使用 R2/S3 时必需）
 
-   从 GitHub Release 安装时，请下载同版本的 `IcefoxStorage-3.1.0.zip`。
+   从 GitHub Release 安装时，请下载同版本的 `IcefoxStorage-3.1.1.zip`。
 
    ```bash
    cp -R plugins/IcefoxStorage /path/to/typecho/usr/plugins/IcefoxStorage
@@ -87,13 +87,13 @@
 
    启用 `IcefoxStorage`，在插件设置页填写 Endpoint、Region、Bucket、访问凭证、公开访问域名和路径前缀。Cloudflare R2 的 Region 使用 `auto`。Endpoint 是 S3 API 地址，公开访问域名应填写绑定到存储桶的稳定图片域名。
 
-   建议同时把仓库中的 [`deploy/php-uploads.ini`](deploy/php-uploads.ini) 加载到 PHP：
+   建议同时把仓库中的 [`deploy/php-uploads.ini`](deploy/php-uploads.ini) 加载到 PHP。Dockerfile 可以直接复制该文件：
 
    ```dockerfile
    COPY deploy/php-uploads.ini /usr/local/etc/php/conf.d/icefox-uploads.ini
    ```
 
-   配置将单文件上传上限设为 20MB、整次 POST 上限设为 512MB，并允许一次提交 100 个文件。修改 PHP 配置后需要重启 PHP-FPM、Apache 或对应容器。插件代码中的 `ini_set()` 无法修改 `upload_max_filesize` 和 `post_max_size`，因为 PHP 会在执行插件前处理上传请求。
+   其他部署方式、Nginx 配置和生效验证见下方 [PHP 上传限制](#php-上传限制)。
 
 4. **启用主题**
 
@@ -238,7 +238,106 @@ $posts = $db->fetchAll(
 
 ### PHP 上传限制
 
-推荐加载 `deploy/php-uploads.ini`。Nginx 部署还应确保 `client_max_body_size` 不低于 `512M`；使用 PHP-FPM 的共享主机可以把同样三项配置写入 Typecho 根目录的 `.user.ini`。配置未生效时，对象存储相册会自动使用分片备用逻辑，但 Typecho 后台原生附件上传仍受服务器限制。
+PHP 会在 Icefox 插件运行前解析上传请求，因此不能在插件代码中通过 `ini_set()` 临时提高这些限制。推荐加载仓库中的 [`deploy/php-uploads.ini`](deploy/php-uploads.ini)：
+
+```ini
+upload_max_filesize = 20M
+post_max_size = 512M
+max_file_uploads = 100
+```
+
+| 配置项 | 作用 |
+| --- | --- |
+| `upload_max_filesize = 20M` | 每个上传文件最大 20MB。超过该值的单个文件不能通过普通 multipart 上传。 |
+| `post_max_size = 512M` | 一次 HTTP POST 请求的总上限，包括所有文件、表单字段和 multipart 开销；必须大于 `upload_max_filesize`。 |
+| `max_file_uploads = 100` | 一次 multipart 请求最多接收 100 个文件。它只限制数量，不代表可以同时上传 100 个 20MB 文件，整次请求仍受 `post_max_size` 限制。 |
+
+#### Docker 或 Docker Compose
+
+使用基于官方 PHP 镜像的 Dockerfile 时，把配置复制到 PHP 自动扫描的 `conf.d` 目录：
+
+```dockerfile
+COPY deploy/php-uploads.ini /usr/local/etc/php/conf.d/99-icefox-uploads.ini
+```
+
+重新构建并创建 PHP/Typecho 容器，服务名按自己的 `compose.yml` 修改：
+
+```bash
+docker compose build typecho
+docker compose up -d --force-recreate typecho
+```
+
+不构建自定义镜像时，也可以在 `compose.yml` 中只读挂载配置：
+
+```yaml
+services:
+  typecho:
+    volumes:
+      - ./deploy/php-uploads.ini:/usr/local/etc/php/conf.d/99-icefox-uploads.ini:ro
+```
+
+修改挂载后同样运行 `docker compose up -d --force-recreate typecho`。
+
+#### PHP-FPM 或 Apache
+
+先用 `php --ini` 查看当前 PHP CLI 的配置目录，再确认网站使用的 PHP-FPM 或 Apache SAPI 版本。CLI、PHP-FPM 和 Apache 可能读取不同目录，不能只修改 CLI 的 `php.ini`。
+
+以 Debian/Ubuntu 的 PHP 8.2 FPM 为例：
+
+```bash
+sudo install -m 0644 deploy/php-uploads.ini /etc/php/8.2/fpm/conf.d/99-icefox-uploads.ini
+sudo systemctl restart php8.2-fpm
+```
+
+如果使用 Apache `mod_php`，目标目录通常是 `/etc/php/8.2/apache2/conf.d/`，复制后运行 `sudo systemctl restart apache2`。请将示例中的 `8.2` 替换为服务器实际 PHP 版本。
+
+#### 共享主机的 `.user.ini`
+
+无法修改系统 PHP 配置时，可以在 Typecho 根目录创建或修改 `.user.ini`：
+
+```ini
+upload_max_filesize = 20M
+post_max_size = 512M
+max_file_uploads = 100
+```
+
+`.user.ini` 只对 PHP-FPM/CGI 生效，且主机商可能设置不可突破的上限。修改后通常需要等待最多 5 分钟，或在主机面板中重启 PHP。
+
+#### Nginx 和其他反向代理
+
+Nginx 必须允许完整请求到达 PHP。在对应的 `http`、`server` 或 Typecho `location` 配置中加入：
+
+```nginx
+client_max_body_size 512M;
+```
+
+然后检查并重新加载配置：
+
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+如果前面还有 CDN、面板反向代理或网关，它们的请求体上限也不能低于实际上传大小。出现 `413 Request Entity Too Large` 通常表示请求在 Nginx、CDN 或其他代理层就被拒绝，尚未到达 Icefox。
+
+#### 验证是否生效
+
+Docker 环境可以在 PHP/Typecho 容器内检查，服务名按实际配置替换：
+
+```bash
+docker compose exec typecho php -r 'foreach (["upload_max_filesize", "post_max_size", "max_file_uploads"] as $key) { echo $key, "=", ini_get($key), PHP_EOL; }'
+```
+
+普通服务器可以运行同一段 `php -r` 命令，但要注意 CLI 配置可能不同于网站使用的 PHP-FPM。访问 Icefox 页面后，还可以在浏览器控制台检查 Web 运行时实际读取的前两项：
+
+```js
+window.ICEFOX_CONFIG.phpUploadMaxBytes // 20971520，即 20MB
+window.ICEFOX_CONFIG.phpPostMaxBytes   // 536870912，即 512MB
+```
+
+如果命令或页面仍显示旧值，通常是配置文件放错 SAPI 目录、PHP/容器尚未重启，或主机商限制了最大值。
+
+配置容量允许时，相册图片使用普通 multipart 直接上传；单个文件或整次请求超过 PHP 上限时，对象存储相册会自动改用 1MB 分片暂存。该备用逻辑不绕过视频上传、Typecho 后台原生附件上传或反向代理的限制，这些请求仍需要正确配置 PHP 和 Web 服务器。
 
 ### 数据库
 - 支持外键约束
@@ -271,6 +370,11 @@ $posts = $db->fetchAll(
 - [Alpine.js](https://alpinejs.dev/) - 轻量级响应式框架
 
 ## 📝 更新日志
+
+### v3.1.1 (2026)
+- 修复 Typecho 1.2.x 查询构造器导致 Icefox 插件重新启用时报 `Database Query Error` 的相册标签迁移问题
+- 保持相册说明、排序、标签关系和旧表结构的幂等迁移，旧用户覆盖后重新启用即可完成升级
+- 发布主题、Icefox 伴生插件和 IcefoxStorage 的统一 3.1.1 版本包
 
 ### v3.1.0 (2026)
 - 新增独立相册、相册标签、说明、排序、置顶和朋友圈同步

@@ -6,7 +6,7 @@ Icefox is a mobile-first, WeChat Moments-style theme for Typecho. It is not a
 standalone application and cannot run without a Typecho installation and the
 companion Icefox plugin.
 
-- Theme version in code: `3.1.0`
+- Theme version in code: `3.1.1`
 - Expected Typecho version: `>= 1.2.0`
 - Expected PHP version: `>= 7.0`
 - Default branch: `main`

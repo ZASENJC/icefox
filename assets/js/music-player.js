@@ -3,7 +3,7 @@
  *
  * @package icefox
  * @author 小胖脸
- * @version 3.1.0
+ * @version 3.1.1
  * @link https://xiaopanglian.com
  */
 

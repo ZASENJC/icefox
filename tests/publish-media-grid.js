@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
 const css = fs.readFileSync('assets/css/icefox.css', 'utf8');
+const header = fs.readFileSync('header.php', 'utf8');
 
 function ruleFor(selector) {
     const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -38,5 +39,16 @@ for (const file of ['components/modals/editor.php', 'edit-page.php']) {
         `${file} must keep the add button in the same grid after the image items`
     );
 }
+
+assert.match(
+    header,
+    /filemtime\(__DIR__\s*\.\s*['"]\/assets\/css\/icefox\.css['"]\)/,
+    'the theme must invalidate cached CSS after direct file replacement'
+);
+assert.match(
+    header,
+    /icefox\.css\?v=[^'"]*icefoxCssVersion/,
+    'the stylesheet URL must include the current CSS file version'
+);
 
 console.log('Publishing media uses a full-width three-column grid');

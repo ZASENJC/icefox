@@ -1,5 +1,6 @@
 <?php
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
+$icefoxCssVersion = rawurlencode((string) (@filemtime(__DIR__ . '/assets/css/icefox.css') ?: '3.1.3'));
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN" class="">
@@ -24,7 +25,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
     <!-- 主题样式 -->
     <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/bulma.min.css'); ?>">
     <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/fancybox.css'); ?>">
-    <link rel="stylesheet" href="<?php $this->options->themeUrl('assets/css/icefox.css?v=3.1.3'); ?>">
+    <link rel="stylesheet" href="<?php $this->options->themeUrl("assets/css/icefox.css?v={$icefoxCssVersion}"); ?>">
 
     <!-- AlpineJS x-cloak 样式 -->
     <style>

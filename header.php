@@ -1,6 +1,6 @@
 <?php
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
-$icefoxCssVersion = rawurlencode((string) (@filemtime(__DIR__ . '/assets/css/icefox.css') ?: '3.1.3'));
+$icefoxCssVersion = rawurlencode((string) (@filemtime(__DIR__ . '/assets/css/icefox.css') ?: '3.1.4'));
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN" class="">
@@ -788,15 +788,15 @@ $icefoxCssVersion = rawurlencode((string) (@filemtime(__DIR__ . '/assets/css/ice
     </style>
     <?php endif; ?>
 
-    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox-plugin.js?v=3.1.3'); ?>"></script>
-    <script defer src="<?php $this->options->themeUrl('/assets/js/friend-links.js?v=3.1.3'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox-plugin.js?v=3.1.4'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/friend-links.js?v=3.1.4'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/jquery.min.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/alpinejs.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/fancybox.umd.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/scrollload.min.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/music-player.js'); ?>"></script>
     <script defer src="<?php $this->options->themeUrl('/assets/js/top-icon-contrast.js'); ?>"></script>
-    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox.js?v=3.1.3'); ?>"></script>
+    <script defer src="<?php $this->options->themeUrl('/assets/js/icefox.js?v=3.1.4'); ?>"></script>
 
     <?php if ($this->options->customJs): ?>
     <?php $customJs = (string) $this->options->customJs; ?>

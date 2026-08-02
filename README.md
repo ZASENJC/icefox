@@ -1,6 +1,6 @@
 # Icefox - Typecho 博客主题
 
-![Version](https://img.shields.io/badge/version-3.1.3-blue)
+![Version](https://img.shields.io/badge/version-3.1.4-blue)
 ![Typecho](https://img.shields.io/badge/typecho-%3E%3D1.2.0-orange)
 ![PHP](https://img.shields.io/badge/php-%3E%3D7.0.0-purple)
 
@@ -81,7 +81,7 @@
 
 3. **安装对象存储插件**（使用 R2/S3 时必需）
 
-   从 GitHub Release 安装时，请下载同版本的 `IcefoxStorage-3.1.3.zip`。
+   从 GitHub Release 安装时，请下载同版本的 `IcefoxStorage-3.1.4.zip`。
 
    ```bash
    cp -R plugins/IcefoxStorage /path/to/typecho/usr/plugins/IcefoxStorage
@@ -372,6 +372,11 @@ window.ICEFOX_CONFIG.phpPostMaxBytes   // 536870912，即 512MB
 - [Alpine.js](https://alpinejs.dev/) - 轻量级响应式框架
 
 ## 📝 更新日志
+
+### v3.1.4 (2026)
+- 发布动态时支持直接粘贴剪贴板图片，并与已选择的图片一起加入待发布媒体
+- 发布图片区固定为一行三列等宽方格，添加图片按钮紧跟现有图片排列
+- 主题主样式使用文件修改时间自动刷新缓存，直接覆盖升级后无需手动清理旧 CSS
 
 ### v3.1.3 (2026)
 - 将必需的伴生插件目录由 `Icefox` 更名为 `IcefoxPlugin`，避免与 `usr/themes/icefox/` 主题目录混淆

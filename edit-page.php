@@ -46,6 +46,24 @@ function editPageManager() {
             textarea.style.height = textarea.scrollHeight + 'px';
         },
 
+        handleMediaPaste(event) {
+            const clipboardData = event.clipboardData;
+            if (!clipboardData) return;
+
+            let images = Array.from(clipboardData.items || [])
+                .filter(item => item.kind === 'file' && item.type.startsWith('image/'))
+                .map(item => item.getAsFile())
+                .filter(Boolean);
+            if (images.length === 0) {
+                images = Array.from(clipboardData.files || [])
+                    .filter(file => file.type.startsWith('image/'));
+            }
+            if (images.length === 0) return;
+
+            event.preventDefault();
+            this.handleMediaSelect({ target: { files: images, value: '' } });
+        },
+
         handleMediaSelect(event) {
             const files = Array.from(event.target.files);
 
@@ -227,6 +245,7 @@ function editPageManager() {
                         placeholder="这一刻的想法..."
                         x-model="postContent"
                         @input="autoResize($event)"
+                        @paste="handleMediaPaste($event)"
                         rows="4"></textarea>
                 </div>
 

@@ -3069,28 +3069,15 @@ main {
 /* 媒体预览区 - 九宫格 */
 .edit-media-preview {
     display: grid;
-    grid-template-columns: repeat(3, 80px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 4px;
-}
-
-.edit-media-preview.media-count-1 {
-    grid-template-columns: 160px;
-}
-
-.edit-media-preview.media-count-1 .media-preview-item {
-    width: 160px;
-    height: 160px;
-}
-
-.edit-media-preview.media-count-2,
-.edit-media-preview.media-count-4 {
-    grid-template-columns: repeat(2, 80px);
 }
 
 .media-preview-item {
     position: relative;
-    width: 80px;
-    height: 80px;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
     border-radius: 4px;
     overflow: hidden;
     background: var(--primary-background);
@@ -3140,8 +3127,9 @@ main {
 }
 
 .media-add-btn {
-    width: 80px;
-    height: 80px;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
